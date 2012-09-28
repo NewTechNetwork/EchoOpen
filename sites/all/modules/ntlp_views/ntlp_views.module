@@ -1,0 +1,2221 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+// $Id: ntlp_views.module,v 0.01 $
+
+/**
+ * @file
+ * Extends Views2 for NTLP data
+ *
+ * For reference:
+ * http://views-help.doc.logrus.com/help/views/api-tables
+ */
+module_load_include('inc', 'ntlp_views', 'module_tools');
+module_load_include('inc', 'ntlp_views', 'dw_tables');
+
+/**
+ * Implementation of hook_help().
+ */
+function ntlp_views_help($path, $arg) {
+    switch ($path) {
+        case 'admin/help#ntlp_views':
+            $output = '<p>' . t('Extends Views2 for NTLP data') . '</p>';
+            return $output;
+    }
+}
+
+function ntlp_views_views_api() {
+    return array(
+        'api' => 2,
+        'path' => drupal_get_path('module', 'ntlp_views'),
+    );
+}
+
+//function ntlp_views_views_pre_build(&$view) {
+////    $view->base_table = 'ntlp_course_activity';
+//}
+/**
+ * Implementation of hook_views_handlers().
+ */
+function ntlp_views_views_handlers() {
+
+    return array(
+        'info' => array(
+            'path' => drupal_get_path('module', 'ntlp_views') . '/includes',
+        ),
+        'handlers' => array(
+            'ntlp_handler_argument_status' => array('parent' => 'views_handler_argument_string'),
+            'ntlp_handler_argument_gbview_activity' => array('parent' => 'views_handler_argument_string'),
+            'ntlp_handler_argument_plib_teacher_reflection' => array('parent' => 'views_handler_argument_string'),
+            'ntlp_handler_argument_og_group_nid' => array('parent' => 'views_handler_argument_numeric'),
+            'ntlp_handler_field_checkbox' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_grade_link' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_gradeall_link' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_user_course_grades' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_activity_submitted' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_outcome' => array('parent' => 'views_handler_field_numeric'),
+            'ntlp_handler_field_dw_cg_outcome' => array('parent' => 'views_handler_field_numeric'),
+            'ntlp_handler_field_activity_status' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_submission_status' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_submission_date' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_course_joinlink' => array('parent' => 'views_handler_field'),
+//            'ntlp_handler_field_course_droplink' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_user_fullname' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_resource_created_on' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_user_name' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_user_name_with_picture' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_date' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_project_availability' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_project_duration' => array('parent' => 'views_handler_field'),
+            'ntlp_views_handler_relationship_og' => array('parent' => 'views_handler_relationship'),
+            'ntlp_handler_field_group_managelinks' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_group_postcount' => array('parent' => 'views_handler_field_numeric'),
+            'ntlp_handler_field_resource_icontitle' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_resource_sortlinks' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_resource_hideshow' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_resource_removelink' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_field_ntk_removelink' => array('parent' => 'views_handler_field'),
+            'ntlp_handler_filter_null_operator' => array('parent' => 'views_handler_filter'),
+            'ntlp_handler_filter_random_projects' => array('parent' => 'views_handler_filter'),
+            'ntlp_handler_sort_liked' => array('parent' => 'views_handler_sort'),
+            'ntlp_handler_argument_node_promote' => array('parent' => 'views_handler_argument_numeric'),
+        ),
+    );
+}
+
+/**
+ * Implementation of hook_views_data().
+ */
+function ntlp_views_views_data() {
+    $data = array();
+    $tables = array('school', 'course', 'user',
+        'course_activity', 'course_user', 'activity_user',
+        'course_resource', 'project_resource', 'activity_submission',
+        'group', 'library_project',
+        'dw_course_grade',
+        'og_ancestry',
+        'library_category', 'library_resource',
+    ); //'library_resource');
+    foreach ($tables as $table) {
+        $function = "ntlp_views_data_$table";
+        $data += $function();
+    }
+    return $data;
+}
+
+// ---------- Table School
+function ntlp_views_data_school() {
+    $tablename = 'ntlp_school';
+    $data[$tablename]['table']['group'] = t('NTLP');
+
+    $data[$tablename]['table']['join'] = array(
+        'node' => array(
+            'left_field' => 'nid',
+            'field' => 'nid',
+        ),
+    );
+    $data[$tablename]['nid'] = array(
+        'title' => t('School: Node'),
+        'help' => t('NTLP School Node info'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+    );
+    $data[$tablename]['location_tid'] = array(
+        'title' => t('School: Region'),
+        'help' => t('NTLP School Region'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'relationship' => array(
+            'title' => t('School: Region'),
+            'help' => t("Bring in information about schools in a particular region."),
+            'base' => 'term_data',
+            'field' => 'location_tid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('School: Region'),
+        ),
+    );
+    $data[$tablename]['address'] = array(
+        'title' => t('School: Address'),
+        'help' => t('NTLP School Address'),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string',
+        ),
+    );
+    $data[$tablename]['active'] = array(
+        'title' => t('School: Active'),
+        'help' => t('Shows whether the school is currently active or inactive.'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Active'),
+            'type' => 'yes-no',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    return $data;
+}
+
+// ---------- Table Course
+function ntlp_views_data_course() {
+    $data = array();
+    $tablename = 'ntlp_course';
+    $data[$tablename]['table']['group'] = t('NTLP');
+    $data[$tablename]['table']['base'] = array(
+        'field' => 'nid',
+        'title' => 'NTLP Course',
+        'help' => t("NTLP Course provides access to course and project information."),
+        'weight' => 0,
+    );
+
+    $data[$tablename]['table']['join'] = array(
+        'node' => array(
+            'handler' => 'views_join', // this is actually optional
+            'left_table' => 'node', // Because this is a direct link it could be left out.
+            'left_field' => 'nid',
+            'field' => 'nid',
+//      'type' => 'INNER',
+        ),
+//    'node_revisions' => array(
+//      'left_field' => 'nid',
+//      'field' => 'nid',
+////      'type' => 'INNER',
+//    ),
+    );
+    $data[$tablename]['nid'] = array(
+        'title' => t('Course: Node ID'),
+        'help' => t('NTLP Course Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        // Related to NODE
+        'relationship' => array(
+            'handler' => 'views_handler_relationship',
+            'base' => 'node',
+            'field' => 'nid',
+            'label' => t('Course: Node ID'),
+        ),
+    );
+    $data[$tablename]['school_nid'] = array(
+        'title' => t('Course: School Node ID'),
+        'help' => t('NTLP Course School Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Course: School Node'),
+            'help' => t("Bring in information about node for a course's School."),
+            'base' => 'node',
+            'field' => 'nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Course: School Node'),
+        ),
+    );
+    $data[$tablename]['school_term_tid'] = array(
+        'title' => t('Course: School Term Taxonomy ID'),
+        'help' => t('NTLP Course School Term Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Course: School Term'),
+            'help' => t("Bring in information about node for a Course's School Term."),
+            'base' => 'ntlp_school_term',
+            'field' => 'tid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Course: School Term Node'),
+        ),
+    );
+    $data[$tablename]['is_project'] = array(
+        'title' => t('Project: Is this a Project'),
+        'help' => t('Is this a project in a course.'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Is this Project'),
+            'type' => 'yes-no',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['availability'] = array(
+        'title' => t('Project: Shows availability status'),
+        'help' => t('Shows availability status of the Project.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_project_availability',
+            'click sortable' => TRUE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_string',
+        ),
+    );
+    $data[$tablename]['duration'] = array(
+        'title' => t('Project: Duration'),
+        'help' => t('Shows Project Duration in From-To date format.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_project_duration',
+            'click sortable' => TRUE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['course_nid'] = array(
+        'title' => t('Project: Course Node ID'),
+        'help' => t('NTLP Course Node identification for this Project'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Project: Course Node'),
+            'help' => t("Bring in information about node for parent course of this project."),
+            'base' => 'node',
+            'field' => 'nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Project: Course Node ID'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['remove_link'] = array(
+        'title' => t('Project Need to know: Remove Link'),
+        'help' => t('Provides a delete link to remove the Need-To-Know item from the project'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_ntk_removelink',
+            'format' => FILTER_FORMAT_DEFAULT,
+        ),
+    );
+
+    return $data;
+}
+
+// ---------- Table User
+function ntlp_views_data_user() {
+    $tablename = 'ntlp_user';
+    $data[$tablename]['table']['group'] = t('NTLP');
+
+    $data[$tablename]['table']['join'] = array(
+        'users' => array(
+            'left_field' => 'uid',
+            'field' => 'uid',
+//        // adds extra fields to the join
+//      'extra' => 'table_a.field2 = table_b.field2',
+//      // Can use AND or OR, not really needed here since it defaults to AND
+//      'extra type' => 'AND',
+        ),
+        'node' => array(
+            'left_field' => 'uid',
+            'field' => 'uid',
+        ),
+        'ntlp_school' => array(
+            'left_field' => 'nid',
+            'field' => 'school_nid',
+        ),
+    );
+    $data[$tablename]['school_nid'] = array(
+        'title' => t('User: School Node Id'),
+        'help' => t('NTLP School to which the user belongs to.'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'relationship' => array(
+            'title' => t('User: School'),
+            'help' => t("Bring in information about user's school."),
+            'base' => 'node',
+            'base field' => 'nid',
+            'field' => 'school_nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('User: School'),
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['uid'] = array(
+        'title' => t('User: User Id'),
+        'help' => t('NTLP User identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'relationship' => array(
+            'title' => t('User: User Id'),
+            'help' => t("Brings extended User information."),
+            'base' => 'users',
+            'field' => 'uid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('User: User Id'),
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['is_active'] = array(
+        'title' => t('User: Is Active'),
+        'help' => t('NTLP Is user Active, can be enabled or disabled.'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Is Active?'),
+            'type' => 'yes-no',
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['checkbox_uid'] = array(
+        'title' => t('User: User selection checkbox'),
+        'help' => t('NTLP User selection'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_checkbox',
+            'click sortable' => FALSE,
+            'notafield' => TRUE,
+        ),
+    );
+    $data[$tablename]['first_name'] = array(
+        'title' => t('User: First Name'),
+        'help' => t('First Name of NTLP User'),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['last_name'] = array(
+        'title' => t('User: Last Name'),
+        'help' => t('Last Name of NTLP User'),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['fullname'] = array(
+        'title' => t('User: Full Name with Group Role'),
+        'help' => t('NTLP user full name with role and ownership in Group.'),
+        'notafield' => TRUE,
+        'field' => array(
+            'handler' => 'ntlp_handler_field_user_fullname',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+    );
+    $data[$tablename]['simplename'] = array(
+        'title' => t('User: Full Name'),
+        'help' => t('NTLP user full name.'),
+        'notafield' => TRUE,
+        'field' => array(
+            'handler' => 'ntlp_handler_field_user_name',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+    );
+
+    $data[$tablename]['namepicture'] = array(
+        'title' => t('User: Full Name With Picture'),
+        'help' => t('NTLP user full name with Picture.'),
+        'notafield' => TRUE,
+        'field' => array(
+            'handler' => 'ntlp_handler_field_user_name_with_picture',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+
+    $data[$tablename]['stu_grades_percent'] = array(
+        'title' => t('Grades: Overall grade of Students in a course.'),
+        'help' => t('Shows percentage of grades students have earned in all the activities in a course.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_user_course_grades',
+//      'notafield' => TRUE,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['stu_outcome_percent'] = array(
+        'title' => t('Grades: Outcome wise grade of Students in a course.'),
+        'help' => t('Shows percentage of grades students have earned in all the activities in a course for an outcome.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_outcome',
+            'notafield' => TRUE,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+//    $data[$tablename]['drop_link'] = array(
+//        'title' => t('User: Drop Link'),
+//        'help' => t("Provides a link to Drop students from a course."),
+//        'field' => array(
+//            'handler' => 'ntlp_handler_field_course_droplink',
+//            'click sortable' => FALSE,
+//        ),
+//        //The relationship can be used to join with OG membership
+//        'relationship' => array(
+//            'title' => t('User OG: User Course Membership'),
+//            'help' => t("Brings enrollment info for the selected user."),
+//            'handler' => 'views_handler_relationship',
+//            'base' => 'og_uid',
+//            'base field' => 'uid',
+//            'field' => 'uid',
+//            'relationship field' => 'uid',
+//            'label' => t('User OG: User ID'),
+//            'extra' => array(
+//                array(
+//                    'field' => 'nid',
+//                    'value' => '***OG_NID***', //This is replaced by query substitution hook
+//                    'numeric' => TRUE
+//                ),
+//            ),
+//        ),
+//    );
+    $data[$tablename]['manage_group_link'] = array(
+        'title' => t('User: Group Membership Links'),
+        'help' => t("Provides links to join/remove a member, and also to Assign/Remove an admin."),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_group_managelinks',
+            'notafield' => TRUE,
+            'click sortable' => FALSE,
+        ),
+        //The relationship can be used to join with OG membership
+        'relationship' => array(
+            'title' => t('User OG: User Group Membership'),
+            'help' => t("Brings enrollment info for the selected user."),
+            'handler' => 'views_handler_relationship',
+            'base' => 'og_uid',
+            'base field' => 'uid',
+            'field' => 'uid',
+            'relationship field' => 'uid',
+            'label' => t('User OG: User ID'),
+            'extra' => array(
+                array(
+                    'field' => 'nid',
+                    'value' => '***OG_NID***', //This is replaced by query substitution hook
+                    'numeric' => TRUE
+                ),
+            ),
+        ),
+    );
+    $data[$tablename]['group_post_count'] = array(
+        'title' => t('User: Post Count in Group'),
+        'help' => t("Returns post count by the user in the current group."),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_group_postcount',
+            'click sortable' => FALSE,
+        ),
+    );
+    return $data;
+}
+
+// ---------- Table Course Users; Stores students who have dropped out of a course og
+function ntlp_views_data_course_user() {
+    $tablename = 'ntlp_course_user';
+    $data[$tablename]['table']['group'] = t('NTLP');
+
+    $data[$tablename]['table']['join'] = array(
+        'users' => array(
+            'left_field' => 'uid',
+            'field' => 'user_uid',
+        ),
+        'node' => array(
+            'left_field' => 'nid',
+            'field' => 'course_nid',
+        ),
+    );
+    $data[$tablename]['user_uid'] = array(
+        'title' => t('Enrollment: User Id'),
+        'help' => t('Id of NTLP Student who is dropped out of a course'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['course_nid'] = array(
+        'title' => t('Enrollment: Course Node ID'),
+        'help' => t('The NTLP Course Node identification from which student was dropped out.'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Enrollment: Course Node'),
+            'help' => t("Bring in information about course where students were dropped out."),
+            'base' => 'node',
+            'field' => 'nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Enrollment: Course Node'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['modifiedon_date'] = array(
+        'title' => t('Enrollment: Enrolled/Dropped Date'),
+        'help' => t('NTLP student drop out date.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_date',
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter',
+        ),
+    );
+    $data[$tablename]['role_id'] = array(
+        'title' => t('Enrollment: User\'s Role'),
+        'help' => t('Role of a user in a course.'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_user_roles',
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['period'] = array(
+        'title' => t('Enrollment: Period'),
+        'help' => t('Period in which the user is enrolled in the course.'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['join_link'] = array(
+        'title' => t('Enrollment: Re-enroll Link'),
+        'help' => t("Provides a link to re-enroll dropped students in a course."),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_course_joinlink',
+            'notafield' => TRUE,
+            'click sortable' => FALSE,
+        ),
+    );
+    return $data;
+}
+
+// ---------- Table Course Users; Stores students who have dropped out of a course og
+function ntlp_views_data_group() {
+    $tablename = 'ntlp_group';
+    $data[$tablename]['table']['group'] = t('NTLP Group');
+
+    $data[$tablename]['table']['join'] = array(
+        'node' => array(
+//      'left_table' => 'og_uid',
+            'left_field' => 'nid',
+            'field' => 'nid',
+            'type' => 'INNER',
+        ),
+//    'users' => array(
+//      'left_table' => 'og_uid',
+//      'left_field' => 'nid',
+//      'field' => 'nid',
+//      'type' => 'INNER',
+//    ),
+        'og' => array(
+            'left_field' => 'nid',
+            'field' => 'nid',
+            'type' => 'INNER',
+        ),
+    );
+    $data[$tablename]['school_nid'] = array(
+        'title' => t('Group: School Node ID'),
+        'help' => t('The School identification in which NTLP Group was created.'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'relationship' => array(
+            'title' => t('Group: School Node'),
+            'help' => t("Bring in information about group's school."),
+            'base' => 'node',
+            'base field' => 'nid',
+            'field' => 'school_nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Group: School Node'),
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['course_nid'] = array(
+        'title' => t('Group: Course Node ID'),
+        'help' => t('The NTLP Group\'s associated Course Node identification.'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Group: Course Node'),
+            'help' => t("Bring in information about the course to which group is associated with."),
+            'base' => 'ntlp_course',
+            'field' => 'nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Group: Course Node'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['project_nid'] = array(
+        'title' => t('Group: Project Node ID'),
+        'help' => t('The NTLP Group\'s associated Project Node identification.'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Group: Project Node'),
+            'help' => t("Bring in information about the project to which group is associated with."),
+            'base' => 'ntlp_course',
+            'field' => 'nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Group: Project Node'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['picture_fid'] = array(
+        'title' => t('Group: Picture Node ID'),
+        'help' => t('The Picture file identification of the NTLP Group.'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'relationship' => array(
+            'title' => t('Group: Picture File Id'),
+            'help' => t("Bring in information about group's picture file."),
+            'base' => 'files',
+            'base field' => 'fid',
+            'field' => 'picture_fid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Group: Picture File Id'),
+        ),
+    );
+    $data[$tablename]['is_closed'] = array(
+        'title' => t('Group: Accessibility - Is Closed'),
+        'help' => t('The Accessibility option of the NTLP Group. Is the Group a Closed Group; where a user must request to join.'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Is this a Closed Group?'),
+            'type' => 'yes-no',
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['showin_school_directory'] = array(
+        'title' => t('Group: Show-in School Directory'),
+        'help' => t('The NTLP Group is listed in School Directory?'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Show in School Directory?'),
+            'type' => 'yes-no',
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['showin_network_directory'] = array(
+        'title' => t('Group: Show-in Network Directory'),
+        'help' => t('The NTLP Group is listed in Network Directory?'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Show in Network Directory?'),
+            'type' => 'yes-no',
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['group_join_link'] = array(
+        'title' => t('Group: Membership Links'),
+        'help' => t("Provides links to join/remove a member, and also to Assign/Remove an admin."),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_group_managelinks',
+            'notafield' => TRUE,
+            'click sortable' => FALSE,
+        ),
+    );
+    return $data;
+}
+
+// ---------- Table Course Activity Users
+function ntlp_views_data_activity_user() {
+    $data = array();
+    $tablename = 'ntlp_activity_user';
+    $data[$tablename]['table']['group'] = t('NTLP Activity');
+
+    $data[$tablename]['table']['join'] = array(
+        'users' => array(
+            'left_field' => 'uid',
+            'field' => 'user_uid',
+            'type' => 'INNER', //INNER required here to get only those records which are matching User or Activity ids
+        ),
+        'ntlp_course_activity' => array(
+            'left_field' => 'nid',
+            'field' => 'activity_nid',
+            'type' => 'INNER',
+        ),
+    );
+    $data[$tablename]['user_uid'] = array(
+        'title' => t('Activity: Student ID'),
+        'help' => t('Student ID who have been assigned the Course Activity'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Activity: Student Node'),
+            'help' => t("Bring in information about Student node linked with activities."),
+            'base' => 'users',
+            'field' => 'uid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Activity: Student Node'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['activity_nid'] = array(
+        'title' => t('Activity: Student Activity Node ID'),
+        'help' => t('NTLP Course Activity Node identification which are assigned to Students'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Activity: Student Activity Node'),
+            'help' => t("Bring in information about node for an activity assigned to Students."),
+            'base' => 'node',
+            'field' => 'nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Activity: Student Activity Node'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['rt_graded_link'] = array(//rt = Run Time
+        'title' => t('Activity User: Grade Link'),
+        'help' => t("Generates a link to open students' submission."),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_grade_link',
+            'notafield' => TRUE,
+            'click sortable' => FALSE,
+        ),
+    );
+    $data[$tablename]['rt_submission_status'] = array(
+        'title' => t('Activity User: Activity Submission Status'),
+        'help' => t('Shows activity submission status.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_submission_status',
+            'click sortable' => FALSE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter',
+        ),
+    );
+    $data[$tablename]['rt_date_submitted'] = array(
+        'title' => t('Activity User: Submission Date'),
+        'help' => t('Date on which a student submitted the assignment.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_submission_date',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter',
+        ),
+    );
+
+    return $data;
+}
+
+// ---------- Table Course Activity
+function ntlp_views_data_course_activity() {
+    $data = array();
+    $tablename = 'ntlp_course_activity';
+    $data[$tablename]['table']['group'] = t('NTLP Activity');
+    $data[$tablename]['table']['base'] = array(
+        'field' => 'nid',
+        'title' => 'NTLP Activity',
+        'help' => t("NTLP Course Activities are learning objects, submissions, resources and calculated outcomes apart from related data."),
+        'weight' => 0,
+    );
+    $data[$tablename]['table']['join'] = array(
+        'ntlp_course' => array(
+            'left_field' => 'nid',
+            'field' => 'course_nid',
+            'type' => 'INNER',
+        ),
+    );
+    $data[$tablename]['nid'] = array(
+        'title' => t('Activity: Node ID'),
+        'help' => t('NTLP Course Activity Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        // Related to NODE
+        'relationship' => array(
+            'handler' => 'views_handler_relationship',
+            'base' => 'node',
+            'field' => 'nid',
+            'label' => t('Activity: Node ID'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['course_nid'] = array(
+        'title' => t('Activity: Course Node ID'),
+        'help' => t('NTLP Course or Project Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Activity: Course Node'),
+            'help' => t("Bring in information about node for an activity."),
+            'base' => 'ntlp_course',
+            'field' => 'nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Activity: Course Node'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['project_nid'] = array(
+        'title' => t('Activity: Project Node ID'),
+        'help' => t('NTLP Course Project Node identification to which an activity is associated with.'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Activity: Project Node'),
+            'help' => t("Bring in information about Project node an activity belongs to."),
+            'base' => 'node',
+            'field' => 'nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Activity: Project Node'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['submission_type'] = array(
+        'title' => t('Activity: Submission Type'),
+        'help' => t('NTLP Activity Submission Type [D]igital, [O]ffline'),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string',
+        ),
+    );
+    $data[$tablename]['allow_resubmission'] = array(
+        'title' => t('Activity: Allow Resubmission'),
+        'help' => t('Can a student resubmit the assignment multiple times?'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Resubmit'),
+            'type' => 'yes-no',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['availability_mode'] = array(
+        'title' => t('Activity: Availability Mode'),
+        'help' => t('NTLP Activity Availability Mode [M]anual, [S]cheduled'),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string',
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_string',
+        ),
+    );
+    $data[$tablename]['available_from'] = array(
+        'title' => t('Activity: Available From'),
+        'help' => t('NTLP Activity Available from date'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_date',
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter',
+        ),
+    );
+    $data[$tablename]['available_to'] = array(
+        'title' => t('Activity: Available To'),
+        'help' => t('NTLP Activity Available to date'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_date',
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter',
+        ),
+    );
+    $data[$tablename]['availability_status'] = array(
+        'title' => t('Activity: Availability Status'),
+        'help' => t('Shows activity availability status using from and to dates and availability mode.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_activity_status',
+            'click sortable' => FALSE,
+            'notafield' => FALSE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter',
+        ),
+        'argument' => array(
+            'handler' => 'ntlp_handler_argument_status',
+        ),
+    );
+    $data[$tablename]['is_displayed_in_gradebook'] = array(
+        'title' => t('Activity: Is Displayed in Gradebook'),
+        'help' => t('Shows if the activity will be displayed in Gradebook, depending on user role'),
+        'argument' => array(
+            'handler' => 'ntlp_handler_argument_gbview_activity',
+        ),
+    );
+    $data[$tablename]['due_date'] = array(
+        'title' => t('Activity: Due Date'),
+        'help' => t('NTLP Activity submission due date'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_date',
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter',
+        ),
+    );
+    $data[$tablename]['is_graded'] = array(
+        'title' => t('Activity: Is this Graded'),
+        'help' => t('Is this activity going to be Graded.'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Graded'),
+            'type' => 'yes-no',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['is_published'] = array(
+        'title' => t('Activity: Is this Published'),
+        'help' => t('Is this activity going to be Published.'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Published'),
+            'type' => 'yes-no',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['submissions_percent'] = array(
+        'title' => t('Activity: Percent of completed submissions'),
+        'help' => t('Shows percentage of completed submissions against all submissions.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_activity_submitted',
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['outcome_tid'] = array(
+        'title' => t('Activity: Outcome tid'),
+        'help' => t('Activity outcome tid.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_outcome',
+//      'notafield' => TRUE,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+
+    $data[$tablename]['rt_gradeall_link'] = array(//rt = Run Time
+        'title' => t('Activity: Grade All Link'),
+        'help' => t("Generates a link to open Grades of students in an activity."),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_gradeall_link',
+            'click sortable' => FALSE,
+        ),
+    );
+
+    $data[$tablename]['school_term_tid'] = array(
+        'title' => t('Activity: School Term Taxonomy ID'),
+        'help' => t('NTLP Course School Term Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+    );
+
+
+    return $data;
+}
+
+// ---------- Table Course Activity Submission
+function ntlp_views_data_activity_submission() {
+    $data = array();
+    $tablename = 'ntlp_activity_submission';
+    $data[$tablename]['table']['group'] = t('NTLP Submission');
+    $data[$tablename]['table']['join'] = array(
+        'ntlp_course' => array(
+            'left_table' => 'ntlp_course_activity',
+            'left_field' => 'course_nid', //this field is in ntlp_course_activity table
+            'field' => 'activity_nid', //this field is in ntlp_activity_submission table
+//      'type' => 'INNER',
+        ),
+        'ntlp_course_activity' => array(
+            'handler' => 'views_join', // this is actually optional
+            'left_table' => 'ntlp_course_activity', // Because this is a direct link it could be left out.
+            'left_field' => 'nid',
+            'field' => 'activity_nid',
+            'type' => 'LEFT',
+        ),
+        'users' => array(
+            'left_field' => 'uid',
+            'field' => 'user_uid',
+//      'type' => 'INNER',
+        ),
+    );
+
+//  $data[$tablename]['table']['join'] = array(
+//    'ntlp_course_activity' => array(
+//      'handler' => 'views_join', // this is actually optional
+//      'left_table' => 'ntlp_course_activity', // Because this is a direct link it could be left out.
+//      'left_field' => 'nid',
+//      'field' => 'activity_nid',
+//      'type' => 'LEFT',
+//    ),
+//    'node' => array(
+//      'left_field' => 'nid',
+//      'field' => 'nid',
+////      'type' => 'INNER',
+//    ),
+//    'users' => array(
+//      'left_field' => 'uid',
+//      'field' => 'user_uid',
+//    ),
+//  );
+    $data[$tablename]['nid'] = array(
+        'title' => t('Submission: Node ID'),
+        'help' => t('NTLP Course Activity Submission Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'handler' => 'views_handler_relationship',
+            'base' => 'node',
+            'field' => 'nid',
+            'label' => t('node'),
+        ),
+    );
+    $data[$tablename]['activity_nid'] = array(
+        'title' => t('Submission: Course Activity Node ID'),
+        'help' => t('NTLP Course Activity Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Submission: Course Activity Node'),
+            'help' => t("Bring in information about an activity."),
+            'base' => 'node',
+//      'base field' => 'nid',
+            'field' => 'nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Submission: Course Activity Node'),
+        ),
+        'argument' => array(
+//      'handler' => 'views_handler_argument_string',
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['user_uid'] = array(
+        'title' => t('Submission: Student ID'),
+        'help' => t('Student IDs who made the submissions.'),
+        'field' => array(
+            'handler' => 'views_handler_filter_numeric',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Submission: Student ID'),
+            'help' => t("Bring in information about Student who made the submissions."),
+            'base' => 'users',
+            'field' => 'uid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Submission: Student ID'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['graded_by_uid'] = array(
+        'title' => t('Submission: Teacher ID'),
+        'help' => t('Teacher IDs who have graded the submissions.'),
+        'field' => array(
+            'handler' => 'views_handler_filter_numeric',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Submission: Teacher ID'),
+            'help' => t("Bring in information about Teacher who have graded the submissions."),
+            'base' => 'users',
+            'field' => 'uid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Submission: Teacher ID'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['date_opened'] = array(
+        'title' => t('Submission: Date Submission Opened'),
+        'help' => t('Date Submission opened by student'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_date',
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter',
+        ),
+    );
+    $data[$tablename]['date_submitted'] = array(
+        'title' => t('Submission: Submission Date'),
+        'help' => t('Date the student submitted the assignment.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_date',
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter',
+        ),
+    );
+    $data[$tablename]['date_graded'] = array(
+        'title' => t('Submission: Graded On Date'),
+        'help' => t('Date the teacher graded the student submission.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_date',
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+//      'handler' => 'views_handler_filter',
+            'handler' => 'ntlp_handler_filter_null_operator',
+        ),
+    );
+//  $data[$tablename]['date_graded_null'] = array(
+//    'title' => t('Submission: Is Graded date NULL'),
+//    'help' => t('Is this submission Graded by Teacher with valid date.'),
+//    'field' => array(
+//      'real_field' => 'date_graded',
+//      'handler' => 'views_handler_field',
+//      'click sortable' => FALSE,
+//    ),
+//    'filter' => array(
+//      'handler' => 'ntlp_handler_filter_null_operator',
+//    ),
+//  );
+    $data[$tablename]['is_graded'] = array(
+        'title' => t('Submission: Is this Graded'),
+        'help' => t('Is this submission Graded by Teacher yet.'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Graded'),
+            'type' => 'yes-no',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['is_final'] = array(
+        'title' => t('Submission: Is this Submission completed'),
+        'help' => t('Is this submission completed by student. Teacher may also mark a submission incomplete after student submission.'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Complete'),
+            'type' => 'yes-no',
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+//  $data[$tablename]['submission_status'] = array(
+//    'title' => t('Submission: Activity Submission Status'),
+//    'help' => t('Shows activity submission status.'),
+//    'field' => array(
+//      'handler' => 'ntlp_handler_field_submission_status',
+//      'click sortable' => FALSE,
+//    ),
+//    'sort' => array(
+//      'handler' => 'views_handler_sort',
+//    ),
+//    'filter' => array(
+//      'handler' => 'views_handler_filter',
+//    ),
+//  );
+    $data[$tablename]['teachers_notes'] = array(
+        'title' => t('Submission: Teacher Remarks'),
+        'help' => t('Remarks made by teacher on submission'),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string',
+        ),
+    );
+    $data[$tablename]['students_notes'] = array(
+        'title' => t('Submission: Student Notes'),
+        'help' => t('Notes submitted by students against an activity'),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string',
+        ),
+    );
+    $data[$tablename]['note_to_teacher'] = array(
+        'title' => t('Submission: Note to Teacher'),
+        'help' => t("Student's message to teacher in a submission."),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string',
+        ),
+    );
+    $data[$tablename]['submissions_percent'] = array(
+        'title' => t('Submission: Percent of completed submissions'),
+        'help' => t('Shows percentage of completed submissions against all submissions.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_activity_submitted',
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['outcome_tid'] = array(
+        'title' => t('Submission: Outcome tid'),
+        'help' => t('Activity outcome tid.'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_outcome',
+            'notafield' => TRUE,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+//  $data[$tablename]['graded_link'] = array(
+//    'title' => t('Submission: Grade Link'),
+//    'help' => t("Generates a link to open students' submission."),
+//    'field' => array(
+//      'handler' => 'ntlp_handler_field_grade_link',
+//      'notafield' => TRUE,
+//      'click sortable' => FALSE,
+//    ),
+//  );
+    return $data;
+}
+
+// ---------- Table Course Resource
+function ntlp_views_data_course_resource() {
+    $data = array();
+    $tablename = 'ntlp_course_resource';
+    $data[$tablename]['table']['group'] = t('NTLP Resource');
+//  $data[$tablename]['table']['base'] = array(
+//    'field' => 'nid',
+//    'title' => 'NTLP Resource',
+//    'help' => t("NTLP Course Resources are documents, links, images and videos attached with a course or project."),
+//    'weight' => 0,
+//  );
+    $data[$tablename]['table']['join'] = array(
+        'node' => array(
+            'left_field' => 'nid',
+            'field' => 'nid',
+        ),
+        'ntlp_course' => array(
+            'left_field' => 'nid',
+            'field' => 'course_nid',
+            'type' => 'INNER',
+        ),
+        'files' => array(
+            'left_field' => 'fid',
+            'field' => 'fid',
+        ),
+    );
+    $data[$tablename]['nid'] = array(
+        'title' => t('Resource: Node ID'),
+        'help' => t('NTLP Course Resource Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        // Related to NODE
+        'relationship' => array(
+            'handler' => 'views_handler_relationship',
+            'base' => 'node',
+            'field' => 'nid',
+            'label' => t('Resource: Node ID'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+
+    $data[$tablename]['node_created'] = array(
+        'title' => t('Resource: Posted Date'),
+        'help' => t('NTLP Resource Posted Date'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_resource_created_on',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => FALSE,
+        ),
+    );
+    $data[$tablename]['node_liked'] = array(
+        'title' => t('Resource: Most Liked'),
+        'help' => t('Most liked NTLP Resources'),
+        'sort' => array(
+            'handler' => 'ntlp_handler_sort_liked',
+        ),
+    );
+
+    $data[$tablename]['title_with_icon'] = array(
+        'title' => t('Resource: Title with Icon'),
+        'help' => t('NTLP Resource Title with its Icon according to Type'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_resource_icontitle',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => FALSE,
+        ),
+    );
+    $data[$tablename]['fid'] = array(
+        'title' => t('Resource: File ID'),
+        'help' => t('NTLP Course Resource File identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'handler' => 'views_handler_relationship',
+            'help' => t("Bring in information about uploaded file in a resource."),
+            'base' => 'files',
+            'base field' => 'fid',
+            'field' => 'fid',
+            'label' => t('Resource: File ID'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['course_nid'] = array(
+        'title' => t('Resource: Course Node ID'),
+        'help' => t('NTLP Course Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Resource: Course Node'),
+            'help' => t("Bring in information about node for a resource."),
+            'base' => 'ntlp_course',
+            'field' => 'nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Resource: Course Node'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['title_with_icon'] = array(
+        'title' => t('Resource: Title with Icon'),
+        'help' => t('NTLP Resource Title with its Icon according to Type'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_resource_icontitle',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => FALSE,
+        ),
+    );
+    $data[$tablename]['type'] = array(
+        'title' => t('Resource: Resource Type'),
+        'help' => t('NTLP Resource Type [L]ink, [G]oogle document'),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string',
+        ),
+    );
+    $data[$tablename]['path'] = array(
+        'title' => t('Resource: Path'),
+        'help' => t('NTLP Resource Path'),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string',
+        ),
+    );
+
+    $data[$tablename]['deleted_on'] = array(
+        'title' => t('Resource: Deleted On'),
+        'help' => t('NTLP Resource deleted on date.'),
+        'field' => array(
+            'handler' => 'views_handler_field',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'ntlp_handler_filter_null_operator',
+        ),
+    );
+
+    $data[$tablename]['is_shared'] = array(
+        'title' => t('Resource: Is Shared'),
+        'help' => t('NTLP Resource shared in resource feed.'),
+        'field' => array(
+            'handler' => 'views_handler_field_boolean',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+        ),
+    );
+    return $data;
+}
+
+// ---------- Table Course Resource
+function ntlp_views_data_project_resource() {
+    $data = array();
+    $tablename = 'ntlp_project_resource';
+    $data[$tablename]['table']['group'] = t('NTLP Resource');
+//  $data[$tablename]['table']['base'] = array(
+//    'field' => 'nid',
+//    'title' => 'NTLP Resource',
+//    'help' => t("NTLP Course Resources are documents, links, images and videos attached with a course or project."),
+//    'weight' => 0,
+//  );
+    $data[$tablename]['table']['join'] = array(
+        'node' => array(
+            'left_field' => 'nid',
+            'field' => 'nid',
+        ),
+        'ntlp_course' => array(
+            'left_field' => 'nid',
+            'field' => 'project_nid',
+            'type' => 'INNER',
+        ),
+        'ntlp_course_resource' => array(
+            'left_field' => 'nid',
+            'field' => 'nid',
+            'type' => 'INNER',
+        ),
+    );
+    $data[$tablename]['nid'] = array(
+        'title' => t('Resource: Node ID'),
+        'help' => t('NTLP Course Resource Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        // Related to NODE
+        'relationship' => array(
+            'handler' => 'views_handler_relationship',
+            'base' => 'node',
+            'field' => 'nid',
+            'label' => t('Resource: Node ID'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['project_nid'] = array(
+        'title' => t('Resource: Project Node ID'),
+        'help' => t('NTLP Project Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Resource: Project Node'),
+            'help' => t("Bring in information about project for a resource."),
+            'base' => 'ntlp_course',
+            'field' => 'nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Resource: Project Node'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['section_tid'] = array(
+        'title' => t('Resource: Project Section ID'),
+        'help' => t('NTLP Project Section identification to which a Resource is associated with.'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('Resource: Project Section'),
+            'help' => t("Bring in information about Project Section to which a Resource belongs to."),
+            'base' => 'term_data',
+            'field' => 'tid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Resource: Project Node'),
+            'extra' => array(
+                array(
+                    'field' => 'vid',
+                    'value' => '***SECTION_VID***', //This is replaced by query substitution hook
+                    'numeric' => TRUE
+                ),
+            ),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['resource_order'] = array(
+        'title' => t('Resource: Order Number'),
+        'help' => t('NTLP Resource Order Number'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+    );
+    $data[$tablename]['sort_links'] = array(
+        'title' => t('Resource: Sort Order Links'),
+        'help' => t('Provides links to sort NTLP Resources'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_resource_sortlinks',
+            'format' => FILTER_FORMAT_DEFAULT,
+        ),
+    );
+    $data[$tablename]['availability'] = array(
+        'title' => t('Resource: Availability status change buttons'),
+        'help' => t('Provides radio buttons to change availability status'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_resource_hideshow',
+            'format' => FILTER_FORMAT_DEFAULT,
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_string',
+        ),
+    );
+    $data[$tablename]['remove_link'] = array(
+        'title' => t('Resource: Remove Link'),
+        'help' => t('Provides a delete link to remove the resource from the selected section'),
+        'field' => array(
+            'handler' => 'ntlp_handler_field_resource_removelink',
+            'format' => FILTER_FORMAT_DEFAULT,
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_string',
+        ),
+    );
+    return $data;
+}
+
+function ntlp_views_data_library_project() {
+    $data = array();
+    $tablename = 'ntlp_library_project';
+    $data[$tablename]['table']['group'] = t('NTLP Library');
+    $data[$tablename]['table']['base'] = array(
+        'field' => 'nid',
+        'title' => 'NTLP Projects Library',
+        'help' => t("NTLP Projects Library provides access to projects in the library."),
+        'weight' => 0,
+    );
+
+    $data[$tablename]['table']['join'] = array(
+        'node' => array(
+            'handler' => 'views_join', // this is actually optional
+            'left_table' => 'node', // Because this is a direct link it could be left out.
+            'left_field' => 'nid',
+            'field' => 'nid',
+            'type' => 'INNER',
+        ),
+//    'node_revisions' => array(
+//      'left_field' => 'nid',
+//      'field' => 'nid',
+////      'type' => 'INNER',
+//    ),
+    );
+    $data[$tablename]['nid'] = array(
+        'title' => t('PLib: Node ID'),
+        'help' => t('NTLP Library Project Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'ntlp_handler_filter_random_projects',
+        ),
+        // Related to NODE
+        'relationship' => array(
+            'handler' => 'views_handler_relationship',
+            'base' => 'node',
+            'field' => 'nid',
+            'label' => t('PLib: Node ID'),
+        ),
+    );
+    $data[$tablename]['is_exemplary'] = array(
+        'title' => t('PLib: Is Exemplary Project'),
+        'help' => t('Shows whether the project in library is marked as Exemplary'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_boolean_operator',
+            'label' => t('Is this Exemplary Project?'),
+            'type' => 'yes-no',
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['submitted_by'] = array(
+        'title' => t('PLib: Submitted By User'),
+        'help' => t('Shows which user has submitted the project in library. Use this to relate with Submitter School'),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'title' => t('PLib: Submitted By'),
+            'help' => t("Bring in information about User."),
+            'base' => 'ntlp_user',
+            'base field' => 'uid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('PLib: Submitted By'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['has_teachers_reflections'] = array(
+        'title' => t('PLib: Contains Teachers Reflections'),
+        'help' => t('Shows whether the project in library has Teacher\'s Reflections'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+        ),
+        'filter' => array(
+            'handler' => 'ntlp_handler_filter_null_operator',
+        ),
+        'argument' => array(
+            'handler' => 'ntlp_handler_argument_plib_teacher_reflection',
+        ),
+    );
+    $data[$tablename]['archived_on'] = array(
+        'title' => t('PLib: Archived On'),
+        'help' => t('Shows Project Library archive date.'),
+        'field' => array(
+            'handler' => 'views_handler_field',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'ntlp_handler_filter_null_operator',
+        ),
+    );
+    return $data;
+}
+
+function ntlp_views_data_og_ancestry() {
+    $data = array();
+    $tablename = 'og_ancestry';
+    $data[$tablename]['table']['group'] = t('NTLP Organic groups integration');
+    $data[$tablename]['table']['join'] = array(
+        'node' => array(
+            'left_field' => 'nid',
+            'field' => 'nid',
+        ),
+    );
+
+    $data[$tablename]['group_nid'] = array(
+        'title' => t('Groups'),
+        'help' => t('The groups for a post.'),
+        'relationship' => array(
+            'title' => t('Group node (post)'),
+            'help' => t("Bring in information about the group node based on a post's groups."),
+            'base' => 'node',
+            'field' => 'group_nid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Group node (post)'),
+        ),
+        'argument' => array(
+            'name' => t('Post: in specified group (by number)'),
+            'name field' => 'title', // the field to display in the summary.
+            'validate type' => 'nid',
+            'handler' => 'ntlp_handler_argument_og_group_nid',
+            'help' => t('<strong>Posts</strong> are filtered for specified organic groups. The page context (if Display is a page) will be set to the first listed group. That means that blocks and breadcrumbs (and theme and locale, if applicable) will be based upon the first specified node id.'),
+        ),
+    );
+    $data[$tablename]['nid'] = array(
+        'title' => t('Post: Nid'),
+        'help' => t('The node ID of the node.'),
+        'field' => array(
+            'handler' => 'views_handler_field_node',
+        ),
+    );
+
+    return $data;
+}
+
+function ntlp_views_data_library_resource() {
+    $data = array();
+    $tablename = 'ntlp_library_resource';
+    $data[$tablename]['table']['group'] = t('NTLP Library');
+    $data[$tablename]['table']['join'] = array(
+        'node' => array(
+            'left_field' => 'nid',
+            'field' => 'nid',
+        ),
+        'term_node' => array(
+            'left_field' => 'nid',
+            'field' => 'nid',
+            'type' => 'INNER',
+        ),
+        'files' => array(
+            'left_field' => 'fid',
+            'field' => 'fid',
+        ),
+    );
+    $data[$tablename]['nid'] = array(
+        'title' => t('Library Resource: Node ID'),
+        'help' => t('NTLP Library Resource Node identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        // Related to NODE
+        'relationship' => array(
+            'handler' => 'views_handler_relationship',
+            'base' => 'term_node',
+            'base field' => 'nid',
+            'field' => 'nid',
+            'label' => t('Library Resource: Node ID'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+
+    $data[$tablename]['fid'] = array(
+        'title' => t('Library Resource: File ID'),
+        'help' => t('NTLP Library Resource File identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        'relationship' => array(
+            'handler' => 'views_handler_relationship',
+            'help' => t("Bring in information about uploaded file in a resource."),
+            'base' => 'files',
+            'base field' => 'fid',
+            'field' => 'fid',
+            'label' => t('Library Resource: File ID'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['type'] = array(
+        'title' => t('Library Resource: Type'),
+        'help' => t('NTLP Library Resource Type [L]ink, [G]oogle document'),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string',
+        ),
+    );
+    $data[$tablename]['path'] = array(
+        'title' => t('Library Resource: Path'),
+        'help' => t('NTLP Library Resource Path'),
+        'field' => array(
+            'handler' => 'views_handler_field_markup',
+            'format' => FILTER_FORMAT_DEFAULT,
+            'click sortable' => TRUE,
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string',
+        ),
+    );
+
+    $data[$tablename]['deleted_on'] = array(
+        'title' => t('Library Resource: Deleted On'),
+        'help' => t('NTLP Library Resource deleted on date.'),
+        'field' => array(
+            'handler' => 'views_handler_field',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'ntlp_handler_filter_null_operator',
+        ),
+    );
+    $data[$tablename]['is_featured'] = array(
+        'title' => t('Library Resource: Is Featured Resource'),
+        'argument' => array(
+          'handler' => 'ntlp_handler_argument_node_promote',
+        ),
+    );
+    return $data;
+}
+
+// ---------- Table School
+function ntlp_views_data_library_category() {
+    $data = array();
+    $tablename = 'ntlp_library_category';
+    $data[$tablename]['table']['group'] = t('NTLP Library');
+    $data[$tablename]['table']['join'] = array(
+        'node' => array(
+            'left_field' => 'nid',
+            'field' => 'module_nid',
+        ),
+        'term_node' => array(
+            'left_field' => 'tid',
+            'field' => 'category_tid',
+            'type' => 'INNER',
+        ),
+    );
+    $data[$tablename]['module_nid'] = array(
+        'title' => t('Library: Module Node'),
+        'help' => t('NTLP Library Module Node Identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+        // Related to NODE
+        'relationship' => array(
+            'handler' => 'views_handler_relationship',
+            'base' => 'node',
+            'field' => 'nid',
+            'label' => t('Library: Module Node ID'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+    );
+    $data[$tablename]['category_tid'] = array(
+        'title' => t('Library: Category Identification'),
+        'help' => t('NTLP Library Category Identification'),
+        'field' => array(
+            'handler' => 'views_handler_field_numeric',
+            'click sortable' => FALSE,
+        ),
+        'relationship' => array(
+            'title' => t('Library: Category Identification'),
+            'help' => t("Bring in information about categories in a particular module."),
+            'base' => 'term_node',
+            'field' => 'category_tid',
+            'handler' => 'views_handler_relationship',
+            'label' => t('Library: Category Identification'),
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_numeric',
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_numeric',
+        ),
+    );
+    return $data;
+}
+/**
+ * Allow replacement of current userid so we can cache these queries
+ */
+function ntlp_views_views_query_substitutions($view) {
+//    watchdog('views', 'ntlp');
+    return array(
+        '***OG_UID***' => intval($view->ntlp_arg_uid),
+        '***OG_NID***' => intval($view->ntlp_arg_nid),
+        '***SECTION_VID***' => 7, //intval($view->ntlp_arg_section_vid),
+    );
+}
+
+?>

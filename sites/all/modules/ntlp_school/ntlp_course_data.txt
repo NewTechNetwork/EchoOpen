@@ -1,0 +1,144 @@
+$content['type']  = array (
+  'name' => 'NTLP Course',
+  'type' => 'lmscourse',
+  'description' => 'LMS Course Group nodes created by LMS Application automatically, when a new course is created.',
+  'title_label' => 'Title',
+  'body_label' => '',
+  'min_word_count' => '0',
+  'help' => '',
+  'node_options' => 
+  array (
+    'status' => true,
+    'promote' => false,
+    'sticky' => false,
+    'revision' => false,
+  ),
+  'old_type' => 'lmscourse',
+  'orig_type' => '',
+  'module' => 'node',
+  'custom' => '1',
+  'modified' => '1',
+  'locked' => '0',
+  'og_content_type_usage' => 'group',
+  'content_profile_use' => 0,
+  'comment' => '0',
+  'comment_default_mode' => '4',
+  'comment_default_order' => '1',
+  'comment_default_per_page' => '50',
+  'comment_controls' => '3',
+  'comment_anonymous' => 0,
+  'comment_subject_field' => '1',
+  'comment_preview' => '1',
+  'comment_form_location' => '0',
+  'notifications_node_ui' => 
+  array (
+    'links' => true,
+    'teaserlinks' => true,
+    'block' => true,
+    'form' => false,
+    'comment' => false,
+    'subform' => false,
+  ),
+  'notifications_content_type' => 
+  array (
+    'thread' => true,
+    'nodetype' => true,
+    'author' => true,
+    'taxonomy' => false,
+    'grouptype' => false,
+    'typeauthor' => false,
+  ),
+);
+$content['fields']  = array (
+  0 => 
+  array (
+    'label' => 'mdl_course_id',
+    'field_name' => 'field_mdl_course_id',
+    'type' => 'number_integer',
+    'widget_type' => 'number',
+    'change' => 'Change basic information',
+    'weight' => '31',
+    'description' => 'Moodle Course id',
+    'default_value' => 
+    array (
+      0 => 
+      array (
+        'value' => '0',
+        '_error_element' => 'default_value_widget][field_mdl_course_id][0][value',
+      ),
+    ),
+    'default_value_php' => '',
+    'default_value_widget' => NULL,
+    'group' => false,
+    'required' => 1,
+    'multiple' => '0',
+    'min' => '',
+    'max' => '',
+    'prefix' => '',
+    'suffix' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => '',
+    'op' => 'Save field settings',
+    'module' => 'number',
+    'widget_module' => 'number',
+    'columns' => 
+    array (
+      'value' => 
+      array (
+        'type' => 'int',
+        'not null' => false,
+        'sortable' => true,
+      ),
+    ),
+    'display_settings' => 
+    array (
+      'weight' => '31',
+      'parent' => '',
+      'label' => 
+      array (
+        'format' => 'hidden',
+      ),
+      'teaser' => 
+      array (
+        'format' => 'hidden',
+        'exclude' => 0,
+      ),
+      'full' => 
+      array (
+        'format' => 'hidden',
+        'exclude' => 0,
+      ),
+      4 => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      2 => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      3 => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'token' => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+  ),
+);
+$content['extra']  = array (
+  'title' => '-5',
+  'revision_information' => '20',
+  'comment_settings' => '30',
+  'menu' => '-2',
+  'og_description' => '-4',
+  'og_selective' => '0',
+  'og_register' => '0',
+  'og_directory' => '0',
+  'og_private' => '0',
+);

@@ -1,0 +1,44 @@
+/*// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+body {
+	background-color:#fff;	
+	font-family:"Lucida Grande","bitstream vera sans","trebuchet ms",verdana,arial;
+	text-align:center;
+}
+
+#page {
+	background-color:#efefef;
+	width:600px;
+	margin:50px auto;
+	padding:20px 150px 20px 50px;
+	min-height:600px;
+	border:2px solid #fff;
+	outline:1px solid #ccc;
+	text-align:left;
+}
+
+h1, h2 {
+	letter-spacing:-1px;
+	color:#2D5AC3;
+	font-weight:normal;		
+	margin-bottom:-10px;
+}
+
+h1 {
+	font-size:22px;
+}
+
+h2 {
+	font-size:18px;
+}
+
+.less {
+	color:#999;
+	font-size:12px;
+}
+
+a {
+	color:#295c72;		
+}

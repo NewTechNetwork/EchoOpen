@@ -1,0 +1,255 @@
+<?php
+
+// $Id: moodle_courselist.module,v 1.3 2009/09/06 04:57:40 agerson Exp $
+
+/**
+* @file
+* Module for dynamic display of Moodle course memberships 
+* based on drupal username.
+* Drupal username and Moodle username must be identical.
+*/
+
+/**
+* Implementation of hook_help()
+*/
+function moodle_courselist_help($path, $arg) {
+  if ($path == 'admin/help#moodle_courselist') {
+    $txt =  'This module displays Moodle course memberships for the currently'
+    .' logged in user. Drupal username and Moodle username must be identical.';
+    $replace = array();
+    return '<p>'. t($txt, $replace) .'</p>';
+  }
+}
+
+/**
+* Implementation of hook_uninstall()
+*/
+function moodle_courselist_uninstall() {
+  variable_del('moodle_sso_mysqlserver');
+  variable_del('moodle_sso_mysqlusername');
+  variable_del('moodle_sso_mysqlpassword');
+  variable_del('moodle_sso_moodleurl');
+}
+
+/**
+* Implementation of hook_perm
+*/
+function moodle_courselist_perm() {
+  return array('view moodle courselist');
+}
+
+/**
+* Implementation of hook_block
+*/
+function moodle_courselist_block($op='list' , $delta=0, $edit=array()) {
+  switch ($op) {
+    case 'list':
+      $blocks[0]['info'] = t('Moodle Course Memberships');
+      return $blocks;
+    case 'view':
+      if (user_access('view moodle courselist')) {
+        $server = variable_get('moodle_sso_mysqlserver', 'localhost');
+        $username = variable_get('moodle_sso_mysqlusername', '');
+        $password = variable_get('moodle_sso_mysqlpassword', '');
+        $url = variable_get('moodle_sso_moodleurl', '');
+
+        if (!empty($server) && !empty($username) && !empty($password) && !empty($url)) {
+          $rows = _moodle_courselist_get_courselist_external();
+          if (count($rows)) {
+//            $links = _moodle_courselist_make_links($rows);
+//            $content = theme('moodle_courselist', $links);
+              $content = _moodle_mycourselist($rows);
+          }
+	   else {
+		$content = t('Not enrolled in any course.');
+	   }
+
+          $blocks['subject'] = t('My Courses');
+          $blocks['content'] = $content;
+
+          return $blocks;
+        }
+        else {
+          $link_to_settings = l('Moodle Courselist','admin/settings/moodle_courselist');
+          $error = "Please configure " . $link_to_settings . " before enabling it as a block.";
+          drupal_set_message($error,'error');
+        }
+      }   
+    }
+}
+
+/**
+* Implementation of hook_theme() 
+*/
+function moodle_courselist_theme() {
+  return array(
+    'moodle_courselist' => array(
+      'arguments' => array('linklist' => null),
+    ),
+  );
+}
+
+/**
+* Theme function for theming quotes.
+*
+* @param $linklist 
+*  A list of courses
+* @return 
+*  string An HTML themed list of links.
+*/
+function theme_moodle_courselist($linklist) {
+  $output = '<div id="moodle_courselist-links">'. $linklist .'</div>';
+  return $output;
+}
+
+/**
+* Implementation of hook_menu() 
+*/
+//function moodle_courselist_menu() {
+//  $items = array();
+//  $items['admin/settings/moodle_courselist'] = array(
+//    'title' => t('Moodle Courselist'),
+//    'description' => t('Display moodle course memberships in a block'),
+//    'page callback' => 'drupal_get_form',
+////    'page arguments' => array('moodle_courselist_admin_settings'),
+//    'access callback' => 'user_access',
+//    'access arguments' => array('administer site configuration'),
+//    'type' => MENU_NORMAL_ITEM,
+//  );
+//  return $items;
+//}
+
+/**
+* Implementation of hook_admin_settings() 
+*/
+//function moodle_courselist_admin_settings() {
+//  $form = array();
+//  $form['moodle_courselist_mysqlserver'] = array(
+//    '#type' => 'textfield',
+//    '#title' => t('Moodle mysql server'),
+//    '#default_value' => variable_get('moodle_sso_mysqlserver', 'localhost'),
+//    '#description' => t('The mysql server where moodle is hosted. e.g. mysql.yoursite.org'),
+//    '#required' => true,
+//  );
+//  $form['moodle_courselist_mysqlusername'] = array(
+//    '#type' => 'textfield',
+//    '#title' => t('Moodle mysql username'),
+//    '#default_value' => variable_get('moodle_sso_mysqlusername', ''),
+//    '#description' => t('The username for your mysql server'),
+//    '#size' => 20,
+//    '#required' => true,
+//  );
+//  $form['moodle_courselist_mysqlpassword'] = array(
+//    '#type' => 'password',
+//    '#title' => t('Moodle mysql password'),
+//    '#default_value' => variable_get('moodle_sso_mysqlpassword', ''),
+//    '#description' => t('The password for your mysql server'),
+//    '#size' => 20,
+//    '#required' => true,
+//  );
+//  $form['moodle_courselist_databasename'] = array(
+//    '#type' => 'textfield',
+//    '#title' => t('Moodle mysql database name'),
+//    '#default_value' => variable_get('moodle_sso_databasename', 'moodle'),
+//    '#description' => t('The database name for your moodle database.'),
+//    '#size' => 20,
+//    '#required' => true,
+//  );
+//  $form['moodle_courselist_databaseprefix'] = array(
+//    '#type' => 'textfield',
+//    '#title' => t('Moodle mysql database prefix'),
+//    '#default_value' => variable_get('moodle_sso_databaseprefix', 'mdl_'),
+//    '#description' => t('The database prefix for your moodle database'),
+//    '#size' => 20,
+//    '#required' => true,
+//  );
+//  $form['moodle_courselist_moodleurl'] = array(
+//    '#type' => 'textfield',
+//    '#title' => t('Moodle url'),
+//    '#default_value' => variable_get('moodle_sso_moodleurl', ''),
+//    '#description' => t('The base url for your moodle server. e.g. http://www.yoursite.org/moodle/ (Include trailing slash)'),
+//    '#required' => true,
+//  );
+//
+//  return system_settings_form($form);
+//}
+
+/**
+* Query a moodle database for any courses that the currently logged in drupal user belongs to.
+* Drupal username and Moodle username must be identical.
+*
+* @return
+*   An array of data about each course
+*/
+function _moodle_courselist_get_courselist_external() {
+  global $user;
+   $server = variable_get('moodle_sso_mysqlserver', 'localhost');
+  $username = variable_get('moodle_sso_mysqlusername', '');
+  $password = variable_get('moodle_sso_mysqlpassword', '');
+  $database_name = variable_get('moodle_sso_databasename', '');
+  $database_prefix = variable_get('moodle_sso_databaseprefix', '');
+
+  mysql_connect($server, $username, $password) or drupal_set_message(mysql_error(),'warning');
+  mysql_select_db($database_name) or drupal_set_message(mysql_error(),'warning');
+  $query = "SELECT c.fullname, c.id as cid, usr.id as uid, usr.firstname, usr.lastname,  c.timemodified
+            FROM ".$database_prefix."course c
+            INNER JOIN ".$database_prefix."context cx ON c.id = cx.instanceid
+            AND cx.contextlevel = '50'
+            INNER JOIN ".$database_prefix."role_assignments ra ON cx.id = ra.contextid
+            INNER JOIN ".$database_prefix."role r ON ra.roleid = r.id
+            INNER JOIN ".$database_prefix."user usr ON ra.userid = usr.id
+            WHERE usr.username = '". mysql_real_escape_string($user->name) ."'";
+
+  $result = mysql_query($query) or drupal_set_message(mysql_error(),'warning');
+
+  while($row = mysql_fetch_array($result)){
+    $rows[] = $row;
+  }
+  return $rows;
+}
+
+/**
+* Take in an array of course data and format each course and an html link.
+*
+* @param $rows
+*  An array of data about each course.
+*
+* @return
+*   An html formatted list of links, one for each course, on their own line.
+*/
+function _moodle_courselist_make_links($rows) {
+  $url_to_moodle = variable_get('moodle_sso_moodleurl', '');
+   $server = variable_get('moodle_sso_mysqlserver', 'localhost');
+  $username = variable_get('moodle_sso_mysqlusername', '');
+  $password = variable_get('moodle_sso_mysqlpassword', '');
+  $database_name = variable_get('moodle_sso_databasename', '');
+  $database_prefix = variable_get('moodle_sso_databaseprefix', '');
+
+  foreach ($rows as $row) {
+    $url = $url_to_moodle . "course/view.php?id=". check_plain($row['cid']);
+    $coursename = check_plain($row['fullname']);
+    $linklist .= l($coursename,check_url($url)) . "<br>";
+  }
+  return $linklist;
+}
+
+
+function _moodle_mycourselist($rows){
+
+$url_to_moodle = variable_get('moodle_sso_moodleurl', '');
+
+$out ='<div class="mycourselist"><table border="1">';
+$out .= "<tr style='background-color:silver'><th>Period </th><th>Course Name </th><th>Teacher  </th> <th>Last Updated </th></tr>";
+$template = '<tr><td>%s</td><td><a href="%s">%s</a></td><td>%s</td><td>%s</td></tr>';
+
+$counter = 1;
+  foreach ($rows as $row) {
+//      usr.firstname, usr.lastname
+    $url = $url_to_moodle . "course/view.php?id=". check_plain($row['cid']);
+    $out .= sprintf($template,$counter, $url, $row['fullname'], $row['firstname'].' '.$row['lastname'], date("m/d/Y",$row['timemodified']));
+    $counter++;
+  }
+  $out .= "</table></div>";
+  
+  return $out;
+}

@@ -1,0 +1,251 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+module_load_include('inc', 'ntlp_school', 'data_access');
+module_load_include('inc', 'ntlp_school', 'constants');
+module_load_include('inc', 'ntlp_school', 'ui_tools');
+
+function ntlp_announcement_menu() {
+    $items['ntlp/announcement/edit/%/%/%/%'] = array(
+            'title' => t('Edit Course Announcement'),      //This title helps in displaying the dialog header caption
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('announcement_popup', 3, 4, 5, 6),        //Course id, Enroll-in-role_id and Comma delimited user ids
+            'access arguments' => array('create ntlp_announcement content'),
+            'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/announcement/save/%/%/%/%'] = array(
+            'title' => t('Course Announcement Save'),
+            'page callback' => 'announcement_submit',
+            'page arguments' => array(3, 4, 5, 6),        //Course id, Enroll-in-role_id and Comma delimited user ids
+            'access arguments' => array('create ntlp_announcement content'),
+            'type' => MENU_CALLBACK,
+    );
+
+    return $items;
+}
+
+//For all defined content types, we should use its auto generated contenttype specific permissions
+//function ntlp_announcement_perm() {
+//    return array('edit announcement' , 'view announcement');
+//}
+
+function announcement_form() {
+    // Add the parent-side behaviors for the examples.
+    modalframe_parent_js();
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/modalframe_setup.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_announcement') . '/ntlp_announcement.js', 'module');
+
+    include('announcement.template.inc');
+
+    //Getting Query String From URL
+    $course_nid = 0;
+    $url = $_GET['q'];
+    $args = explode('/', $url);
+    for ($i = 0; $i < count($args); $i++) {
+        if (is_numeric($args[$i])) {
+            $course_nid = $args[$i];
+            break;
+        }
+    }
+    $today = getdate(strtotime(get_tz_course($course_nid, NTLP_DATE_TZ_SQL, time()))); // Get today's date
+    $pyear = $today['year'];
+    $pmonth = $today['mon'];
+    $pday = $today['mday'];
+//    echo $pmonth.'/'.$pday.'/'.$pyear.'/';
+//    echo "Agenda for Course: $course_id, $date";
+
+    $user_role = check_user_permission($course_nid);
+    $announcement_result = get_announcement($course_nid, $pyear, $pmonth, $pday);
+
+    if(!user_access('create ntlp_announcement content') && $announcement_result == null) {
+        //Do not show announcement block, if no announcement defined for today
+        //AND the user does not have the Edit permissions
+    }else {
+        global $base_path;
+        $rHTML = str_replace('@DRUPAL_BASE', $base_path, $HTMLform_groupbox_announcement_hdr);
+        $form['announcements'] = array(
+                '#type'   => 'fieldset',
+                '#title'  => '',
+                '#tree'   => TRUE, // Don't forget to set #tree!
+                '#prefix' => $rHTML, // This is our wrapper div.
+                '#suffix' => $HTMLform_groupbox_announcement_ftr,
+        );
+
+        # announcement body
+        $announcement_text = $announcement_result->body;
+
+        if($announcement_text == null || $announcement_text == '') {
+            $announcement_text ='<div style="margin:10px" id="announcement_view">No Announcements</div>';
+        }
+
+        $form['announcements']['announcement_text'] = array(
+                '#type'  => 'item',
+                '#value' => $announcement_text,
+                '#prefix' => '<div style="margin:10px;" id="announcement_view">',
+                '#suffix' => '</div>',
+        );
+
+        if(isset($user_role) && $user_role == NTLP_ROLEID_NETWORKMANAGER || $user_role == NTLP_ROLEID_TEACHER || $user_role == NTLP_ROLEID_NETWORKSTAFF) {
+            $form['announcements']['edit'] = array(
+                    '#type' => 'item',
+                    '#value' => dlg('Edit >', 'ntlp/announcement/edit/'.
+                    "$course_nid/$pyear/$pmonth/$pday",
+                    200, 400),
+                    '#prefix' => '<div align="right">',
+                    '#suffix' => '</div>',
+            );
+        }
+    }
+    return $form;
+}
+
+//Returns announcement block view
+function announcement_block_contents() {
+    return drupal_get_form('announcement_form');
+}
+
+function announcement_popup($form_state, $course_nid, $y, $m, $d) {
+    // Send the Modal Frame javascript for child windows to the page.
+    modalframe_child_js();
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/modalframe_setup.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_announcement') . '/ntlp_announcement.js', 'module');
+
+    $form['announcement'] = array(
+            '#type'   => 'fieldset',
+            '#title'  => '',
+            '#tree'   => TRUE, // Don't forget to set #tree!
+
+    );
+
+    $announcement_result = get_announcement($course_nid, $y, $m, $d);
+    $announcement_text = $announcement_result->body;
+
+    if($announcement_text == null) {
+        $announcement_text ='';
+    }
+
+
+    $form['announcement']['edit'] = array(
+            '#type'  => 'textarea',
+            '#wysiwyg' => false,
+            '#resizable' => false,
+            '#value' => $announcement_text,
+            '#attributes' => array('style' => 'resize: none;'),
+//            '#prefix' => '<tr><td>',
+//            '#suffix' => '</td></tr>',
+    );
+
+    $form['announcement']['clear'] = array(
+            '#type' => 'submit',
+            '#value' => 'Clear',
+            '#prefix' => '<div style="float: left;  margin: 10px 0 0 0">',
+            '#suffix' => '</div>',
+            '#attributes' => array('class' => 'CancelBtn' , 'onclick' => '$(\'#edit-announcement-edit\').val(\'\'); return false;'),
+    );
+    $form['announcement']['submit'] = array(
+            '#type' => 'item',
+            '#value' => '<a class="SaveBtn" onclick="update_announcement('."$course_nid, $y, $m, $d".', 0);">Save</a>',
+            '#prefix' => '<div style="width: 170px; margin: 10px 0 0 0; float: right;" class="clearfix"> <div class="clearfix" style="margin-right: 10px; float: left;">',
+            '#suffix' => '</div>',
+    );
+
+
+    return $form;
+}
+
+function announcement_submit($course_nid, $y, $m, $d) {
+    global $user;
+    $savenotify = arg(7);
+    $announcement = isset($_GET['text']) ? $_GET['text'] : '';
+    $announcement = trim($announcement);
+    
+//    watchdog('ca', "$course_nid, $y, $m, $d, $announcement");
+    //$rec = get_announcement($course_nid, $y, $m, $d);
+
+    
+    if(false && $rec) {
+        $nid = $rec->nid;
+
+        $event_node = node_load($nid);
+        if (!$event_node) {
+//            drupal_set_message('Unknown error: Announcement not found in contents', 'error');
+            print "ERROR:Unknown error: Announcement not found in contents";
+        }
+        $edit = true;
+    } else {
+//      drupal_set_message('creating new agenda');
+        $event_node = new stdClass();
+        $event_node->title = t("Course Announcement for: $y/$m/$d");
+        $event_node->type = 'ntlp_announcement';   // Your specified content type
+        $event_node->created = $time;
+        $edit = false; // set boolean for editing a node..
+    }
+
+//  $event_node->title = $agenda_title;
+    $event_node->changed = $time;
+    $event_node->body = $announcement;
+    $event_node->status = 1;
+    $event_node->promote = 0;
+    $event_node->sticky = 0;
+    $event_node->format = 1;       // Filtered HTML
+    $event_node->uid = $user->uid; // UID of content owner
+    /* using it to notififcation */
+    
+    if (intval($savenotify) == 1) {
+        watchdog("notify" , $savenotify);
+        $event_node->context = $course_nid;
+    }
+    $event_node->event['has_time'] = '1';
+    $event_node->event['has_end_date'] = '0';
+    $event_node->event['timezone'] = '205';
+
+    $event_node->event['start_exploded']['year'] = $y;
+    $event_node->event['start_exploded']['month'] = $m;
+    $event_node->event['start_exploded']['day'] = $d;
+    $event_node->event['start_exploded']['hour'] = 0;
+    $event_node->event['start_exploded']['minute'] =  0;
+
+    node_save($event_node);
+    $nid = $event_node->nid;
+
+    try {
+        if($edit == false) {
+            db_query("INSERT INTO {ntlp_course_announcement} VALUES (%d, %d, %d, %d, %d, '1')",
+                    $nid, $course_nid, intval($y), intval($m), intval($d));
+
+            if (intval($savenotify) == 1) {
+                if (strlen($event_node->body) > 0) {
+                    module_invoke_all('ntlpcontent', $event_node, 'content_posted');
+                }
+            }
+        }else {
+            db_query("UPDATE {ntlp_course_announcement} SET course_nid = %d,
+                            year = %d, month = %d, day = %d, status = '1' WHERE nid = %d",
+                    $course_nid, intval($y), intval($m), intval($d), $nid);
+        }
+    }
+    catch (Exception $e) {
+        print "ERROR:".$e->getMessage();
+    }
+
+    print '';
+}
+
+function current_date() {
+
+    $dates = array();
+    $date  = date('o/m/d');
+    $curr_date = explode('/',$date);
+
+    $dates['year'] = $curr_date[0];
+    $dates['month'] = $curr_date[1];
+    $dates['day'] = $curr_date[2];
+
+    return $dates;
+}
+
+?>

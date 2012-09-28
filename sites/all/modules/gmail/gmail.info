@@ -1,0 +1,5 @@
+; $Id: gmail.info 11 2009-12-20 03:15:00Z shahbaz.ahmer@parallelmode.com $
+name = Gmail
+description = Gmail block for NTLP with OAuth3
+package = Third-party integration
+core = 6.x

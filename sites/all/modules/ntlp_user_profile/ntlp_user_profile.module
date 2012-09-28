@@ -1,0 +1,901 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+module_load_include('inc', 'ntlp_course', 'data_access');
+module_load_include('inc', 'ntlp_school', 'permission');
+module_load_include('inc', 'ntlp_group', 'data_access');
+module_load_include('inc', 'ntlp_blocks', 'data_access');
+module_load_include('inc', 'ntlp_user_profile', 'form_def');
+require_once "data_access.inc";
+include "ntlp_user_settings.inc";
+
+function ntlp_user_profile_menu() {
+    $items['ntlp/user/profile/%'] = array(
+        'title' => 'View User Profile',
+        'page callback' => 'ntlp_user_profile_frm',
+        'access arguments' => array('edit own profile'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(3),
+        'description' => 'NTLP User Profile.',
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/user/basicsettings/%'] = array(
+        'title' => 'User Settings',
+        'page callback' => 'ntlp_user_settings_frm',
+        'access arguments' => array('edit own profile'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(3),
+        'description' => 'NTLP User Profile.',
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/save/user/profile/image/%/%'] = array(
+        'title' => 'Image Save',
+        'page callback' => 'save_profile_picture',
+        'access arguments' => array('edit own profile'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(5, 6),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/myaccount/user/settings'] = array(
+        'title' => 'User My Account Settings',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_use_myaccount_settings'), //ntlp_admincourse_form'),
+        'access arguments' => array('edit own profile'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/myaccount/user/settings/changepassword'] = array(
+        'title' => 'User My Account Change Password',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_use_myaccount_settings_changepassword'), //ntlp_admincourse_form'),
+        'access callback' => 'check_changepassword_permissions',
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['user/forgot/password'] = array(
+        'title' => 'User Forgot Password',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_user_forgot_password'), //ntlp_admincourse_form'),
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/user/profile/webnotify/%/%/%'] = array(
+        'title' => 'Notification Settings',
+        'page callback' => 'change_user_webnotify_config',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('edit own profile'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/user/profile/emailnotify/%/%/%'] = array(
+        'title' => 'email Notification Settings',
+        'page callback' => 'change_user_emailnotify_config',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('edit own profile'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+
+    return $items;
+}
+
+function check_changepassword_permissions() {
+    if (isset($user->roles[NTLP_ROLEID_NETWORKMANAGER]) || isset($user->roles[NTLP_ROLEID_DIRECTORS]) || isset($user->roles[NTLP_ROLEID_NETWORKSTAFF]) || isset($user->roles[NTLP_ROLEID_SITEADMIN])) {
+        return true;
+    } else {
+        global $user;
+        if ($user->roles[NTLP_ROLEID_SCHOOLLEADER]) {
+            $role = NTLP_ROLEID_SCHOOLLEADER;
+        } else if ($user->roles[NTLP_ROLEID_TEACHER]) {
+            $role = NTLP_ROLEID_TEACHER;
+        } else if ($user->roles[NTLP_ROLEID_PARENT]) {
+            $role = NTLP_ROLEID_PARENT;
+        } else if ($user->roles[NTLP_ROLEID_STUDENT]) {
+            $role = NTLP_ROLEID_STUDENT;
+        } else {
+            return false;
+        }
+
+        return (bool) get_selected_school_permissions(get_this_school(), $role, 'change password');
+    }
+}
+
+function ntlp_user_profile_perm() {
+    return array('edit profile', 'view profile', 'edit own profile', 'edit own profile(Teacher)', 'edit own profile(Student)');
+}
+
+function ntlp_user_settings_frm() {
+    return drupal_get_form('ntlp_user_settings_form');
+}
+
+function ntlp_user_profile_frm($useruid) {
+    return drupal_get_form('ntlp_user_profile_form', $useruid);
+}
+
+function ntlp_user_profile_form($form_state = null, $useruid) {
+    include('profile.template.inc');
+    global $base_path, $user;
+
+
+    modalframe_parent_js();
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/modalframe_setup.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_announcement') . '/ntlp_announcement.js', 'module');
+    drupal_add_js(drupal_get_path('module', 'image_uploader') . '/image_uploader.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_user_profile') . '/ntlp_user_profile.js');
+
+
+/// check permission right here..
+
+    $school_nid = get_this_school();
+
+    $view_state = '';
+    if (isset($form_state['post']['Edit_Profile'])) {
+        $view_state = 'Edit Profile';
+        //watchdog('info', 'view state: '.$form_state['post']['Edit_Profile']);
+    }
+
+    if (isset($form_state['values']['user_profile']['user_id'])) {
+        $useruid = $form_state['values']['user_profile']['user_id'];
+    }
+
+
+    $profileObj = load_profile_record($useruid);
+
+    check_profile_access_permission($profileObj); // checking profile permission
+
+    if ($profileObj == false) {
+        drupal_set_message('User does not exist.');
+    } else {
+
+        $form['user_profile'] = array(
+            '#type' => 'fieldset',
+            '#title' => '',
+            '#tree' => TRUE, // Don't forget to set #tree!
+            '#prefix' => '<div id="user_profile_test">',
+            '#suffix' => '</div>',
+        );
+
+
+        if ($user->uid == $useruid) { //check for own profile edit starts here
+            if ($view_state != 'Edit Profile') {
+                if (user_access("edit own profile")) {
+
+                    $form['user_profile']['profile_edit_button'] = array(
+                        '#type' => 'submit',
+                        '#value' => t('Edit'),
+                        '#name' => 'Edit_Profile',
+                        '#ahah' => array(
+                            'path' => ahah_helper_path(array('user_profile')),
+                            'wrapper' => 'user_profile_test',
+                            'progress' => array('type' => 'throbber', 'message' => t('')),
+                        ),
+                        '#attributes' => array('class' => 'SaveBtn'),
+                        '#prefix' => '<div style="float:left"><h1 class="pageHeading">My Profile</h1></div><div style="float:right">',
+                        '#suffix' => '</div><div style="clear:both"></div>',
+                    );
+                }
+            } else {
+                $form['user_profile']['profile_save_button'] = array(
+                    '#type' => 'submit',
+                    '#value' => t('Save'),
+                    '#ahah' => array(
+                        'path' => ahah_helper_path(array('user_profile')),
+                        'wrapper' => 'user_profile_test',
+                        'progress' => array('type' => 'throbber', 'message' => t('Saving data')),
+                    ),
+                    '#submit' => array('edit_quotation_data'),
+                    '#attributes' => array('class' => 'SaveBtn'),
+                    '#prefix' => '<div style="float:left"><h1 class="pageHeading">My Profile</h1></div><div style="float:right">',
+                    '#suffix' => '</div><div style="clear:both"></div>',
+                );
+            }
+        }//test for own profile edit ends here
+        $form['user_profile']['user_id'] = array(
+            '#type' => 'hidden',
+            '#id' => 'user_id',
+            '#value' => $useruid,
+            '#prefix' => '<div style="display:none">',
+            '#suffix' => '</div>',
+        );
+
+
+
+        ///////// fieldset for Personal Info start from here /////////
+        $form['user_profile']['personinfo'] = array(
+            '#type' => 'fieldset',
+            '#tree' => TRUE,
+            '#prefix' => $HTMLpersoninfo_hdr,
+            '#suffix' => $HTMLpersoninfo_ftr,
+        );
+
+
+        $form['user_profile']['personinfo']['user_name'] = array(
+            '#type' => 'item',
+            '#value' => ($useruid > 1) ? $profileObj->first_name . '&nbsp;' . $profileObj->last_name : 'Admin',
+            '#prefix' => '<h2 class="teacherHeading">',
+            '#suffix' => '</h2>',
+        );
+        if ($useruid > 1) {
+            $form['user_profile']['personinfo']['role'] = array(
+                '#type' => 'item',
+                '#value' => $profileObj->role_name,
+                '#prefix' => '<b>',
+                '#suffix' => '</b>',
+            );
+        } else {
+            $form['user_profile']['personinfo']['ident'] = array(
+                '#type' => 'item',
+                '#value' => $profileObj->role_name,
+                '#prefix' => '<b>',
+                '#suffix' => '</b>',
+            );
+        }
+
+        $school_node = node_load($profileObj->school_nid);
+
+        $region_Obj = _get_school_region($profileObj->school_nid);
+        $location = taxonomy_get_term($region_Obj->location_tid);
+
+        $form['user_profile']['personinfo']['school'] = array(
+            '#type' => 'item',
+            '#value' => '<a class="link" href="' . url($region_Obj->school_website) . '" target="_blank" >' . $school_node->title . '</a> ',
+            '#prefix' => '<div class="links"> ',
+            '#suffix' => '</div>',
+        );
+
+//        <img src="'.$picture.'" width="200" alt="Picture of '.$profileObj->first_name.'&nbsp;'.$profileObj->last_name.'" />
+
+        if ($profileObj->picture == null || empty($profileObj)) {
+            $picture = $base_path . 'themes/Boldr/Images/common/small_person_image_not_found.jpg';
+        } else {
+            $picture = $base_path . $profileObj->picture;
+        }
+
+        if ($view_state == 'Edit Profile') {
+            $form['user_profile']['personinfo']['picture'] = array(
+                '#type' => 'item',
+                '#id' => 'changeimage',
+                '#value' => '<div id="profile_image" align="left">' . drupal_get_form('ntlp_activeimage', $picture, 197, 200) . '</div>',
+                '#prefix' => '<div align="center" class="teacherImage">',
+                '#suffix' => '</div>',
+            );
+        } else {
+            $form['user_profile']['personinfo']['picture'] = array(
+                '#type' => 'item',
+                '#value' => '<div id="profile_image" align="left"><img src="' . $picture . '" width="200" alt="Picture of ' . $profileObj->first_name . '&nbsp;' . $profileObj->last_name . '" /></div>',
+                '#prefix' => '<div align="center" class="teacherImage">  ',
+                '#suffix' => '</div>',
+            );
+        }
+
+        $form['user_profile']['personinfo']['contact'] = array(
+            '#type' => 'item',
+            '#prefix' => '<div class="contactInformation">
+            <h2 class="teacherHeading">Contact Information</h2>
+            <ul class="information">',
+            '#suffix' => ' </ul>
+          </div>',
+        );
+
+        $form['user_profile']['personinfo']['contact']['email'] = array(
+            '#type' => 'item',
+            '#value' => $profileObj->mail,
+            '#prefix' => '<li class="email"><a class="link" href="mailto:' . $profileObj->mail . '">',
+            '#suffix' => '</a></li>',
+        );
+
+        if (!empty($profileObj->im_id))
+            $id_id = $profileObj->im_id; else
+            $id_id='';
+        if (!empty($profileObj->im_name) and $view_state != 'Edit Profile')
+            $im_name = ' (' . $profileObj->im_name . ')'; else
+            $im_name='';
+        if ($useruid > 1)
+            if (check_user_permission_for_access($profileObj->rid, $school_nid . " display instant messaging id field")) {
+
+                $form['user_profile']['personinfo']['contact']['im_id'] = array(
+                    '#type' => ($view_state == 'Edit Profile') ? 'textfield' : 'item',
+                    '#value' => $id_id . $im_name,
+                    '#prefix' => '<li class="docs">',
+                    '#suffix' => '</li>',
+                    '#size' => '8',
+                );
+            }
+
+        if ($useruid > 1)
+            if ($view_state == 'Edit Profile') {
+                $im_hosts = _get_load_hosts();
+                $form['user_profile']['personinfo']['contact']['im_name'] = array(
+                    '#type' => 'select',
+                    '#prefix' => '<li class="docs">',
+                    '#suffix' => '</li>',
+                    '#options' => $im_hosts,
+                    '#default_value' => $profileObj->im_name,
+                    '#attributes' => array('class' => 'my-dropdown'),
+                );
+            }
+
+        if ($useruid > 1)
+            if (check_user_permission_for_access($profileObj->rid, $school_nid . " display phone number field")) {
+                $field_type = 'item';
+            } else {
+                $field_type = 'hidden';
+            }
+        $form['user_profile']['personinfo']['contact']['phone_number'] = array(
+            '#type' => ($view_state == 'Edit Profile') ? 'textfield' : $field_type,
+            '#value' => (!empty($profileObj->phone_number)) ? $profileObj->phone_number : '',
+            '#prefix' => '<li class="phone">',
+            '#suffix' => '</li>',
+            '#size' => '12',
+            '#attributes' => array('maxlength' => '12'),
+        );
+
+        if ($useruid > 1) {
+            $outcomediv2 = '<input type="text" size="20" id="txt_%INDEX%" onBlur="weight_func(this, %INDEX%)">';
+            $form['add_outcome']['hide_outcome2'] = array(
+                '#type' => 'hidden',
+                '#id' => 'oc_td2',
+                '#value' => $outcomediv2,
+                '#prefix' => '<div style="display:none">',
+                '#suffix' => '</div>',
+            );
+            //delete this field later
+            $form['add_outcome']['selected_oc_id'] = array(
+                '#type' => 'hidden',
+                '#id' => 'selected_oc_id',
+                '#value' => '',
+                '#prefix' => '<div style="display:none">',
+                '#suffix' => '</div>',
+            );
+            //delete this field later
+            $form['add_outcome']['selected_oc_weight'] = array(
+                '#type' => 'hidden',
+                '#id' => 'selected_oc_weight',
+                '#value' => '',
+                '#prefix' => '<div style="display:none">',
+                '#suffix' => '</div>',
+            );
+
+            $max_allowed = 3;
+            $mywebs = explode("||", $profileObj->websites);
+            for ($x = 0; $x < $max_allowed; $x++) {
+                if (!empty($mywebs[$x]))
+                    $mywebster .= $mywebs[$x] . '||';
+                else
+                    $mywebster .= 'x||';
+                $form['user_profile']['personinfo']['contact']['mywebsites'] = array(
+                    '#type' => ($view_state == 'Edit Profile') ? 'hidden' : 'hidden',
+                    '#id' => 'mywebsites',
+                    '#value' => $mywebster,
+                );
+            }
+
+
+            $mywebs = explode("||", $profileObj->websites);
+
+
+            if (check_user_permission_for_access($profileObj->rid, $school_nid . ' display private website field')) {
+                $field_type = 'item';
+            } else {
+                $field_type = 'hidden';
+            }
+            for ($x = 0; $x < sizeof($mywebs); $x++) {
+
+                if ($mywebs[$x]) {
+                    
+                }
+
+                if ($mywebs[$x] != 'x') {
+                    $form['user_profile']['personinfo']['contact']['websites' . $x] = array(
+                        '#type' => ($view_state == 'Edit Profile') ? 'textfield' : $field_type,
+                        '#id' => 'txt_' . $x,
+                        '#value' => ($view_state == 'Edit Profile') ? $mywebs[$x] : '<a href="' . url($mywebs[$x]) . '" target="_blank" >' . $mywebs[$x] . '</a>',
+                        '#size' => '20',
+                        '#attributes' => array('onblur' => "weight_func(this," . $x . ")"),
+                        '#prefix' => '<li class="url"><span id="ocContainer">',
+                        '#suffix' => '</span></li>',
+                    );
+                }
+            }
+
+
+
+            if (($view_state == 'Edit Profile')) {
+                $form['user_profile']['personinfo']['contact']['add_website'] = array(
+                    '#type' => 'item',
+                    '#value' => '<a class="AddOutComesBg" onclick="get_website_textfield();">Add Website</a>',
+                    '#prefix' => '<li id="ocLastRow">',
+                    '#suffix' => '</li></span>',
+                );
+            }
+        }
+
+        ///////// fieldset for Personal Info ends here /////////
+        ///////// PARENT CHILDREN START /////////
+//        print_r($profileObj);
+        if ($profileObj->role_name == 'Parent') {
+            $form['user_profile']['children'] = array(
+                '#type' => 'item',
+                '#value' => '',
+                '#prefix' => str_replace('@HEADING', 'My Students', $HTMLBlueBoxStart)
+                . $HTMLWhiteBoxCourseLinkStart,
+                '#suffix' => $HTMLBlueBoxEnd
+                . $HTMLWhiteBoxCourseLinkEnd,
+            );
+
+
+            if ($children = _get_parent_children($profileObj->uid)) {
+                foreach ($children as $child) {
+                    $user_pic = $child->picture ? $child->picture : 'themes/Boldr/Images/common/small_person_image_not_found.jpg';
+                    $form['user_profile']['children']['child_' . $child->uid] = array(
+                        '#type' => 'item',
+                        '#value' => '<div class="AdminMainPanel">
+                                        <div class="AdminPersonImg" style="float: left;">
+                                            <img src=' . $base_path . $user_pic . ' width="32px" alt="' . $child->first_name . '" />
+                                        </div>
+                                        <div class="AdminPersonNameAndOwner" style="float: left; margin-left: 5px;">
+                                            <div class="AdminPersonName">' . l($child->first_name . ' ' . $child->last_name, 'ntlp/user/profile/' . $child->uid) . '</div>
+                                            <div style="clear: both;"></div>
+                                            <div style="float: left; font-size: 11px; margin-top: -5px;">
+                                                Class of ' . $child->grad_year . '
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                     </div>',
+                        '#prefix' => '<li><a href="#">',
+                        '#suffix' => '</a></li>',
+                    );
+                }
+            }
+        }
+        ///////// PARENT CHILDREN END /////////
+
+
+        if ($useruid > 1) {
+            if ($view_state == 'Edit Profile') {
+                $header = 'Favorite Quote';
+            } else {
+                $header = '';
+            }
+            ///////// fieldset for Favorite Quote starts here /////////
+            if (!empty($profileObj->fav_quote)) {
+                $HTMLquote_hdr = str_replace('<!-- QUOTE', '', $HTMLquote_hdr);
+                $HTMLquote_ftr = str_replace('QUOTE -->', '', $HTMLquote_ftr);
+                ;
+            }
+            $form['user_profile']['fav_quote'] = array(
+                '#type' => ($view_state == 'Edit Profile') ? 'textarea' : 'item',
+                '#value' => ($view_state == 'Edit Profile') ? $profileObj->fav_quote : nl2br($profileObj->fav_quote),
+                '#cols' => '85',
+                '#rows' => '1',
+                '#attributes' => array('style' => 'font-family:arial;font-size:10pt;'),
+                '#prefix' => $HTMLquote_hdr . '<h2 class="teacherComment">' . $header,
+                '#suffix' => '</h2>' . $HTMLquote_ftr,
+            );
+            ///////// fieldset for Favorite Quote ends here /////////
+            ///////// fieldset for About Me starts from here /////////
+            $form['user_profile']['about_me'] = array(
+                '#type' => 'fieldset',
+                '#tree' => TRUE,
+                '#prefix' => $HTMLaboutme_hdr,
+                '#suffix' => $HTMLaboutme_ftr,
+            );
+
+            if (($view_state == 'Edit Profile') or !empty($profileObj->about_me_statement))
+                $form['user_profile']['about_me']['about_me_statement'] = array(
+                    '#type' => ($view_state == 'Edit Profile') ? 'textarea' : 'item',
+                    '#value' => ($view_state == 'Edit Profile') ? $profileObj->about_me_statement : nl2br($profileObj->about_me_statement),
+                    '#cols' => '65',
+                    '#rows' => '3',
+                    '#attributes' => array('style' => 'font-family:arial;font-size:10pt;'),
+                    '#prefix' => '<tr>
+                          <th>About Me</th>
+                          <td>',
+                    '#suffix' => '</td>
+                        </tr>',
+                );
+
+            if ($profileObj->role == "Student") {
+                if (($view_state == 'Edit Profile') or !empty($profileObj->goals))
+                    $form['user_profile']['about_me']['goals'] = array(
+                        '#type' => ($view_state == 'Edit Profile') ? 'textfield' : 'item',
+                        '#value' => $profileObj->goals,
+                        '#size' => '60',
+                        '#prefix' => '<tr>
+                          <th>My Goals After High School</th>
+                          <td>',
+                        '#suffix' => '</td>
+                        </tr>',
+                    );
+            }else {
+                if (($view_state == 'Edit Profile') or !empty($profileObj->college))
+                    $form['user_profile']['about_me']['college'] = array(
+                        '#type' => ($view_state == 'Edit Profile') ? 'textfield' : 'item',
+                        '#value' => $profileObj->college,
+                        '#size' => '60',
+                        '#prefix' => '<tr>
+                          <th>College</th>
+                          <td>',
+                        '#suffix' => '</td>
+                        </tr>',
+                    );
+            }
+
+            // if($profileObj->role == "Student") {
+            if (($view_state == 'Edit Profile') or !empty($profileObj->movies))
+                $form['user_profile']['about_me']['movies'] = array(
+                    '#type' => ($view_state == 'Edit Profile') ? 'textfield' : 'item',
+                    '#value' => $profileObj->movies,
+                    '#size' => '60',
+                    '#prefix' => '<tr>
+                          <th><b>Interests</b></th>
+                          <td>
+							<p><b>Movies</b><br />
+						  ',
+                    '#suffix' => '</p>',
+                );
+
+            if (($view_state == 'Edit Profile') or !empty($profileObj->tv))
+                $form['user_profile']['about_me']['tv'] = array(
+                    '#type' => ($view_state == 'Edit Profile') ? 'textfield' : 'item',
+                    '#value' => $profileObj->tv,
+                    '#size' => '60',
+                    '#prefix' => '<p><b>TV<br /></b>',
+                    '#suffix' => '</p>',
+                );
+
+            if (($view_state == 'Edit Profile') or !empty($profileObj->music))
+                $form['user_profile']['about_me']['music'] = array(
+                    '#type' => ($view_state == 'Edit Profile') ? 'textfield' : 'item',
+                    '#value' => $profileObj->music,
+                    '#size' => '60',
+                    '#prefix' => '<p><b>Music<br /></b>',
+                    '#suffix' => '</p>',
+                );
+
+            if (($view_state == 'Edit Profile') or !empty($profileObj->books))
+                $form['user_profile']['about_me']['books'] = array(
+                    '#type' => ($view_state == 'Edit Profile') ? 'textfield' : 'item',
+                    '#value' => $profileObj->books,
+                    '#size' => '60',
+                    '#prefix' => '<p><b>Books<br /></b>',
+                    '#suffix' => '</p>',
+                );
+
+            if (($view_state == 'Edit Profile') or !empty($profileObj->hobbies))
+                $form['user_profile']['about_me']['hobbies'] = array(
+                    '#type' => ($view_state == 'Edit Profile') ? 'textfield' : 'item',
+                    '#value' => $profileObj->hobbies,
+                    '#size' => '60',
+                    '#prefix' => '<p><b>Hobbies<br /></b>',
+                    '#suffix' => '</p></td>
+                        </tr>',
+                );
+
+            if (($view_state == 'Edit Profile') or !empty($profileObj->fun_fact))
+                $form['user_profile']['about_me']['fun_fact'] = array(
+                    '#type' => ($view_state == 'Edit Profile') ? 'textfield' : 'item',
+                    '#value' => $profileObj->fun_fact,
+                    '#size' => '60',
+                    '#prefix' => '<tr>
+                          <th>Fun Fact</th>
+                          <td>',
+                    '#suffix' => '</td>
+                        </tr>',
+                );
+            ///////// fieldset for About Me ends here /////////
+        }
+
+
+
+
+
+        ///////// student and teacher courses start here /////////
+
+        if ($profileObj->rid == NTLP_ROLEID_TEACHER or $profileObj->rid == NTLP_ROLEID_STUDENT) {
+            ///////// fieldset for courses start from here /////////
+            $form['user_profile']['courses'] = array(
+                '#type' => 'fieldset',
+                '#title' => '',
+                '#tree' => TRUE,
+                '#prefix' => $HTMLcourses_hdr,
+                '#suffix' => $HTMLcourses_ftr,
+            );
+
+
+
+            ///////// teacher courses ends here /////////
+            if ($profileObj->rid == NTLP_ROLEID_TEACHER) {
+
+                $form['user_profile']['courses']['continer'] = array(
+                    '#type' => 'item',
+                    '#title' => '',
+                    '#tree' => TRUE,
+                    '#prefix' => str_replace('@WHITEBOX_HEADING', 'Current Courses Teaching', $HTMLWhiteBoxStart)
+                    . $HTMLWhiteBoxCourseLinkStart,
+                    '#suffix' => $HTMLWhiteBoxCourseLinkEnd . $HTMLWhiteBoxEnd,
+                );
+
+
+
+                $form['user_profile']['courses']['continer']['mycourses'] = array(
+                    '#type' => 'item',
+                    '#title' => '',
+                    '#tree' => TRUE,
+                    '#prefix' => $HTMLWhiteBoxCourseLinkStart,
+                    '#suffix' => $HTMLWhiteBoxCourseLinkEnd,
+                );
+
+
+
+                $user_courses = get_user_courses($useruid, NTLP_ROLEID_TEACHER, true);
+                if ($user_courses) {
+                    while ($obj = db_fetch_object($user_courses)) {
+
+
+                        if (check_permission_on_course_link($useruid)) {
+                            $courses .= '<a href="' . url('ntlp/courses/home/' . $obj->course_nid) . '">' . $obj->title . '  (' . $obj->semester_name . ')</a><br>';
+                        } else {
+                            $courses .= $obj->title . '  (' . $obj->semester_name . ')<br>';
+                        }
+                    }
+                    $form['user_profile']['courses']['continer']['mycourses']['course_' . $courseid] = array(
+                        '#type' => 'item',
+                        '#value' => $courses,
+                        '#prefix' => '<li>',
+                        '#suffix' => '</li>',
+                    );
+                } else {
+                    $form['user_profile']['courses']['continer']['mycourses']['course_' . $courseid] = array(
+                        '#type' => 'item',
+                        '#value' => 'No courses available.',
+                        '#prefix' => '<li><a href="#">',
+                        '#suffix' => '</a></li>',
+                    );
+                }
+
+
+                $teaching_courses = get_user_courses($useruid, NTLP_ROLEID_STUDENT, true);
+                if ($teaching_courses) {
+                    $form['user_profile']['courses']['continer']['training'] = array(
+                        '#type' => 'item',
+                        '#value' => '',
+                        '#prefix' => '<h2 class="teacherHeading">Current Courses Taking</h2>'
+                        . $HTMLWhiteBoxCourseLinkStart,
+                        '#suffix' => $HTMLWhiteBoxCourseLinkEnd,
+                    );
+                    $teaching_courses_display = "";
+
+                    while ($obj = db_fetch_object($teaching_courses)) {
+
+                        if (check_permission_on_course_link($useruid)) {
+                            $teaching_courses_display .= '<a href="' . url('ntlp/courses/home/' . $obj->course_nid) . '">' . $obj->course_short_title . '  (' . $obj->semester_name . ')</a><br>';
+                        } else {
+                            $teaching_courses_display .= $obj->course_short_title . '  (' . $obj->semester_name . ')<br>';
+                        }
+                    }
+
+                    $form['user_profile']['courses']['continer']['training']['trainings_' . $courseid] = array(
+                        '#type' => 'item',
+                        '#value' => $teaching_courses_display,
+                        '#prefix' => '<li>',
+                        '#suffix' => '</li>',
+                    );
+                } else {
+                    $form['user_profile']['courses']['continer']['trainings_' . $courseid] = array(
+                        '#type' => 'item',
+                        '#value' => 'No tranings available.',
+                        '#prefix' => '<li><a href="#">',
+                        '#suffix' => '</a></li>',
+                    );
+                }
+            }
+
+
+
+            ///////// teacher courses ends here /////////
+
+
+            if ($profileObj->rid == NTLP_ROLEID_STUDENT) {
+
+                $advisor = get_advisor_record($profileObj->uid);
+
+                $user_advisor = '<a style="color:#339900" href="' . url('ntlp/user/profile/' . $advisor->uid) . '">' . $advisor->first_name . ' ' . $advisor->last_name . '</a>';
+                $HTMLWhiteBoxStartTemp = str_replace('<!-- ADVISOR -->', "<span style='font-size:15px; color:#3570AA; font-weight:bold'>Advisor:</span> $user_advisor", $HTMLWhiteBoxStart);
+                $form['user_profile']['courses']['continer'] = array(
+                    '#type' => 'fieldset',
+                    '#title' => '',
+                    '#tree' => TRUE,
+                    '#prefix' => str_replace('@WHITEBOX_HEADING', 'Current Courses', $HTMLWhiteBoxStartTemp) .
+                    $HTMLWhiteBoxCourseLinkStart,
+                    '#suffix' =>
+                    $HTMLWhiteBoxCourseLinkEnd . $HTMLWhiteBoxEnd,
+                );
+
+
+
+                $form['user_profile']['courses']['continer']['mycourses'] = array(
+                    '#type' => 'item',
+                    '#title' => '',
+                    '#tree' => TRUE,
+                    '#prefix' => $HTMLWhiteBoxCourseLinkStart,
+                    '#suffix' => $HTMLWhiteBoxCourseLinkEnd,
+                );
+
+
+                $user_courses = get_user_courses($useruid, NTLP_ROLEID_STUDENT, true);
+                if ($user_courses) {
+                    while ($obj = db_fetch_object($user_courses)) {
+
+                        if (check_permission_on_course_link($useruid)) {
+                            $courses .= '<a href="' . url('ntlp/courses/home/' . $obj->course_nid) . '">' . $obj->course_short_title . '  (' . $obj->semester_name . ')' . '</a><br>';
+                        } else {
+                            $courses .= $obj->course_short_title . '  (' . $obj->semester_name . ')' . '<br>';
+                        }
+                    }
+
+
+                    $form['user_profile']['courses']['continer']['mycourses']['course_' . $courseid] = array(
+                        '#type' => 'item',
+                        '#value' => $courses,
+                        '#prefix' => '<li>',
+                        '#suffix' => '</li>',
+                    );
+                } else {
+                    $form['user_profile']['courses']['continer']['mycourses']['course_' . $courseid] = array(
+                        '#type' => 'item',
+                        '#value' => 'No courses available.',
+                        '#prefix' => '<li><a href="#">',
+                        '#suffix' => '</a></li>',
+                    );
+                }
+            }
+            ///////// student courses ends here /////////
+            ///////// MY GROUPS START /////////
+
+            if ($profileObj->uid == $user->uid) {
+
+                $form['user_profile']['courses']['my_groups'] = array(
+                    '#type' => 'fieldset',
+                    '#title' => '',
+                    '#tree' => TRUE,
+                    '#prefix' => str_replace('@WHITEBOX_HEADING', 'My Groups', $HTMLWhiteBoxStart2),
+                    '#suffix' => $HTMLWhiteBoxEnd2,
+                );
+
+                $form['user_profile']['courses']['my_groups']['wrapper'] = array(
+                    '#type' => 'item',
+                    '#prefix' => $HTMLWhiteBoxCourseLinkStart,
+                    '#suffix' => $HTMLWhiteBoxCourseLinkEnd,
+                );
+
+
+                if ($user_groups = _get_groups_details(array('USER_ID' => $user->uid), array(), $limit = 5)) {
+                    foreach ($user_groups as $user_group) {
+                        $form['user_profile']['courses']['my_groups']['wrapper']["ugrp_{$user_group->nid}"] = array(
+                            '#type' => 'item',
+                            '#value' => l($user_group->title, 'ntlp/groups/home/' . $user_group->nid),
+                            '#prefix' => '<li>',
+                            '#suffix' => '</li>',
+                        );
+                    }
+                }
+            }
+            ///////// MY GROUPS END /////////
+        }
+    } //condition of valid user ends here
+
+    $form['user_profile']['course_' . $courseid] = array(
+        '#type' => 'item',
+        '#suffix' => '</td></tr></table>',
+    );
+
+//}//condition for own profile user ends here
+    return $form;
+}
+
+function edit_quotation_data($form, $form_state) {
+    $useruid = $form_state['values']['user_profile']['user_id'];
+    $user_profile = $form_state['clicked_button']['#post']['user_profile'];
+    //print_r($user_profile);
+
+    $fav_quote = $user_profile['fav_quote'];
+    $about_me_statement = $user_profile['about_me']['about_me_statement'];
+    $college = $user_profile['about_me']['college'];
+    $goals = $user_profile['about_me']['goals'];
+    $movies = $user_profile['about_me']['movies'];
+    $tv = $user_profile['about_me']['tv'];
+    $music = $user_profile['about_me']['music'];
+    $books = $user_profile['about_me']['books'];
+    $hobbies = $user_profile['about_me']['hobbies'];
+    $fun_fact = $user_profile['about_me']['fun_fact'];
+    $phone_number = $user_profile['personinfo']['contact']['phone_number'];
+    $websites = $user_profile['personinfo']['contact']['websites'];
+    $im_name = $user_profile['personinfo']['contact']['im_name'];
+    $im_id = $user_profile['personinfo']['contact']['im_id'];
+    $mywebsites = $user_profile['personinfo']['contact']['mywebsites'];
+
+    $mywebs = explode("||", $mywebsites);
+    for ($x = 0; $x < sizeof($mywebs); $x++) {
+        if ($mywebs[$x] != 'x')
+            $mywebster .= $mywebs[$x] . '||';
+    }
+    $mywebster = rtrim($mywebster, '||');
+
+
+    db_query("UPDATE {ntlp_user} SET
+        fav_quote ='%s', about_me_statement='%s', college='%s', movies='%s', tv='%s', music='%s', books='%s', hobbies='%s',
+        fun_fact='%s',phone_number='%s',websites='%s',im_name='%s',im_id='%s',goals='%s'
+        WHERE uid = %d", $fav_quote, $about_me_statement, $college, $movies, $tv, $music, $books, $hobbies, $fun_fact, $phone_number, $mywebster, $im_name, $im_id, $goals, $useruid);
+
+    //watchdog('info',' inside edit_quotation_data method '.$qustion );
+    //$fav_quote = $form_state['clicked_button']['#post']['user_profile']['fav_quote'];
+    //db_query("UPDATE {users} SET fav_quote ='%s' WHERE uid = %d",$fav_quote, $useruid);
+    //watchdog('info',' inside edit_quotation_data method '.$qustion );
+    drupal_set_message('Saved successfully');
+}
+
+function _get_school_region($school_nid) {
+
+    $result = db_query("SELECT location_tid,school_website  FROM {ntlp_school} WHERE nid = %d ", $school_nid);
+
+    return $obj = db_fetch_object($result);
+}
+
+function save_profile_picture($fid, $uid) {
+    global $base_path;
+
+    watchdog('uploadimage', 'fid ' . $fid);
+    $file_Obj = _get_file_detail($fid);
+    watchdog('uploadimage', print_r($file_Obj, true));
+    watchdog('uploadimage', "UPDATE {users} SET picture = " . $file_Obj->filepath . " WHERE uid = " . $uid);
+
+    db_query("UPDATE {users} SET picture = '%s' WHERE uid = %d", $file_Obj->filepath, $uid);
+
+    watchdog('uploadimage', 'file updated successfully');
+    echo drupal_get_form('ntlp_activeimage', $base_path . $file_Obj->filepath, 197, 200);
+}
+
+function check_permission_on_course_link($profile_user_id) {
+    global $user;
+    $flag = false;
+
+    if (!isset($user->roles[NTLP_ROLEID_PARENT]) && (get_user_school($user->uid) == get_user_school($profile_user_id) || is_NETWORK_role($user))) {
+        $flag = true;
+    } else {
+        if (isset($user->roles[NTLP_ROLEID_PARENT]) && check_user_relation($profile_user_id, $user->uid)) {
+            $flag = true;
+        } else {
+            $flag = false;
+        }
+    }
+    return $flag;
+}
+
+function is_NETWORK_role($user) {
+    $flag = false;
+
+    if (isset($user->roles[NTLP_ROLEID_NETWORKGUEST]) || isset($user->roles[NTLP_ROLEID_NETWORKMANAGER])
+            || isset($user->roles[NTLP_ROLEID_NETWORKSTAFF])) {
+        $flag = true;
+    } else {
+        $flag = false;
+    }
+
+    return $flag;
+}
+
+function change_user_webnotify_config($notify_id, $user_uid, $change) {
+//    drupal_set_message("webnotify: $change");
+    update_notification_web_exclusion_for_user($notify_id, $user_uid, $change);
+}
+
+function change_user_emailnotify_config($notify_id, $user_uid, $change) {
+
+    update_notification_email_exclusion_for_user($notify_id, $user_uid, $change);
+}

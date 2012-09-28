@@ -1,0 +1,17 @@
+/*// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+/* $Id: modalframe.child.css,v 1.1.2.1 2009/09/15 08:48:25 markuspetrux Exp $ */
+
+.modalframe-page-wrapper,
+.modalframe-page-container {
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+/*  border:2px solid #3591cb;*/
+}
+.modalframe-page-content {
+  margin: 0;
+  padding: 1em;
+}

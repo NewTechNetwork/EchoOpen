@@ -1,0 +1,60 @@
+/* $Id: blackblue.css,v 1.1.2.3.2.2 2008/12/06 18:04:45 rz Exp $ */
+
+#simplemenu {
+	background:#333333;
+	color:#fff;
+	font:11px Verdana, Helvetica, sans-serif;
+	width:100%;
+	z-index:999;
+	text-align:left;
+	margin:4px 0 0 0;
+
+	
+}
+#simplemenu a {
+	color:#fff;
+	text-decoration:none;
+	padding:7px 12px 8px 12px;
+	width:auto;
+	border-bottom:1px solid #1a1a1a;
+	border-right:1px solid #1a1a1a;
+	border-left:1px solid #505050;
+	border-top:1px solid #404040;
+
+}
+#simplemenu a:hover {
+	border-left:1px solid #5db1e0;
+	border-top:1px solid #5db1e0;
+
+}
+#simplemenu li {
+  	background:transparent;
+}
+#simplemenu li.expanded > a {
+	background:url(arrow_right.gif) no-repeat 94%;
+	padding-right:18px;
+	border-left:1px solid #505050;
+	border-top:1px solid #404040;
+}
+#simplemenu li.root > a {
+	background:url(arrow_down.gif) no-repeat 94%;
+	padding-right:18px;
+	border-left:1px solid #505050;
+	border-top:1px solid #404040;	
+}
+#simplemenu li:hover, #simplemenu li.sfHover,
+#simplemenu a:focus, #simplemenu a:hover, #simplemenu a:active {
+ 	background:url(hover.jpg) repeat-x top left;
+	color:#fff;
+}
+#simplemenu li ul {
+	background:#333;
+}
+#simplemenu li ul a {
+	color:#fff; 
+	height:auto;
+}
+#simplemenu li ul li:hover, #simplemenu li ul li.sfHover,
+#simplemenu li ul a:focus, #simplemenu li ul a:hover, #simplemenu li ul a:active {
+	color:#ffffff;
+}

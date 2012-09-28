@@ -1,0 +1,7 @@
+; $Id: ntlp_views.info,v .01 $
+name = NTLP Views
+description = Extends Views2 for NTLP data
+package = NTLP
+core = 6.x
+version = "6.x-0.1"
+

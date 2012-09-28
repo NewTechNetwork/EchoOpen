@@ -1,0 +1,5 @@
+; $Id: gapps_feeds.info 11 2009-12-20 03:15:00Z shahbaz.ahmer@parallelmode.com $
+name = Google Apps Feeds
+description = Provides Google Apps feeds based services as block for Documents and Sites for NTLP with OAuth2
+package = Third-party integration
+core = 6.x

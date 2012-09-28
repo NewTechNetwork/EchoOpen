@@ -1,0 +1,583 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+// $Id: ntlp_events.module,v 1.3 2010/5/2 Shahbaz Ahmer, Saifuddin $
+
+/**
+ * NTLP Events Module
+ * Uses month rendering functions from:
+ * Availability Calendars Module
+ *
+ */
+module_load_include('inc', 'ntlp_events', 'events.contents');
+module_load_include('inc', 'ntlp_events', 'ntlp_events_header.content');
+module_load_include('inc', 'ntlp_school', 'data_access');
+
+/**
+ * Implementation of hook_menu().
+ */
+function ntlp_events_menu() {
+    $items = array();
+
+    $items['ntlp/events/%/%/%/%'] = array(
+        'page callback' => 'events_main',
+        'page arguments' => array(2, 3, 4, 5),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/events/%/%/%/%/print'] = array(
+        'page callback' => 'events_main_print',
+        'page arguments' => array(2, 3, 4, 5, true),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/events/edit/%/%'] = array(
+        'page callback' => 'events_edit_form',
+        'page arguments' => array(3, 4),
+//      'access arguments' => array('create ntlp_events content'), // No permission found with this name in system.
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+//Course_nid, from yy/mm/dd, to yy/mm/dd
+//Adding multiple /% creates a conflict with events_main
+    $items['ntlp/events/save/%/%/%/%'] = array(
+        'page callback' => 'events_save',
+        'page arguments' => array(3, 4, 5, 6, 7, 8, 9, 10, 11),
+//      'access arguments' => array('create ntlp_events content'), // No permission found with this name in system.
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/events/view/%/%/%/%'] = array(
+        'page callback' => 'view_events',
+        'page arguments' => array(3, 4, 5, 6),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/events/open/%'] = array(
+        'page callback' => 'open_an_event',
+        'page arguments' => array(3),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/events/show/%'] = array(
+        'page callback' => 'show_event',
+        'page arguments' => array(3),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/events/editable/%'] = array(
+        'page callback' => 'can_edit',
+        'page arguments' => array(3),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/events/delete/data/%'] = array(
+        'page callback' => 'event_delete',
+        'page arguments' => array(4),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/events/get_calendar/%/%/%/%'] = array(
+        'page callback' => 'events_get_calendar_month',
+        'page arguments' => array(3, 4, 5, 6),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+function events_edit_form($group_nid, $event_nid) {
+    print drupal_get_form('events_edit', $group_nid, $event_nid);
+}
+
+function events_edit($eventsform, $group_nid, $event_nid) {
+    global $user;
+
+    $path = drupal_get_path('module', 'ntlp_events');
+
+    $title = '';
+    $events_desc = '';
+    $today = getdate(); // Get today's date
+
+    $school_nid = get_group_school_nid($group_nid);
+    $date = get_tz($school_nid, 'Y/m/d', date('Y/m/d H:i:s', time()));
+
+    $year = date("Y", strtotime($date));
+    $month = date("m", strtotime($date));
+    $day = date("d", strtotime($date));
+
+
+
+
+//    $year = $today['year'];
+//    $month = $today['mon'];
+//    $day = $today['mday'];
+    $from_date = "$month/$day/$year";
+    $to_date = "$month/$day/$year";
+
+
+
+    $cuurent_user_role = get_user_role($user->uid);
+
+    if ($event_nid != 0) {
+        $events_obj = get_event($event_nid);
+//        echo 'Result: Events found';
+        if ($events_obj) {
+            $events_desc = $events_obj->body;
+            $title = $events_obj->title;
+            $visibility_to = $events_obj->visible_to;
+
+//            list($tyear, $tmonth, $tday, $thour, $tmin, $tsec) = split('[: -]', $events_obj->event_end);
+//
+//            $event_end['year']= $tyear;
+//            $event_end['month']= $tmonth;
+//            $event_end['day']= $tday;
+//            $event_end['hour']= $thour;
+//            $event_end['minutes']= $tmin;
+//
+//            list($fyear, $fmonth, $fday, $fhour, $fmin, $fsec) = split('[: -]', $events_obj->event_start);
+//
+//            $event_start['year']= $fyear;
+//            $event_start['month']= $fmonth;
+//            $event_start['day']= $fday;
+//            $event_start['hour']= $fhour;
+//            $event_start['minutes']= $fmin;
+
+            list($year, $month, $day, $hour, $min, $sec) = split('[: -]', $events_obj->event_start);
+            $from_date = "$month/$day/$year";
+            list($year, $month, $day, $hour, $min, $sec) = split('[: -]', $events_obj->event_end);
+            $to_date = "$month/$day/$year";
+//            echo 'From:'.print_r($from_date, true);
+//            echo '  To:'.print_r($to_date, true);
+        }
+    }
+
+
+
+    $form['body_start'] = array(
+        '#type' => 'markup',
+        '#value' => '<div id="ActivitiesCSS" style="width:auto;"><div class="ActivitiesAssignment" style="padding:5px">
+                            <table cellpadding="8" class="table" cellspacing="0" border="0" width="100%">',
+    );
+    if (check_user_permission_for_access($cuurent_user_role->rid, get_this_school() . ' create school wide events') &&
+            check_user_permission_for_access($cuurent_user_role->rid, get_this_school() . ' create network events')) {
+
+        $options = array('S' => 'School Event List', 'N' => 'Network Event List');
+        $default_value = 'S';
+    } else {
+        if (check_user_permission_for_access($cuurent_user_role->rid, get_this_school() . ' create school wide events')) {
+            $options = array('S' => 'School Event List');
+            $default_value = 'S';
+        } else if (check_user_permission_for_access($cuurent_user_role->rid, get_this_school() . ' create network events')) {
+            $options = array('N' => 'Network Event List');
+            $default_value = 'N';
+        }
+    }
+
+    if ($group_nid) {
+        $node = node_load($group_nid);
+        if ($node->type == 'ntlp_group') {
+            $default_value = 'G';
+        }
+    }
+
+    if ($node->type == 'ntlp_group' || $group_nid == 0) {
+        $form['visibility_to'] = array(
+            '#type' => 'radios',
+            '#id' => 'visibility_to',
+            '#prefix' => '<tr><th style="width:100px;padding-top:1em">' . t('Post To:') . '</th><td colspan="3" style="padding-left:1em;"><div style="float:left;padding:0 30px 0 0">',
+            '#suffix' => '</div></td></tr>',
+            '#options' => $options,
+            '#default_value' => isset($visibility_to) ? $visibility_to : $default_value,
+        );
+    }
+
+    $form['fromdate'] = array(
+        '#type' => 'textfield',
+        '#id' => 'events-fromdate',
+        '#size' => '10',
+//            '#title' => t('From'),
+        '#default_value' => $from_date,
+        '#attributes' => array('style' => 'padding-left:2px;padding-right:0px;', 'class' => 'ntlp_datepicker'),
+////            '#default_value' => isset($fromdate) ? $fromdate : _event_user_time(),
+        '#prefix' => '<tr><th style="width:100px;padding-top:1em">' . t('From Date:') . '</th><td style="padding-left:1em;">',
+        '#suffix' => '</td>',
+    );
+
+    $form['todate'] = array(
+        '#type' => 'textfield',
+        '#id' => 'events-todate',
+        '#size' => 10,
+//            '#title' => t('To'),
+        '#attributes' => array('style' => 'padding-left:2px;padding-right:0px;', 'class' => 'ntlp_datepicker'),
+        '#default_value' => $to_date,
+        '#prefix' => '<th style="width:100px;padding-top:1em">' . t('To Date:') . '</th><td style="padding-left:1em;">',
+        '#suffix' => '</td></tr>',
+    );
+
+    $form['events_title'] = array(
+        '#type' => 'textfield',
+        '#id' => 'events-title',
+//    '#size' => '40',
+        '#default_value' => $title,
+        '#prefix' => '<tr><th style="width:100px;padding-top:1em">' . t('Title:') . '</th><td colspan="3" style="padding-left:1em;">',
+        '#suffix' => '</td></tr>',
+        '#attributes' => array('style' => 'width:465px', 'title' => 'enter event title'),
+    );
+
+    $form['events_desc'] = array(
+        '#type' => 'textarea',
+        '#id' => 'events-text',
+//            '#title' => t('Detail'),
+        '#default_value' => '',
+        '#required' => TRUE,
+        '#default_value' => $events_desc,
+        '#prefix' => '<tr><th style="width:100px;padding-top:1em">' . t('Description:') . '</th><td colspan="3" style="padding-left:1em;">',
+        '#suffix' => '</td></tr>',
+        '#attributes' => array('style' => 'height:150px;width:465px'),
+    );
+
+    $form['body_end'] = array(
+        '#type' => 'markup',
+        '#value' => '</table></div></div>',
+    );
+
+    return $form;
+}
+
+function events_save($event_nid, $course_nid, $year, $month, $day, $to_year, $to_month, $to_day, $visibility_to) {
+    global $user;
+    $events_title = isset($_GET['title']) ? $_GET['title'] : '';
+    $events_text = isset($_GET['body']) ? $_GET['body'] : '';
+//    $events_text = check_markup($events_text);
+
+    $fromdate = mktime(0, 0, 0, $month, $day, $year);
+    $todate = mktime(0, 0, 0, $to_month, $to_day, $to_year);
+
+    $eventsfromdate = $year . '/' . $month . '/' . $day;
+    $eventstodate = $to_year . '/' . $to_month . '/' . $to_day;
+
+    $school_nid = get_this_school();
+
+    if ($course_nid != 0) {
+        $group_node = node_load($course_nid);
+        $event_type = $group_node->type . '_event';
+        $visibility_to == 'G';
+    } else {
+        if ($visibility_to == 'S') {
+            $event_type = "ntlp_school_event";
+            $context = $school_nid;
+        } else {
+            $event_type = "ntlp_network_event";
+            $context = -1;
+        }
+    }
+
+    watchdog('events', "Save event of type: $event_type for school: $school_nid in group: $course_nid<br>From:$eventsfromdate To:$eventstodate<br>$events_text");
+
+    if ($todate >= $fromdate) {
+
+        $fromdate = getdate($fromdate);
+        $todate = getdate($todate);
+
+        $rec = false;
+        if ($event_nid != 0)
+            $rec = get_event($event_nid);
+
+        if ($rec) {
+            $event_node = node_load($event_nid);
+            if (!$event_node) {
+                watchdog('events', 'Unable to find events in content nodes');
+                print 'ERROR:Unable to find events in content nodes';
+                exit;
+            }
+            $edit = true;
+        } else {
+//                drupal_set_message('creating new events');
+            $event_node = new stdClass();
+            $event_node->created = $time;
+            $edit = false; // set boolean for editing a node..
+        }
+        $event_node->type = $event_type;   // Your specified content type
+        $event_node->status = 1;
+        $event_node->promote = 0;
+        $event_node->sticky = 0;
+        $event_node->format = 1;       // Filtered HTML
+        $event_node->uid = $user->uid; // UID of content owner
+        $event_node->context = $context;
+
+        $event_node->event['has_time'] = '1';
+        $event_node->event['has_end_date'] = '1';
+        $event_node->event['timezone'] = '205';
+
+        $event_node->event['start_exploded']['year'] = $fromdate['year'];
+        $event_node->event['start_exploded']['month'] = $fromdate['mon'];
+        $event_node->event['start_exploded']['day'] = $fromdate['mday'];
+        $event_node->event['start_exploded']['hour'] = 0;   //$hour;
+        $event_node->event['start_exploded']['minute'] = 0;    //$minute;
+
+        $event_node->event['end_exploded']['year'] = $todate['year'];
+        $event_node->event['end_exploded']['month'] = $todate['mon'];
+        $event_node->event['end_exploded']['day'] = $todate['mday'];
+        $event_node->event['end_exploded']['hour'] = 0; //$tohour;
+        $event_node->event['end_exploded']['minute'] = 0;   //$tominute;
+
+        $event_node->title = empty($events_title) ? "Events $course_nid for " . $fromdate['year'] . '/' . $fromdate['mon'] . '/' . $fromdate['mday'] : $events_title;
+        $event_node->changed = $time;
+        $event_node->body = $events_text;
+
+        node_save($event_node);
+        $nid = $event_node->nid;
+//            watchdog('events', 'Saved:'.$nid);
+//            drupal_set_message('events node saved');
+//          Visible to: G=Group, S=School, O=Organization (Group of school), N=Whole network (All)
+        try {
+            if ($edit == false) {
+//                    $retval = drupal_write_record('ntlp_events', $data);
+//                    if ($retval == FALSE) drupal_set_message('FALSE returned');
+//                    drupal_set_message('Events created.'.$retval);
+                db_query("INSERT INTO {ntlp_events} (nid, group_nid, year, month, day, status, visible_to, school_nid)
+                    VALUES (%d, %d, %d, %d, %d, '1', '%s', %d)", $nid, $course_nid, intval($fromdate['year']), intval($fromdate['mon']), intval($fromdate['mday']), $visibility_to, $school_nid);
+
+                module_invoke_all('ntlpcontent', $event_node, 'content_posted');
+            } else {
+//                    $retval = drupal_write_record('ntlp_events', $data, 'nid');
+//                    drupal_set_message('Events updated.'.$retval);
+                db_query("UPDATE {ntlp_events} SET year = %d, month = %d, day = %d,
+                        status = '1', visible_to = '%s'
+                        WHERE nid = %d", intval($fromdate['year']), intval($fromdate['mon']), intval($fromdate['mday']), $visibility_to, $nid);
+            }
+
+
+
+        } catch (Exception $e) {
+            watchdog('events', 'Fatal error:' . $e->getMessage());
+            return 'ERROR:Fatal error:' . $e->getMessage();
+        }
+    }
+    //update block cache block for users
+    ntlp_update_block_cache('ntlp_event', $nid);
+}
+
+/**
+ * Themed output to display a list of node dates.
+ *
+ * @param $node
+ * @return HTML output.
+ */
+function events_get_calendars_month_meta($year, $month, $startofweek) {
+    $month_meta['daysinmonth'] = date("t", mktime(0, 0, 0, $month, 1, $year));
+    $month_meta['firstday'] = date("w", mktime(0, 0, 0, $month, 1, $year)) + $startofweek;
+    $tempDays = $month_meta['firstday'] + $month_meta['daysinmonth']; // padding
+    $month_meta['weeksinmonth'] = ceil($tempDays / 7);
+
+//    // Stop empty weeks occuring at start of month
+//    if ($month_meta['firstday'] > 6) {
+//        $month_meta['firstday'] = $month_meta['firstday'] - 7;
+//        $month_meta['weeksinmonth'] --;
+//    }
+    return $month_meta;
+}
+
+function events_render_calendars_month($node, $year, $month, $day) {
+    $lp = 0;
+    include('events.template.inc');
+    $path = drupal_get_path('module', 'ntlp_events');
+    drupal_add_js($path . '/ntlp_events.js', 'module');
+
+    $startofweek = 0;
+    $month_meta = events_get_calendars_month_meta($year, $month, $startofweek);
+    /* here we list all the days of the week, an array of 14 (two full weeks) so that if users select monday
+      as the first day we still get a full week in our following loop */
+    $days = array(
+        13 => t('Mon'),
+        12 => t('Tue'),
+        11 => t('Wed'),
+        10 => t('Thu'),
+        9 => t('Fri'),
+        8 => t('Sat'),
+        7 => t('Sun'),
+        6 => t('Mon'),
+        5 => t('Tue'),
+        4 => t('Wed'),
+        3 => t('Thu'),
+        2 => t('Fri'),
+        1 => t('Sat'),
+        0 => t('Sun'),
+    );
+    $counter = 0;
+    for ($j = 0; $j < $month_meta['weeksinmonth']; $j++) {
+        for ($i = 0; $i < 7; $i++) {
+            $counter++;
+            $week[$j][$i] = $counter;
+// offset the days
+            $week[$j][$i] -= $month_meta['firstday'];
+            if (($week[$j][$i] < 1) || ($week[$j][$i] > $month_meta['daysinmonth'])) {
+                $week[$j][$i] = "";
+            }
+        }
+    }
+
+// find all entries in database for this month ($availability, $notes) and pre-populate
+    $school_nid = get_this_school();
+    $status_result = get_events_ofthemonth($school_nid, $node, $year, $month);
+    while ($status = db_fetch_array($status_result)) {
+        //$day_status[$status['day']] = $status['status'];
+
+        for ($i = 0; $i <= 31; $i++) {
+            $cal_date = strtotime("$year-$month-$i 00:00:00");
+
+            if ($cal_date >= strtotime($status['event_start']) && $cal_date <= strtotime($status['event_end']))
+                $day_status[$i] = $status['status'];
+        }
+    }
+    $html_row = '';
+    $html_month = '';
+//    $debugval = '';
+    foreach ($week as $key => $val) {
+        $weeknumber = $key + 1;
+//        firep($weeknumber);
+//        array_push($cells, array('data' => '', 'class' => 'calnote')); // add the note cell to the cells array
+        $html_row = $HTMLmain_calendar_row;
+//Change the class of first row, if this is a 6 week month,
+//and first day falls on last cell
+        if ($month_meta['firstday'] == 6 && $weeknumber == 1) {
+            $html_row = str_replace("@CLASS_ROW", "FirstRow", $html_row);
+            $html_row = str_replace("@CLASS_CELL", " class='LastCell'", $html_row);
+        } else {
+            $html_row = str_replace("@CLASS_ROW", "Numday", $html_row);
+            $html_row = str_replace("@CLASS_CELL", "", $html_row);
+        }
+
+        for ($i = 0; $i < 7; $i++) {
+// if there's a date, it's part of this month
+            $calclass = '';
+            if ($week[$key][$i]) {
+                $lp++;
+
+                if ($day_status[$week[$key][$i]] == 1) { // booked
+                    $calclass = 'active';
+                } elseif ($day_status[$week[$key][$i]] == 2) { // provisionally booked
+                    $calclass = 'calnotavailableprov';
+                }
+
+
+//                if($lp == date('d') && $year == date('Y') && $month == date('m')) {
+                //JR 20101101 change to get School Date
+                $date = get_tz($school_nid, 'Y/m/d', date('Y/m/d H:i:s', time()));
+                if ($lp == date('d', strtotime($date)) && $year == date('Y', strtotime($date)) && $month == date('m', strtotime($date))) {
+                    $calclass = 'mainDate';
+                }
+
+                $link = url("ntlp/events/$node/$year/$month/" . $week[$key][$i]);
+                $html_row = str_replace("@DAY_" . ($i + 1), "<a href='$link'
+                            style='cursor: pointer; cursor: hand;'
+                            name='$year-$month-" . $week[$key][$i] . "'
+                            class='$calclass click'>" . $week[$key][$i] . "</a>", $html_row);
+            } else { // empty, typically row 1 or 5 in a month
+                $html_row = str_replace("@DAY_" . ($i + 1), '', $html_row);
+            }
+        }
+        $html_month .= $html_row;
+//        firep($html_row);
+    }
+//    firep($html_month);
+//    $html_month = $month_meta['firstday'].'<br>'.$month_meta['daysinmonth'].'<br>'.
+//                  $month_meta['weeksinmonth'].'<br>'.$debugval;
+    $output = $HTMLmain_calendar_body;
+    $output = str_replace("@CALENDAR_DAYS", $html_month, $output);
+    return $output;
+}
+
+/*
+ * this return boolean based on current date.
+ */
+
+function events_get_current_date($year, $month, $date) {
+
+    $flag = false;
+    if ($year == date('Y')) {
+        if ($month == date('m')) {
+            if ($date == date('d')) {
+                $flag = true;
+            }
+        }
+    }
+    return $flag;
+//    echo " <br>Today is ".date("d/m/Y");
+}
+
+function view_events($course_nid, $year = 2008, $month = 1, $day = 1) {
+//    echo "Course: $course_nid, $year, $month, $day";
+    $filters = isset($_GET['filters']) ? $_GET['filters'] : '';
+
+    $output = events_main_list($course_nid, $year, $month, $day, $filters);
+    echo $output;
+}
+
+function show_event($event_nid) {
+    $output = events_main_contents($event_nid);
+    echo $output;
+}
+
+function can_edit($event_nid) {
+
+    global $user, $base_url;
+
+    // Calling Get Events Function
+    $rec = get_event($event_nid);
+
+    if ($rec) {
+
+        $isadmin = is_user_adminof_this_event($rec->nid, $user, $rec->type); // checking permission for group
+        $isschoolstaff = ((isset($user->roles[NTLP_ROLEID_SITEADMIN]) || isset($user->roles[NTLP_ROLEID_TEACHER]) || isset($user->roles[NTLP_ROLEID_SCHOOLLEADER]))
+                    && check_user_school($user) && $rec->type != 'ntlp_network_event');
+        $iseventowner = ($user->uid == $rec->uid);
+
+        print ($isadmin || $isschoolstaff || $iseventowner);
+    }
+
+    print false;
+}
+
+function open_an_event($event_nid) {
+// Calling Get Events Function
+    $rec = get_event($event_nid);
+
+    if ($rec) {
+        $output = events_main($rec->group_nid, $rec->year, $rec->month, $rec->day, $event_nid);
+    } else {
+        $output = "The event you selected is not available.";
+    }
+    return $output;
+}
+
+function events_get_calendar_month($node, $year, $month, $day) {
+//    watchdog('info', "Course: $node ($year/$month)");
+    $output = events_render_calendars_month($node, $year, $month, $day);
+    echo $output;
+}
+
+function event_delete($event_id) {
+
+    //update block cache block for users
+    ntlp_update_block_cache('ntlp_event', $event_id);
+    if ($event_id) {
+
+        db_query("DELETE FROM {node} where nid = %d", $event_id);
+
+        db_query("DELETE FRoM {ntlp_events} where nid = %d", $event_id);
+    }
+}

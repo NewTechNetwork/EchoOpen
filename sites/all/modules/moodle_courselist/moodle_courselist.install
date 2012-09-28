@@ -1,0 +1,19 @@
+<?php
+
+// $Id: moodle_courselist.install,v 1.1 2008/06/19 00:16:57 agerson Exp $
+
+/**
+* @file
+* install and uninstall code.
+*/
+
+
+/**
+* Implementation of hook_uninstall()
+*/
+function hook_uninstall() {
+  variable_del('moodle_courselist_mysqlserver');
+  variable_del('moodle_courselist_mysqlusername');
+  variable_del('moodle_courselist_mysqlpassword');
+  variable_del('moodle_courselist_moodleurl');
+}

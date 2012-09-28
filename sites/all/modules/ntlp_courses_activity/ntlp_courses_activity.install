@@ -1,0 +1,93 @@
+<?php
+// $Id: ntlp_school.install,v .01 $
+
+/**
+ * Implementation of hook_install().
+ */
+function ntlp_courses_activity_install() {
+  // Create tables.
+  drupal_install_schema('ntlp_courses_activity');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ntlp_courses_activity_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('ntlp_courses_activity');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function ntlp_courses_activity_submission_schema() {
+    //Template schema, a new table will be created for each term
+    $schema['ntlp_activity_submission'] = array(
+    'description' => 'School Term wise Student Activity Submissions',
+    'fields' => array(
+      'nid'     => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => "Student Activity Submission nid"
+        ),
+      'activity_nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Course Activity nid'
+        ),
+      'user_uid'  => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Student id',
+        ),
+      'date_opened'  => array(
+        'type' => 'datetime',
+        'not null' => FALSE,
+        'default' => NULL,
+        'description' => 'Date Student opened the activity to view',
+        ),
+      'date_submitted'  => array(
+        'type' => 'datetime',
+        'not null' => FALSE,
+        'default' => NULL,
+        'description' => 'Date Student submitted his work for the activity',
+        ),
+      'note_to_teacher' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'default' => NULL,
+        'description' => 'Student\'s Note to Teacher',
+        ),
+      'is_final' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => NULL,
+        'description' => 'Final Submission Flag',
+        ),
+      'version_num' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => FALSE,
+        'default' => NULL,
+        'description' => 'Student\'s Note to Teacher',
+        ),
+      ),
+    'indexes' => array(
+      'activity_nid' => array('activity_nid'),
+      'user_uid' => array('user_uid'),
+      'is_final' => array('is_final'),
+      ),
+    'primary key' => array('nid'),
+    'mysql_suffix' => 'ENGINE = InnoDB DEFAULT CHARACTER SET = utf8',
+    );
+
+  return $schema;
+}

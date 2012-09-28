@@ -1,0 +1,7 @@
+; $Id: ntlp_project.info,v .01 $
+name = NTLP Project Maintenance
+description = Allows maintenance of NTLP Project
+package = NTLP
+core = 6.x
+version = "6.x-0.1"
+

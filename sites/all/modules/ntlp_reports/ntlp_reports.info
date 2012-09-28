@@ -1,0 +1,7 @@
+; $Id: ntlp_reports.info,v.01 $
+name = NTLP Reports
+description = Provides an API to call Jasper Reports
+package = NTLP
+core = 6.x
+version = "6.x-0.1"
+

@@ -1,0 +1,106 @@
+/*// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+
+.yellow-arrow-central {
+	left: 10px;
+    margin-left: 20px;
+    top: 0;
+}
+
+.yellow-middle { 
+  margin-left:55px; 
+  padding: 5px 8px 4px 8px;
+  background-color: rgb(255,249,194); 
+  color: #000 !important; 
+  max-width: 200px; 
+  text-align: left; 
+  border-radius: 3px; 
+  -moz-border-radius:3px; 
+  -webkit-border-radius:3px; 
+}
+
+.grey-middle { 
+  margin-left:55px; 
+  padding: 5px 8px 4px 8px;
+  background-color: #CCCCCC !important; 
+  color: #000 !important; 
+  max-width: 200px; 
+  text-align: left; 
+  border-radius: 3px; 
+  -moz-border-radius:3px; 
+  -webkit-border-radius:3px; 
+}
+.noTip{ position: absolute; background: none !important; width: 18px; height: 5px;}
+
+.tipsy { padding: 5px; font-size: 12px;  text-align:left; position: absolute; z-index: 100000; }
+  /*.tipsy-inner { padding: 5px 8px 4px 8px; background-color: black; color: #fff !important; max-width: 200px; text-align: left;  }*/
+  .tipsy-inner { padding: 5px 8px 4px 8px; background-color: #FFF9C2; color: #000 !important; max-width:300px; width:auto !important; width:300px; max-height: 200px; height: auto !important; height:300px; text-align: left; word-wrap:break-word; }
+  .tipsy-inner { border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; }
+  .tipsy-arrow { position: absolute; background: url(../Images/tipsy2.gif) no-repeat top left; width: 28px; height: 11px; }
+  .tipsy-n .tipsy-arrow { top: 0; left: 50%; margin-left: -4px; }
+    .tipsy-nw .tipsy-arrow { top: 0; left: 10px; }
+    .tipsy-ne .tipsy-arrow { top: 0; right: 10px; }
+  .tipsy-s .tipsy-arrow { bottom: 0; left: 50%; margin-left: -4px; background-position: bottom left; }
+    .tipsy-sw .tipsy-arrow { bottom: 0; left: 10px; background-position: bottom left; }
+    .tipsy-se .tipsy-arrow { bottom: 0; right: 10px; background-position: bottom left; }
+  .tipsy-e .tipsy-arrow { top: 50%; margin-top: -4px; right: 0; width: 5px; height: 9px; background-position: top right; }
+  .tipsy-w .tipsy-arrow { top: 50%; margin-top: -4px; left: 0; width: 5px; height: 9px; }
+
+
+
+  .grey{ padding: 5px 8px 4px 8px; background-color: #CCCCCC !important; color: #ffffff !important; max-width: 200px; text-align: left;  }
+  .black-toedit{ margin-left: 28px; padding: 5px 8px 4px 8px; background-color: #000; color: #ffffff !important; max-width: 200px; text-align: left;  }
+  .grey-arrow { position: absolute; background: url(../Images/tipsy_grey2.gif) no-repeat top left; width: 18px; height: 5px; }
+  .black-arrow-toedit { margin-left: 28px; position: absolute; background: url(../Images/tipsy.gif) no-repeat top left; width: 18px; height: 5px; }
+  .grey-arrow-search-panel { position: absolute; background: url(../Images/tipsy_grey.gif) no-repeat top center; width: 13px; height: 5px; }
+  .grey-arrow-central { left: 10px; margin-left: 25px; top: 0; position: absolute; background: url(../Images/tipsy_grey.gif) no-repeat top left; width: 18px; height: 5px;}
+  .tipsy-n .grey-arrow{ top: 0; left: 50%; margin-left: -4px; }
+    .tipsy-nw .grey-arrow { top: 0; left: 10px; }
+    .tipsy-ne .grey-arrow { top: 0; right: 10px; }
+  .tipsy-s .grey-arrow { bottom: 0; left: 50%; margin-left: -4px; background-position: bottom left; }
+    .tipsy-sw .grey-arrow { bottom: 0; left: 10px; background-position: bottom left; }
+    .tipsy-se .grey-arrow { bottom: 0; right: 10px; background-position: bottom left; }
+  .tipsy-e .grey-arrow { top: 50%; margin-top: -4px; right: 0; width: 5px; height: 9px; background-position: top right; }
+  .tipsy-w .grey-arrow { top: 50%; margin-top: -4px; left: 0; width: 5px; height: 9px; }
+
+
+  .black { padding: 5px 8px 4px 8px; background-color: black; color: #fff !important; max-width: 200px; text-align: left;  }
+  .black { border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; }
+  .black-arrow { position: absolute; background: url(../Images/tipsy.gif) no-repeat top left; width: 18px; height: 5px; }
+  .tipsy-n .black-arrow{ top: 0; left: 50%; margin-left: -4px; }
+    .tipsy-nw .black-arrow { top: 0; left: 10px; }
+    .tipsy-ne .black-arrow { top: 0; right: 10px; }
+  .tipsy-s .black-arrow { bottom: 0; left: 50%; margin-left: -4px; background-position: bottom left; }
+    .tipsy-sw .black-arrow { bottom: 0; left: 10px; background-position: bottom left; }
+    .tipsy-se .black-arrow { bottom: 0; right: 10px; background-position: bottom left; }
+  .tipsy-e .black-arrow { top: 50%; margin-top: -4px; right: 0; width: 5px; height: 9px; background-position: top right; }
+  .tipsy-w .black-arrow { top: 50%; margin-top: -4px; left: 0; width: 5px; height: 9px; }
+ 
+.black-arrow-modal{border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; position: absolute; background: url(../Images/tipsy.gif) no-repeat top right; width: 18px; height: 5px; }
+
+
+.yellow { padding: 5px; background-color:#fff9c2 !important; color:#000 !important;  text-align:left; overflow:hidden !important;}
+.yellow { border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; }
+.yellow-arrow { position: absolute; background: url(../Images/tipsy3.gif) no-repeat top left !important; width: 30px; height: 15px; }
+  .tipsy-n .yellow-arrow { top: 0; left: 50%; margin-left: -4px; }
+    .tipsy-nw .yellow-arrow { top: -3px; left: 10px; }
+    .tipsy-ne .yellow-arrow { top: 0; right: 10px; }
+  .tipsy-s .yellow-arrow { bottom: 0; left: 50%; margin-left: -4px; background-position: bottom left; }
+    .tipsy-sw .yellow-arrow { bottom: 0; left: 10px; background-position: bottom left; }
+    .tipsy-se .yellow-arrow { bottom: 0; right: 10px; background-position: bottom left; }
+  .tipsy-e .yellow-arrow { top: 50%; margin-top: -4px; right: 0; width: 5px; height: 9px; background-position: top right; }
+  .tipsy-w .yellow-arrow { top: 50%; margin-top: -4px; left: 0; width: 5px; height: 9px; }
+
+
+
+/*<!--old tipsy css file starts here...-->*/
+
+/*.tipsy { padding: 5px; font-size: 10px; opacity: 0.8; filter: alpha(opacity=80); background-repeat: no-repeat;  background-image: url(../Images/tipsy.gif); }
+  .tipsy-inner { padding: 5px 8px 4px 8px; background-color: black; color: white; max-width: 200px; text-align: center; }
+  .tipsy-inner { -moz-border-radius:3px; -webkit-border-radius:3px; }
+  .tipsy-north { background-position: top center; }
+  .tipsy-south { background-position: bottom center; }
+  .tipsy-east { background-position: right center; }
+  .tipsy-west { background-position: left center; }*/

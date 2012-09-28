@@ -1,0 +1,431 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+// $Id: ntlp_reports.module,v 0.01 $
+
+/**
+ * @file
+ * Provides an API to call Jasper Reports
+ */
+require_once 'ntlp_report_mgmt.inc';
+require_once 'ntlp_report_tabs.inc';
+module_load_include('inc', 'ntlp_reports', 'xmlparser');
+module_load_include('inc', 'ntlp_reports', 'data_access');
+
+function ntlp_reports_menu() {
+
+    $items['ntlp/reports/%/%'] = array(
+        'title' => 'Report Viewer',
+        'description' => 'Report Viewer',
+        'page callback' => 'ntlp_reports_viewer_form',
+        'access arguments' => array('view ntlp reports'),
+        'page arguments' => array(2, 3),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/reports/previewheader/%/%/%'] = array(
+        'title' => 'Report Viewer Header',
+        'page callback' => 'ntlp_reports_viewer_header_form',
+        'access arguments' => array('view ntlp reports'),
+        'page arguments' => array(3, 4, 5),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/reports/process/%/%'] = array(
+        'title' => 'Process Report',
+        'description' => 'Process Report and return status.',
+        'page callback' => 'ntlp_reports_process',
+        'access arguments' => array('view ntlp reports'),
+        'page arguments' => array(3, 4),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/reports/show/%/%'] = array(
+        'title' => 'Preview Report',
+        'description' => 'Preview Jasper Report by passing the parameters and reports file to execute on JasperReports.',
+        'page callback' => 'ntlp_reports_preview',
+        'access arguments' => array('view ntlp reports'),
+        'page arguments' => array(3, 4),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/reports/new'] = array(
+        'title' => 'Create new report',
+        'page callback' => 'ntlp_reports_maintenance',
+        'access arguments' => array('create ntlp reports'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/reports/edit/%'] = array(
+        'title' => 'Edit Report',
+        'page callback' => 'ntlp_reports_maintenance',
+        'access arguments' => array('create ntlp reports'),
+        'page arguments' => array(3),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/reports/source/%/%'] = array(
+        'title' => 'Download Report Source',
+        'page callback' => 'ntlp_reports_downloadsource',
+        'access arguments' => array('manage ntlp reports'),
+        'page arguments' => array(3, 4),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/reports/delete/%'] = array(
+        'title' => 'Delete Report',
+        'page callback' => 'ntlp_reports_delete',
+        'access arguments' => array('manage ntlp reports'),
+        'page arguments' => array(3),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/reports/inputform/%/%'] = array(
+        'title' => 'Run Report',
+        'page callback' => 'ntlp_reports_inputform',
+        'access arguments' => array('view ntlp reports'),
+        'page arguments' => array(3, 4),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/reports/parseinput/%/%'] = array(
+        'title' => 'Run Report - Parse Inputs',
+        'page callback' => 'ntlp_reports_inputform_parseparams',
+        'access arguments' => array('view ntlp reports'),
+        'page arguments' => array(3, 4),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/reports/getinfo/%/%'] = array(
+        'title' => 'Get report info',
+        'page callback' => 'ntlp_reports_getinfo',
+        'page arguments' => array(3, 4),
+        'access arguments' => array('create ntlp reports'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/reports'] = array(
+        'title' => 'Run Reports tab',
+        'page callback' => 'ntlp_reports_runreports_tab',
+        'access arguments' => array('view ntlp reports'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/reports/manage'] = array(
+        'title' => 'Manage Reports tab',
+        'page callback' => 'ntlp_reports_managereports_tab',
+        'access arguments' => array('manage ntlp reports'),
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+function ntlp_reports_perm() {
+    return array('view ntlp reports', 'manage ntlp reports', 'create ntlp reports');
+}
+
+/**
+ * see if the java extension was loaded.
+ */
+function checkJavaExtension()
+{
+    if(!extension_loaded('java'))
+    {
+        $sapi_type = php_sapi_name();
+        $port = (isset($_SERVER['SERVER_PORT']) && (($_SERVER['SERVER_PORT'])>1024)) ? $_SERVER['SERVER_PORT'] : '8080';
+        if ($sapi_type == "cgi" || $sapi_type == "cgi-fcgi" || $sapi_type == "cli")
+        {
+            if(!(PHP_SHLIB_SUFFIX=="so" && @dl('java.so'))&&!(PHP_SHLIB_SUFFIX=="dll" && @dl('php_java.dll'))&&!(@include_once("java/Java.inc"))&&!(require_once("http://127.0.0.1:$port/java/Java.inc")))
+            {
+                return "java extension not installed.";
+            }
+        }
+        else
+        {
+            if(!(@include_once("java/Java.inc")))
+            {
+                require_once("http://127.0.0.1:$port/java/Java.inc");
+            }
+        }
+    }
+    if(!function_exists("java_get_server_name"))
+    {
+        return "The loaded java extension is not the PHP/Java Bridge";
+    }
+
+    return true;
+}
+
+/**
+ * convert a php value to a java one...
+ * @param string $value
+ * @param string $className
+ * @returns boolean success
+ */
+function convertValue($value, $className)
+{
+    // if we are a string, just use the normal conversion
+    // methods from the java extension...
+    try
+    {
+        if ($className == 'java.lang.String')
+        {
+            $temp = new Java('java.lang.String', $value);
+            return $temp;
+        }
+        else if ($className == 'java.lang.Boolean' ||
+            $className == 'java.lang.Integer' ||
+            $className == 'java.lang.Long' ||
+            $className == 'java.lang.Short' ||
+            $className == 'java.lang.Double' ||
+            $className == 'java.math.BigDecimal')
+        {
+            $temp = new Java($className, $value);
+            return $temp;
+        }
+        else if ($className == 'java.sql.Timestamp' ||
+            $className == 'java.sql.Time')
+        {
+            $temp = new Java($className);
+            $javaObject = $temp->valueOf($value);
+            return $javaObject;
+        }
+    }
+    catch (Exception $err)
+    {
+        echo ('unable to convert value, ' . $value . ' could not be converted to ' . $className);
+        return false;
+    }
+
+    echo ('unable to convert value, class name ' . $className. ' not recognised');
+    return false;
+}
+
+function ntlp_reports_process($report_nid, $format, $ajax = true) {
+    $conf = variable_get('ntlp_reports', array());
+    $host = $conf['report_server_ip'];
+    $hostname = $conf['report_server_name'];
+    $port = $conf['report_server_port'];
+    $db_host = $conf['database_server_ip'];
+    $db_name = $conf['database_name'];
+    $db_user = $conf['database_user'];
+    $db_pass = $conf['database_password'];
+    $report_path = $conf['report_path'];
+
+    define ("JAVA_HOSTS", "{$host}:{$port}");
+    module_load_include('inc', 'ntlp_reports', 'java/Java');
+
+//    $CLASS_PATH = "poi.jar;".
+//	"itext.jar;".
+//	"jcommon.jar;".
+//	"jfreechart.jar;".
+//	"jasperreports.jar;".
+//	"commons-logging.jar;".
+//	"commons-digester.jar;".
+//	"commons-beanutils.jar;".
+//	"commons-collections.jar;".
+//        "mysql-connector-java.jar;";
+//
+//    java_require($CLASS_PATH);
+
+//$outputStream = new Java ("java.io.FileOutputStream", new Java("java.io.File", $outputPath));
+
+
+//    $installed = checkJavaExtension();
+//    if (!$installed) {
+//        drupal_set_message($installed);
+//        return;
+//    }
+
+    if ($rnode = node_load($report_nid)) {
+        if ($rnode->status == 1 && ($rep = get_report_info($report_nid, $format))) {
+            //Initialize JavaBridge
+            $class = new JavaClass("java.lang.Class");
+            $class->forName("com.mysql.jdbc.Driver");
+            $driverManager = new JavaClass("java.sql.DriverManager");
+            $conn_path = "jdbc:mysql://".$db_host."/".$db_name."?user=".$db_user."&password=".$db_pass;
+            $conn = $driverManager->getConnection($conn_path);
+
+            //Provide Report XML (jrxml)
+            $compileManager = new JavaClass("net.sf.jasperreports.engine.JasperCompileManager");
+            if (substr($rep->filepath, 0, 1) == '/') {
+                $report = $compileManager->compileReport($rep->filepath);
+            } else {
+                $report = $compileManager->compileReport(realpath('.') . '/' . $rep->filepath);
+            }
+
+//            //Compile all sub-reports
+//            if ($srrs = get_subreports($report_nid)) {
+//                while ($srrec = db_fetch_object($srrs)) {
+//                    if (substr($srrec->filepath, 0, 1) == '/') {
+//                        $compileManager->compileReport($srrec->filepath);
+//                    } else {
+//                        $compileManager->compileReport(realpath('.') . '/' . $srrec->filepath);
+//                    }
+//                }
+//            }
+            $fillManager = new JavaClass("net.sf.jasperreports.engine.JasperFillManager");
+
+            $params = process_report_parameters($report_path, $report_nid, $format);
+
+            if ($params !== FALSE) {
+                //Execute report
+                $jasperPrint = $fillManager->fillReport($report, $params, $conn);
+
+//                $jrxmldata = xml_parser_xml_to_array(realpath('.') . '/' . $rep->filepath);
+//                $outputPath = realpath(".")."/"."output.pdf";
+//                $outputPath = file_create_filename(get_new_filename($rep->filename), file_directory_temp()) ;
+                $dir_path = get_path_newuploads();
+                $file_name = get_new_filename($rep->filename) . "." . strtolower($format);
+                $outputPath = file_create_filename($file_name, realpath('.') . '/' . $dir_path) ;
+//                $outputPath .= "." . strtolower($format);
+//                $msg = $outputPath;
+//                print_r($params);
+//                die();
+
+                if ($format == "PDF") {
+                    $exportManager = new JavaClass("net.sf.jasperreports.engine.JasperExportManager");
+                    $exportManager->exportReportToPdfFile($jasperPrint, $outputPath);
+//                    header("Content-type: application/pdf");
+                } elseif ($format == "XLS") {
+                    $exporter_parameter = new JavaClass("net.sf.jasperreports.engine.JRExporterParameter");
+                    $exportManager = new Java("net.sf.jasperreports.engine.export.JRXlsExporter");
+                    $exportManager->setParameter($exporter_parameter->JASPER_PRINT, $jasperPrint);
+                    $exportManager->setParameter($exporter_parameter->OUTPUT_FILE_NAME, $outputPath);
+                    $exportManager->exportReport();
+//                    header("Content-type: application/vnd.ms-excel");
+                } elseif ($format == "CSV") {
+                    $exporter_parameter = new JavaClass("net.sf.jasperreports.engine.JRExporterParameter");
+                    $exportManager = new Java("net.sf.jasperreports.engine.export.JRCsvExporter");
+                    $exportManager->setParameter($exporter_parameter->JASPER_PRINT, $jasperPrint);
+                    $exportManager->setParameter($exporter_parameter->OUTPUT_FILE_NAME, $outputPath);
+                    $exportManager->exportReport();
+//                    header("Content-Type: application/csv");        //text/x-csv or text/comma-seperated-values
+//                    header("Content-Disposition: inline; filename=\"".$rnode->title.".csv\";");
+                } elseif ($format == "HTM") {
+                    $exportManager = new Java("net.sf.jasperreports.engine.export.JRHtmlExporter");
+                    $exportManager->exportReportToHtmlFile($jasperPrint, $outputPath);
+//                    header("Content-Type: text/html");        //text/x-csv or text/comma-seperated-values
+                }
+                $_SESSION['report_path'] = 'http://' . $hostname . '/' . $dir_path . '/' . $file_name;  //$outputPath;
+//                readfile($outputPath);
+//                unlink($outputPath);
+            } else {
+                $msg = "Report parameter does not match.";
+            }
+        } else {
+            $msg = "Report is no longer available now.";
+        }
+    } else {
+        $msg = "This is not a valid report.";
+    }
+    if ($ajax) {
+        if (empty($msg)) {
+            drupal_json(array(
+                'status' => 1,
+            ));
+        } else {
+            drupal_json(array(
+                'status' => 0,
+                'message' => $msg,
+            ));
+        }
+    } else {
+        return $msg;
+    }
+}
+
+function process_report_parameters($report_path, $report_nid, $format) {
+    //Setup subreport directory path, so that subreports are loaded from this folder/path
+    $params = new Java("java.util.HashMap");
+//    $params->put("SUBREPORT_DIR", convertValue(realpath('.') . '/sites/default/files/reports/', 'java.lang.String'));
+//    $params->put("SUBREPORT_DIR", convertValue('/var/www/boldr/sites/default/files/reports/', 'java.lang.String'));
+    $params->put("SUBREPORT_DIR", convertValue($report_path, 'java.lang.String'));
+
+    if ($prs = get_report_parameters($report_nid, $format)) {
+        foreach($prs as $pname => $prec) {
+            if ($pname == 'SUBREPORT_DIR')
+                continue;
+
+//            echo "<p>$pname = $_GET[$pname]</p>";
+            if (isset($_GET[$pname])) {
+                $params->put($pname, convertValue($_GET[$pname], $prec->datatype));
+            } else {
+                return FALSE;
+            }
+        }
+        return $params;
+    }
+    return NULL;
+}
+
+function ntlp_reports_preview($report_nid, $format) {
+    if (isset($_SESSION['report_path'])) {
+        if ($rnode = node_load($report_nid)) {
+            if ($format == "PDF") {
+                header("Content-type: application/pdf");
+                header("Content-Disposition: inline; filename='echo_report_" . date('mdY', time()) . ".pdf';");
+            } elseif ($format == "XLS") {
+                header("Content-type: application/vnd.ms-excel");
+            } elseif ($format == "CSV") {
+                header("Content-Type: application/csv");        //text/x-csv or text/comma-seperated-values
+                header("Content-Disposition: inline; filename=\"".$rnode->title.".csv\";");
+            } elseif ($format == "HTM") {
+                header("Content-Type: text/html");        //text/x-csv or text/comma-seperated-values
+            }
+            header("Cache-Control: no-store, no-cache, must-revalidate");
+            
+            $output_path = $_SESSION['report_path'];
+            $_SESSION['report_path'] = '';
+            unset($_SESSION['report_path']);
+//            echo ($output_path);
+            readfile($output_path);
+
+            try {
+                file_delete($output_path);
+            } catch (Exception $err) {
+            }
+        }
+    }
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function ntlp_reports_theme() {
+    $theme = array(
+        'ntlp_reports_viewer' => array(
+          'template' => 'ntlp-reports-viewer',
+          'arguments' => array('form' => NULL),
+        ),
+        'ntlp_reports_viewer_header' => array(
+          'template' => 'ntlp-reports-viewer-header',
+          'arguments' => array('form' => NULL),
+        ),
+    );
+    return $theme;
+}
+
+
+function ntlp_reports_downloadsource($report_nid, $format) {
+    if ($rnode = node_load($report_nid)) {
+        if ($rnode->status == 1 && ($rep = get_report_info($report_nid, $format))) {
+            header("Content-Type: text/html");        //text/x-csv or text/comma-seperated-values
+            header("Content-Disposition: attachment; filename='" . $rep->filename . "';");
+            header("Cache-Control: no-store, no-cache, must-revalidate");
+            readfile($rep->filepath);
+        }
+    }
+}
+
+function ntlp_reports_delete($report_nid) {
+    if ($rnode = node_load($report_nid)) {
+        $rnode->status = 0;
+        node_save($rnode);
+
+        $msg = '';
+    } else {
+        $msg = 'Report not found.';
+    }
+    drupal_json(array(
+        'status' => empty($msg) ? 1 : 0,
+        'message' => $msg,
+    ));
+}
+
+function get_path_reportsuploads() {
+    $dir = file_directory_path() . '/reports';
+    return $dir;
+}

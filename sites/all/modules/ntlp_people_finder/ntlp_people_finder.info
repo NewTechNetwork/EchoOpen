@@ -1,0 +1,7 @@
+; $Id: ntlp_school.info,v .01 $
+name = NTLP People Finder
+description = Finding People With Their Names
+package = NTLP
+core = 6.x
+version = "6.x-0.1"
+

@@ -1,0 +1,2473 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+require_once "data_access.inc";
+require_once "activity_mgmt.inc";
+require_once "courses_activity_view_mgmt.inc";
+require_once "courses_activity_submission_mgmt.inc";
+require_once "courses_activity_grade_mgmt.inc";
+require_once "ntlp_activity_grade_all.inc";
+require_once "activity_copy_mgmt.inc";
+require_once "activity_delete_mgmt.inc";
+require_once "activity_rubric_evaluate.inc";
+require_once "activity_rubric_view.inc";
+require_once "activity_rubric_graded_mgmt.inc";
+
+
+module_load_include('inc', 'ntlp_school', 'data_access');
+
+//module_load_include('inc', 'memcache', 'dmemcache');
+
+function ntlp_courses_activity_menu() {
+
+    $items['ntlp/courses/activity/new/%'] = array(
+        'title' => 'Add New Activity',
+        'page callback' => 'drupal_get_form',
+        'access arguments' => array('create course activity'), //On Load: check if teacher is enrolled in this course
+        'page arguments' => array('ntlp_courses_activity_form', 'new', 4),
+        'description' => 'Course maintenance.',
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/edit/%/%'] = array(
+        'title' => 'View Activity',
+        'access arguments' => array('edit course activity'), //On Load: check if teacher is enrolled in this course
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_courses_activity_form', 'edit', 4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/gradeall/%/%'] = array(
+        'title' => 'View Activity',
+        'page callback' => 'ntlp_grade_all_frm',
+        'access arguments' => array('grade submission'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/gradeall_table/%/%'] = array(
+        'title' => 'View Activity',
+        'page callback' => 'ntlp_activity_stu_submissions_filter',
+        'access arguments' => array('grade submission'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/activity/gradeall/ajax_late/%/%/%'] = array(
+        'title' => 'Activity Grade All Late',
+        'page callback' => 'ntlp_grade_all_ajax_chcbox_frm',
+        'page arguments' => array(4, 5, 6, 'late'),
+        'access arguments' => array('grade submission'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/activity/gradeall/ajax_inc/%/%/%'] = array(
+        'title' => 'Activity Grade All Late',
+        'page callback' => 'ntlp_grade_all_ajax_chcbox_frm',
+        'page arguments' => array(4, 5, 6, 'incomplete'),
+        'access arguments' => array('grade submission'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/activity/gradeall/ajax/%/%/%'] = array(
+        'title' => 'Activity Grade All',
+        'page callback' => 'ntlp_grade_all_ajax_frm',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('grade submission'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/activity/autogradeall/ajax/%/%/%'] = array(
+        'title' => 'Activity Auto-Grade All',
+        'page callback' => 'ntlp_grade_all_set_scores',
+        'page arguments' => array(4, 5, 6), //$activity_nid, $user_ids, $scores, $outcome_tid
+        'access arguments' => array('grade submission'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/activity/clearall/ajax/%/%'] = array(
+        'title' => 'Activity Clear All Grades',
+        'page callback' => 'ntlp_grade_all_clear_scores',
+        'page arguments' => array(4, 5), //$activity_nid, $user_ids
+        'access arguments' => array('grade submission'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/publish/%/%'] = array(
+        'title' => 'Publish Toggle',
+        'page callback' => 'ntlp_publish_grade',
+        'access arguments' => array('grade submission'),
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/view/%/%'] = array(
+        'title' => 'View Activity',
+        'page callback' => '_ntlp_courses_activity_view_frm',
+        'access arguments' => array('view course activity'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/library/project/activity/view/%/%'] = array(
+        'title' => 'View Activity',
+        'page callback' => 'ntlp_courses_activity_form_view',
+        'access arguments' => array('view course activity'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/google/docs/search'] = array(
+        'page callback' => 'get_google_docs',
+        'type' => MENU_CALLBACK,
+        'access callback' => TRUE,
+    );
+
+    $items['ntlp/courses/activity/submission/attachment/%'] = array(
+        'title' => 'View Activity',
+        'page callback' => 'ntlp_activity_submission_attachment',
+        'page arguments' => array(5),
+        'access arguments' => array('view course activity'), //On Load: check if teacher is enrolled in this course
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/sub/%/%'] = array(
+        'title' => 'Course Activity',
+        'page callback' => 'ntlp_activity_basic_submission_frm',
+        'access arguments' => array('allow submission for an activity'), //On Load: check if student is enrolled in this course
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/courses/activity/student/evaluate/%/%'] = array(
+        'title' => 'Course Activity',
+        'access arguments' => array('view course activity'), //On Load: check if teacher is enrolled in this course
+        'page callback' => 'ntlp_rubric_activity_evaluate_frm',
+        'page arguments' => array(5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/rubric/view/%/%'] = array(
+        'title' => 'Course Activity',
+        'access arguments' => array('view course activity'), //On Load: check if teacher is enrolled in this course
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_courses_activity_rubric_view_form', 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/courses/activity/rubric/grade/%/%'] = array(
+        'title' => 'Course Activity',
+        'access arguments' => array('view course activity'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_courses_activity_rubric_graded_form', 5, 6),
+        'access callback' => TRUE, //On Load: check if teacher is enrolled in this course
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/unit/autocomplete/%'] = array(
+        'title' => t('Curriculum Unit autocomplete'),
+        'page callback' => 'unit_autocomplete',
+        'page arguments' => array(3),
+        'access callback' => TRUE,
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['upload/attachment'] = array(
+        'page callback' => 'upload_attachment',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/next/student/%'] = array(
+        'page callback' => 'get_next_student_record',
+        'page arguments' => array(3),
+        'access arguments' => array('grade submission'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/copy/%/%'] = array(
+        'title' => 'Copy Activity',
+        'page callback' => 'ntlp_activity_copy',
+        'access arguments' => array('view course activity'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/activity/save/%/%/%/%'] = array(
+        'title' => 'View Activity',
+        'page callback' => 'ntlp_activity_copy_data',
+        'access arguments' => array('view course activity'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(3, 4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/delete/%/%'] = array(
+        'title' => 'Delete Activity',
+        'page callback' => 'ntlp_activity_delete',
+        'access arguments' => array('view course activity'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/courses/activity/remove/%/%'] = array(
+        'title' => 'Delete Activity',
+        'page callback' => 'ntlp_activity_delete_data',
+        'access arguments' => array('view course activity'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/add/activity/user/%/%/%'] = array(
+        'title' => 'Add Course Activity User',
+        'page callback' => 'ntlp_courses_activity_Adduser',
+        'access arguments' => array('view course activity'),
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/delete/rubric/user/%/%/%'] = array(
+        'title' => 'Add Course Activity User',
+        'page callback' => 'ntlp_courses_activity_Deleteuser',
+        'access arguments' => array('view course activity'),
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/grade100all/%'] = array(
+        'title' => 'Grade All',
+        'page callback' => 'mark_all_100',
+        'access arguments' => array('view course activity'),
+        'page arguments' => array(4),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/%'] = array(
+        'title' => 'Courses Activity',
+        'page callback' => 'ntlp_courses_activities_frm',
+        'access arguments' => array('view course activity'),
+        'page arguments' => array(3),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/data/%/%'] = array(
+        'title' => 'Courses Activity',
+        'page callback' => 'ntlp_courses_activities_data',
+        'access arguments' => array('view course activity'),
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['accordion/example'] = array(
+        'title' => 'Accordion Example',
+        'access arguments' => array('view course activity'), //On Load: check if teacher is enrolled in this course
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('accrodion_example_form'),
+        'type' => MENU_CALLBACK,
+    );
+// new item added by saif for tacher to grade an activity for single student
+    $items['ntlp/courses/activity/grade/%/%/%'] = array(
+        'title' => 'Course Activity',
+        'page callback' => 'ntlp_basic_activity_grade_frm',
+        'access arguments' => array('allow submission for an activity'),
+        'page arguments' => array(4, 5, 6), // param : 4 => coursenid, 5 => activity_nid, 6 => student_uid
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/grade/activity/autosave/%'] = array(
+        'title' => 'Auto Save Grades of a Course Activity',
+        'page callback' => 'ntlp_activity_last_graded_update_date',
+        'access arguments' => array('allow submission for an activity'),
+        'page arguments' => array(4), // param : 4 => activity_nid
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/grade/student/autosave/%/%/%'] = array(
+        'title' => 'Auto Save Grades for a Student Course',
+        'page callback' => 'ntlp_autosave_student_course',
+        'access arguments' => array('allow submission for an activity'),
+        'page arguments' => array(4, 5, 6), // param : 4 => student_uid, 5 => course_nid, 7 => term_tid
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activity/is_graded/%/%'] = array(
+        'title' => 'Delete Activity',
+        'page callback' => 'ntlp_is_activity_graded',
+        'access arguments' => array('view course activity'),
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+function ntlp_rubric_activity_evaluate_frm($course_id, $activity_id) {
+    global $user;
+
+    $feedback_for_uid = check_plain(arg(7));
+    $feedback_by_uid = $user->uid;
+
+    set_item_url_handler("Evaluation Page");
+
+    if (!check_feedback_for_validation($activity_id, $feedback_for_uid)) {
+
+        drupal_set_message("You should add him/her into your list before Evaluate", "error");
+        drupal_goto('ntlp/goback');
+    }
+
+    return drupal_get_form('ntlp_rubric_activity_evaluate_form', $course_id, $activity_id, $feedback_for_uid);
+}
+
+function get_access() {
+    return true;
+}
+
+function ntlp_courses_activity_perm() {
+    return array('view course activity', 'edit course activity', 'create course activity', 'view submitted activity',
+        'allow submission for an activity', 'grade submission', 'delete ntlp activity', 'submitted grade view');
+//    user_access($string);
+}
+
+function ntlp_activity_submission_attachment() {
+    $type = check_plain(arg(5));
+    if ($type == 'L') {
+        return drupal_get_form('link_attachment_form');
+    }
+    if ($type == 'G') {
+        return drupal_get_form('google_docs_attachment_form');
+    }
+}
+
+//function ntlp_course_activity_main($course_id) {
+//
+//    return  drupal_get_form('ntlp_course_activity_main_form');
+//}
+
+
+
+function theme_ntlp_courses_activity_form($form) {
+
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/modalframe_setup.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/ntlp_courses_activity.js');
+    drupal_add_js(drupal_get_path('module', 'image_uploader') . '/image_uploader.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/date_picker.js');
+
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/jquery.ui.datepicker.css', 'module', 'all', FALSE);
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/demos.css', 'module', 'all', FALSE);
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/jquery.ui.all.css', 'module', 'all', FALSE);
+
+    jquery_ui_add(array('ui.dialog', 'ui.draggable', 'ui.datepicker'));
+
+
+    modalframe_parent_js();
+
+    $course_id = $form['#post']['main']['courseid'];
+    $activityid = $form['#post']['main']['activityid'];
+
+    $memcache_object = cache_get('Edit Activity' . session_id() . $activityid);
+
+//    watchdog("cache check",$memcache_object);
+    if (!$memcache_object)
+        return drupal_render($form);
+
+
+    $availabilitymode = $form['#post']['main']['info']['availabilitymode'];
+
+    $form['main']['info']['availabilitymode']['#value'] = ($availabilitymode == 'S' || $availabilitymode == 1);
+
+    $form['main']['detail']['curriculum']['unit']['#value'] = $form['#post']['unit'];
+
+    //watchdog('form vals', print_r($form['main'], true));;
+
+
+
+    $outcome_array = get_all_outcomes($course_id);
+    if ($outcome_array != null) {
+
+        $max_points = $memcache_object->data['outcomes'];
+
+        foreach ($outcome_array as $outcome_obj) {
+
+            if ($max_points != false) {
+
+                watchdog("got cached: " . $outcome_obj->tid, $max_points[$outcome_obj->tid]);
+                $form['main']['detail']['points']['outcome_' . $outcome_obj->tid]['#value'] = $max_points[$outcome_obj->tid];
+            }
+        }
+    }
+
+    //set associated students checkboxes
+    $student_list = $memcache_object->data['students'];
+    //watchdog("stu list", print_r($student_list, true));
+    for ($i = 0; $i < count($student_list); $i++) {
+
+        $form['students'][$student_list[$i]]['selected']['#value'] = 1;
+    }
+
+    //set rubric values
+    for ($i = 0; $i < 4; $i++) {
+        $form['main']['rubric_setup']['rebric']['level_' . $i]['#value'] = $memcache_object->data['level'][$i];
+    }
+    for ($i = 0; $i < 4; $i++) {
+        $form['main']['rubric_setup']['rebric']['level_percent_' . $i]['#value'] = $memcache_object->data['level_percent'][$i];
+    }
+    for ($i = 0; $i < 5; $i++) {
+        $form['main']['rubric_setup']['rebric']['category' . $i]['#value'] = $memcache_object->data['category'][$i];
+    }
+    for ($i = 0; $i < 5; $i++) {
+        $form['main']['rubric_setup']['rebric']['ppoints' . $i]['#value'] = $memcache_object->data['possible_points'][$i];
+    }
+
+    for ($j = 0; $j < 4; $j++) {
+        for ($i = 0; $i < 5; $i++) {
+            $form['main']['rubric_setup']['rebric']['descriptor' . $j + 1 . $i]['#value'] = $memcache_object->data['level_desc'][$j][$i];
+        }
+    }
+    $form['main']['info']['coursetype']['#value'] = '<img src="' . $base_path . 'themes/Boldr/Images/ActivitiesImages/DocumentIcon.jpg" alt="type" />' . get_activity_name($memcache_object->data['activity_type']);
+    $form['main']['activitytype']['#value'] = $memcache_object->data['activity_type'];
+
+    return drupal_render($form);
+}
+
+function ntlp_courses_activity_theme() {
+    return array(
+        // The form ID.
+        'ntlp_courses_activity_form' => array(
+            // Forms always take the form argument.
+            'arguments' => array('form' => NULL),
+        ),
+    );
+}
+
+function ntlp_courses_activity_form($form_state, $editurl, $course_id, $activity_id = 0) {
+
+    $user_role = check_user_permission($course_id);
+
+    if ($user_role == NTLP_ROLEID_SITEGUEST)
+        drupal_goto('ntlp/render/error/page/Sorry, you are not authorized to change this Course', array('destination' => $_GET['q']));
+
+    global $user, $base_path;
+    require_once "activity_template.inc";
+
+    modalframe_parent_js();
+    drupal_add_js(drupal_get_path('module', 'ntlp_announcement') . '/ntlp_announcement.js', 'module');
+    drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/ntlp_courses_activity.js', 'footer');
+    drupal_add_js(drupal_get_path('module', 'image_uploader') . '/image_uploader.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/date_picker.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/modalframe_setup.js', 'footer');
+
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/jquery.ui.datepicker.css', 'module', 'all', FALSE);
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/demos.css', 'module', 'all', FALSE);
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/jquery.ui.all.css', 'module', 'all', FALSE);
+
+    jquery_ui_add(array('ui.dialog', 'ui.draggable', 'ui.datepicker'));
+
+    $url = $_GET['q'];
+    $args = explode('/', $url);
+
+    for ($i = 0; $i < count($args); $i++) {
+        if (is_numeric($args[$i]) && empty($courseid))
+            $courseid = $args[$i];
+        elseif (is_numeric($args[$i]) && empty($studentid))
+            $project_id = $args[$i];
+    }
+
+    $form = array();
+
+    if ($editurl != 'edit') { //New activity is called
+        $activity_id = 0;
+        $project_nid = arg(5);
+        $project_section_tid = arg(6);
+//        $activity_type = $_REQUEST['type'];
+
+        ahah_helper_register($form, $form_state);
+        drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/course_ahah_helper.js', 'footer');
+
+        if (isset($form_state['values'])) {
+
+            $view_state = $form_state['values'];
+
+            $activity_name = $form_state['storage']['main']['info']['activityname'];
+            $selected_coursetype = $form_state['storage']['main']['activitytype'];
+            $activity_duedate = $form_state['storage']['main']['info']['duedate'];
+            $activity_duehour = $form_state['storage']['main']['info']['duedate_hour'];
+            $activity_duemin = $form_state['storage']['main']['info']['duedate_minute'];
+            $activity_duemeridian = $form_state['storage']['main']['info']['duedate_meridian'];
+            $activity_submissiontype = $form_state['storage']['main']['info']['submissiontype'];
+            $activity_resubmit = $form_state['storage']['main']['info']['allow_student_resubmit'];
+            $activity_avability_mode = $form_state['storage']['main']['info']['availabilitymode'];
+            $allow_late_submission = $form_state['storage']['main']['info']['allow_late_submission'];
+            $activity_pdate = $form_state['storage']['main']['info']['publishondate'];
+            $activity_phour = $form_state['storage']['main']['info']['publishondate_hour'];
+            $activity_pmin = $form_state['storage']['main']['info']['publishondate_minute'];
+            $activity_hdate = $form_state['storage']['main']['info']['hideondate'];
+            $activity_hhour = $form_state['storage']['main']['info']['hideondate_hour'];
+            $activity_hmin = $form_state['storage']['main']['info']['hideondate_minute'];
+            $activity_hmerdian = $form_state['storage']['main']['info']['hideondate_meridian'];
+            $activity_avability = $form_state['storage']['main']['info']['availability'];
+            $activity_desc = $form_state['storage']['main']['info']['description'];
+            $activity_grade = $form_state['storage']['main']['detail']['grades']['is_graded'];
+            $activity_gradingmethod = $form_state['storage']['main']['detail']['grades']['gradingmethod'];
+            $activity_unit = $form_state['storage']['main']['detail']['curriculum']['unit'];
+            $activity_project = $form_state['storage']['main']['detail']['curriculum']['project'];
+            $activity_courseterm = $form_state['storage']['main']['info']['course_term'];
+            $activity_acadmic_standard = $form_state['storage']['main']['detail']['curriculum']['academicstandards'];
+            $school_nid = get_course_school_nid($course_nid);
+        } else {
+            set_item_url_handler('Activity');
+        }
+
+        if (!isset($form_state['storage']['main']['info']['coursetype'])) {
+            if (empty($_REQUEST['type'])) {
+                $selected_coursetype = 'lo_task';
+            } else {
+                $selected_coursetype = $_REQUEST['type'];
+            }
+        } else {
+            $selected_coursetype = $form_state['storage']['main']['info']['coursetype'];
+        }
+        if (!isset($form_state['storage']['main']['detail']['curriculum']['project'])) {
+            if (!empty($project_nid)) {
+                $activity_project = $project_nid;
+            }
+        }
+
+        if (!isset($form_state['storage']['main']['courseid'])) {
+            
+        } else {
+            $course_id = $form_state['storage']['main']['courseid'];
+        }
+    } else {
+        set_item_url_handler('Activity');
+        $activityObj = get_activity_records($activity_id);
+        $selected_coursetype = $activityObj->type;
+        $course_id = $activityObj->course_nid;
+
+        if (isset($form_state['values'])) {
+
+            $activity_project = $form_state['values']['main']['detail']['curriculum']['project'];
+        }
+    }
+
+
+    if ($activityObj->available_from != '0000-00-00 00:00:00'
+            && $activityObj->available_to != '0000-00-00 00:00:00') {
+
+        $cschool_nid = get_course_school_nid($course_id);
+
+        $from_date = get_tz($cschool_nid, "Y-m-d H:i", $activityObj->available_from);
+
+        $to_date = get_tz($cschool_nid, "Y-m-d H:i", $activityObj->available_to);
+//$to_date = $activityObj->available_to;
+    } else {
+        $from_date = $activityObj->available_from;
+        $to_date = $activityObj->available_to;
+    }
+
+    $publishdate = dateconversion($from_date);
+    $hidedate = dateconversion($to_date);
+
+    /** 
+     * Saifuddin when copy an activity its due date become null so in case of
+     * it is generating an error on line # 822 so fixed with that line of code. 6/8/11
+     */
+    if ($activityObj->due_date != '0000-00-00 00:00:00') {
+        $cdate = get_tz($cschool_nid, "Y-m-d H:i", $activityObj->due_date);
+    }else{
+        $cdate = get_tz($cschool_nid, "Y-m-d H:i", date("Y-m-d H:i", time()));
+    }
+    
+//$cdate = $activityObj->due_date;
+//    echo $cdate .'<bR>';
+    $date = dateconversion($cdate);
+//    print_r($date);
+
+
+    if ($publishdate['year'] == 0000 || $publishdate['month'] == 00) {
+
+        $manual_avability = 0;
+        $publishdate = $date;
+    }
+
+    if ($hidedate['year'] == 0000 || $hidedate['month'] == 00) {
+
+        $manual_avability = 0;
+        $hidedate = $date;
+    }
+
+    /* this action is defined to reslove a ahah help issue because its changes the form action
+     * after validation
+     * */
+    if (isset($activityObj)) {
+        $form['#action'] = url('ntlp/courses/activity/edit/' . $course_id . '/' . $activityObj->nid);
+    } else {
+        $form['#action'] = url('ntlp/courses/activity/new/' . $course_id);
+    }
+    if (is_course_exist($course_id)) {
+        $form['main'] = array(
+            '#type' => 'markup',
+            '#title' => '',
+            '#tree' => TRUE, // Don't forget to set #tree!
+            '#prefix' => '<div id="activity-main-wrapper">', // This is our wrapper div.
+            '#suffix' => '</div>',
+        );
+
+        $form['main']['courseid'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $course_id,
+        );
+
+        $form['main']['activityid'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $activity_id,
+        );
+
+        $form['main']['school_nid'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $cschool_nid,
+        );
+
+        $last_state_url = "";
+        $current_url = get_back_url_value();
+        if (is_object($current_url)) {
+            if (strpos($current_url->url, "ntlp/courses/activity") !== false) {
+                $last_state_url = "ACTIVITY";
+            } else {
+                $last_state_url = "OTHER";
+            }
+        }
+        $form['main']['last_state_url'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $last_state_url,
+        );
+
+        if (isset($activityObj)) {
+            $activity_status = 'Edit Activity';
+        } else {
+            $activity_status = 'New Activity';
+        }
+        $form['main']['acitivity_title'] = array(
+            '#type' => 'item',
+            '#title' => '',
+            '#prefix' => '<div id="dialog-show-confirmation" style="display: none;" title="Warning">
+                        <span class="msg">Are you sure you want to submit the form?</span>
+                    </div>
+                    <div class="clearfix" style="width:100%">
+                       <div style="float:left;width:200px" align="left"><font style="color:#3570AA;font-size: 18px;" >' . $activity_status,
+            '#suffix' => '</font></div>',
+        );
+
+
+        $form['main']['submitbtn'] = array(
+            '#type' => 'submit',
+            '#value' => t('Save'),
+            '#executes_submit_callback' => TRUE,
+            '#submit' => array('course_activity_submit'),
+            '#validate' => array('course_activity_validate'),
+            '#attributes' => array('class' => 'SaveBtn', 'onmousedown' => "this.className='SaveBtnClick'", 'onmouseup' => "this.className='SaveBtn'"),
+            '#prefix' => '<div style="float:right;width:130px;"><div style="float:left !important; width:51px;"> ',
+            '#suffix' => '</div>',
+        );
+
+        $form['main']['cancelbtn'] = array(
+            '#type' => 'submit',
+            '#value' => t('Cancel'),
+            '#executes_submit_callback' => TRUE,
+            '#attributes' => array('class' => 'CancelBtn'),
+            '#validate' => array('course_activity_validate'),
+//                '#submit' => array('course_activity_submit'),
+            '#prefix' => '',
+            '#suffix' => '</div></div>',
+        );
+
+        $form['main']['activitytype'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $selected_coursetype,
+        );
+
+        $form['main']['info'] = array(
+            '#type' => 'markup',
+            '#title' => '',
+            '#tree' => TRUE, // Don't forget to set #tree!
+            '#prefix' => $HTMLform_groupbox_hdr, // This is our wrapper div.
+            '#suffix' => $HTMLform_groupbox_ftr,
+        );
+
+        $availabilitymode = ($activityObj->available_from == '0000-00-00 00:00:00' ? 'M' : 'S');
+
+        $form['main']['info']['coursetype'] = array(
+            '#type' => 'item',
+            '#size' => '40',
+            '#value' => '<img src="' . $base_path . 'themes/Boldr/Images/ActivitiesImages/DocumentIcon.jpg" alt="type" />' . get_activity_name($selected_coursetype),
+            '#prefix' => '<div class="formGroupbox"><table cellpadding="8" cellspacing="0" border="0" class="table"  width="822px"><tr><th style="width:139px;"> ' . t('Type') . '</th><td>',
+            '#suffix' => '</td></tr>',
+        );
+
+        $form['main']['info']['activityname'] = array(
+            '#type' => 'textfield',
+            '#prefix' => '<tr><th style="width:139px;" >' . t('Activity Name') . '</th><td colspan="3">',
+            '#suffix' => '</td></tr>',
+            '#default_value' => (isset($activityObj)) ? $activityObj->title : '',
+            '#size' => 30,
+        );
+
+
+        if (isset($availabilitymode)) {
+            if ($availabilitymode == 'S') {
+                $availability_status = TRUE;
+            } else
+            if ($availabilitymode == 'M') {
+                $availability_status = FALSE;
+            }
+        } else {
+            $availability_status = TRUE;
+        }
+
+        $form['main']['info']['availabilitymode'] = array(
+            '#type' => 'checkbox',
+            '#prefix' => '<tr id="row_hides3"><th style="width:139px;">Visibility</th><td colspan="3"  ><table ><tr><td style="border-bottom:none !important;">',
+            '#suffix' => '</td><td style="border-bottom:none !important;">Show</td></tr></table></td></tr>',
+            '#value' => $availability_status,
+        );
+
+
+        $form['main']['info']['update_coursetype'] = array(
+            '#type' => 'submit',
+            '#value' => t('Update usage'),
+            '#submit' => array('ahah_helper_generic_submit'),
+            '#attributes' => array('class' => 'no-js'),
+            '#prefix' => '<tr colspan="2" style="display:none"><td>',
+            '#suffix' => '</td></tr>',
+        );
+
+        $course_term = get_course_terms($course_id);
+        $dateformat = "m/d/Y";
+
+        while ($rs = db_fetch_array($course_term)) {
+            $term_name[$rs['tid']] = $rs['name'] . ' - (' . get_tz($cschool_nid, $dateformat, ($rs['date_started']))
+                    . ' - ' . get_tz($cschool_nid, $dateformat, ($rs['date_closed'])) . ')';
+        }
+
+
+        /* Selecting current school term */
+//Get school id of Course, not current user/filter
+//        $school_id = get_this_school();
+        $termdate = get_current_selected_course_term($course_id);
+//        $term_data = db_fetch_object($termdate);
+
+        $form['main']['info']['course_term'] = array(
+            '#prefix' => "<tr><th style='width:139px;'>" . t('Course Term') . "</th><td><span class='comboboxBgLeft' style='width:375px;'>",
+            '#suffix' => '</span></td></tr>',
+            '#type' => 'select',
+            '#options' => $term_name,
+            '#default_value' => (isset($activityObj)) ? $activityObj->school_term_tid : $termdate,
+            '#attributes' => array('class' => 'my-dropdown'),
+        );
+
+        if (isset($activityObj)) {
+            $duedate_date = strftime("%m/%d/%Y", mktime($date['hour'], $date['minute'], 0, $date['month'], $date['day'], $date['year']));
+            if (!empty($date['minute']))
+                $duedate_minute = $date['minute'];
+            else
+                $duedate_minute = 0;
+            if (!empty($date['hour']))
+                $duedate_hour = $date['hour'];
+            else
+                $duedate_hour = 0;
+
+            if (intval($duedate_hour) == 0)
+                $duedate_hour = 24;
+        }
+        else {
+            $duedate_date = get_tz_course($course_id, "m/d/Y", time());
+            $duedate_hour = '17';
+            $duedate_minute = '00';
+        }
+
+        if ($selected_coursetype == 'lo_workshop')
+            $ddate_label = t('Worshop take place on');
+        else
+            $ddate_label = t('Due Date');
+
+        $form['main']['info']['duedate'] = array(
+            '#type' => 'textfield',
+            '#default_value' => $duedate_date,
+            '#size' => '10',
+            '#prefix' => "<tr><th style='width:139px;'>" . $ddate_label . "</th><td colspan = '3' nowrap><table><tr><td style='border:none'>",
+            '#suffix' => '</td>',
+            '#attributes' => array('class' => 'ntlp_datepicker', 'style' => 'padding-left:2px;padding-right:0px;'),
+        );
+
+        if ($selected_coursetype != 'lo_workshop')
+            $form['main']['info']['duedate']['#TREE'] = true;
+
+        $form['main']['info']['duedate_hour'] = array(
+            '#type' => 'select',
+            '#options' => _get_hours(),
+            '#default_value' => ($duedate_hour > 12) ? leading_zeros($duedate_hour - 12) : $duedate_hour,
+            '#prefix' => '<td style="border:none"><span style="width:40px;" class="comboboxBgLeft">',
+            '#suffix' => '</span>&nbsp;&nbsp;</td>',
+            '#attributes' => array('class' => 'my-dropdown'),
+        );
+
+        $form['main']['info']['duedate_minute'] = array(
+            '#type' => 'select',
+            '#options' => _get_minutes(),
+            '#default_value' => $duedate_minute,
+            '#prefix' => '<td style="border:none"><span style="width:40px;" class="comboboxBgLeft">',
+            '#suffix' => '</span>&nbsp;&nbsp;</td>',
+            '#attributes' => array('class' => 'my-dropdown'),
+        );
+
+        $form['main']['info']['duedate_meridian'] = array(
+            '#type' => 'select',
+            '#options' => _get_meridian(),
+            '#default_value' => ($duedate_hour >= 12 && $duedate_hour != 24) ? 'PM' : 'AM',
+            '#prefix' => '<td style="border:none"><span style="width:40px;" class="comboboxBgLeft">',
+            '#suffix' => '</span>&nbsp;&nbsp;</td></tr></table></td></tr>',
+            '#attributes' => array('class' => 'my-dropdown'),
+        );
+
+        
+        if ($selected_coursetype == 'lo_workshop' || 
+            $selected_coursetype == 'lo_task'
+            ) {
+
+            $form['main']['info']['submissiontype'] = array(
+                '#type' => 'radios',
+                '#attribute' => array('class' => 'radiobtnfloat'),
+                '#prefix' => '<tr><th style="width:139px;">Submission Option</th><td colspan="3">',
+                '#suffix' => '</td></tr>',
+                '#options' => array('D' => 'Online', 'O' => 'Offline'),
+                '#default_value' => (isset($activityObj)) ? $activityObj->submission_type : 'D',
+                '#attributes' => array('onClick' => 'disable_lateOption(this)'),
+            );
+        }
+
+
+        if ($selected_coursetype != 'lo_workshop') {
+
+            /* Please set Peer Feedback activity type to “Allow Resubmit = yes” and
+             * GRAY THAT OPTION OUT so that teachers cannot change it
+             */
+            $default_selection = ($selected_coursetype == 'lo_rubric') ? '1' : '0';
+
+            $disabled = (($selected_coursetype == 'lo_rubric') ||
+                    (isset($activityObj->submission_type) && $activityObj->submission_type == 'O'));
+
+            $form['main']['info']['allow_student_resubmit'] = array(
+                '#type' => 'radios',
+                '#prefix' => '<tr><th style="width:139px;">Allow students to Re-submit</th><td colspan="3">',
+                '#suffix' => '</td></tr>',
+                '#options' => array('1' => 'Yes', '0' => 'No'),
+                '#disabled' => $disabled,
+                '#id' => 'allow_resubmit_radio_btn',
+                '#default_value' => (isset($activityObj->allow_resubmission)) ? $activityObj->allow_resubmission : $default_selection,
+            );
+        }
+
+        $disable_status = (isset($activityObj) && $activityObj->submission_type == 'O');
+
+        $form['main']['info']['allow_late_submission'] = array(
+            '#type' => 'radios',
+            '#prefix' => '<tr id="row_hides3"><th style="width:139px;">Allow Late Submit</th><td colspan="3"><table><tr><td style="border-bottom:none !important;">',
+            '#suffix' => '</td><td style="border-bottom:none !important;"></td></tr></table></td></tr>',
+            '#id' => 'allow_late_chk',
+            '#options' => array('1' => 'Yes', '0' => 'No'),
+            '#disabled' => $disable_status,
+            '#default_value' => (isset($activityObj)) ? $activityObj->allow_late_submission : '0',
+        );
+
+        if ($selected_coursetype == 'lo_journal')
+            $description_label = t('Journal Prompt');
+        else
+            $description_label = t('Description');
+
+        $form['main']['info']['description'] = array(
+            '#type' => 'textarea',
+            '#prefix' => '<tr><th style="width:139px;" >' . $description_label . '</th><td colspan="3" style="clear:both; float:left; width:645px;">',
+            '#suffix' => '</td></tr>',
+            '#rows' => 8,
+            '#default_value' => (isset($activityObj)) ? $activityObj->body : '',
+        );
+
+        $divdata = '';
+        $hiddendata = '';
+        if (isset($activityObj)) {
+
+            $obj = get_attachment($activityObj->nid, 'ntlp_activity_attachment', 'activity_nid');
+            if ($obj != null) {
+
+                foreach ($obj as $attchmentObj) {
+                    if ($attchmentObj->type == 'G') {
+                        $hiddendata .= 'G,' . $attchmentObj->id . ',' . $attchmentObj->path . ';';
+                        $divdata .= '<div id="G_' . $attchmentObj->id . '"> <a onclick="detele_attach(\'G_' . $attchmentObj->id . '\');" ><img src="' . $base_path . 'sites/all/modules/ntlp_courses_activity/theme/delete.PNG" border="0" /></a><a href="' . $attchmentObj->path . '" target="_blank">' . $attchmentObj->attachment_name . '</a></div><br />';
+                    } elseif ($attchmentObj->type == 'L') {
+                        $hiddendata .= 'L,' . $attchmentObj->id . ',' . $attchmentObj->path . ';';
+                        $divdata .= '<div id="L_' . $attchmentObj->id . '"> <a onclick="detele_attach(\'L_' . $attchmentObj->id . '\');" ><img src="' . $base_path . 'sites/all/modules/ntlp_courses_activity/theme/delete.PNG" border="0" /></a><a href="' . $attchmentObj->path . '" target="_blank" >' . $attchmentObj->path . '</a></div><br />';
+                    } elseif ($attchmentObj->type == 'F') {
+                        $hiddendata .= 'F,' . $attchmentObj->id . ',' . $attchmentObj->path . ';';
+                        if ($file_obj = _get_dpl_files_obj($attchmentObj->fid)) {
+                            $file_path = $file_obj->filepath;
+                        }
+                        $divdata .= '<div id="F_' . $attchmentObj->id . '"><a onclick="detele_attach(\'F_' . $attchmentObj->id . '\');" ><img src="' . $base_path . 'sites/all/modules/ntlp_courses_activity/theme/delete.PNG" border="0" /></a>' . l($attchmentObj->path, $file_path, array('attributes' => array('target' => '_blank'))) . '</div><br />';
+                        $fids .= ',' . $attchmentObj->fid;
+                    }
+                }
+            }
+
+            $colspan = 'colspan="3"';
+        }
+
+        $form['main']['info']['urls'] = array(
+            '#type' => 'hidden',
+            '#prefix' => '<tr id="google_docs_row" style="display:' . ($divdata ? "" : "none") . '"><th style="width:139px;">&nbsp;</th><td ' . $colspan . '><div class="AttachedFiles" id="urllist" >' . $divdata,
+            '#suffix' => '</div></td></tr>',
+        );
+
+
+        $form['main']['info']['hAttachedFiles'] = array(
+            '#type' => 'hidden',
+            '#value' => $hiddendata,
+            '#prefix' => '<tr style="display:none"><td colspan="2">',
+            '#suffix' => '</td></tr>',
+        );
+
+        $manage_options = $HTMLform_activity_attachment_options;
+        $school_nid = get_user_school($user->uid);
+
+        $status = check_gdoc_status_for_school($school_nid);
+
+        /*       $attach_fileupload_link = '<a style="float:left;text-decoration:none;color: #3399CC;" id="attach_link">+ Attach file</a>';
+          $attach_googledoc_link = dlg("+ Link Google doc", 'ntlp/courses/activity/submission/attachment/G', 300, 600, dlg_txt_color);
+
+          $form['#fileupload_embed'] = true;
+          $form['#fileupload_auto_upload'] = true;
+
+          $form['main']['info']['upload_control'] = array(
+          '#prefix' => '<tr><th style="width:139px;">Attachments</th><td><div style="float:left;" ><div><table border="0" width="100%"><tr>
+          <td onmouseover="place_fileupload_control(this);" onmouseout="place_fileupload_control_mouseout(this);" style=" border-bottom: none !important;">' . $attach_fileupload_link . '</td><td style=" border-bottom: none !important;">&nbsp;&nbsp;&nbsp;&nbsp;</td>',
+          '#suffix' => '<td style=" border-bottom: none !important;><div style="float:left;position:relative;z-index:10;width:40px">&nbsp;</div><div style="float:left;position:relative;z-index:10;">' . $attach_googledoc_link . '</div></td></tr></table></div></td></tr></table>',
+          //                '#prefix' => '<tr><td><div><table border="0" width="100%"><tr>
+          //            <td onmouseover="place_fileupload_control(this);" onmouseout="place_fileupload_control_mouseout(this);">' . $attach_fileupload_link,
+          //                '#suffix' => '</td>
+          //            <td><div style="float:left;position:relative;z-index:10;width:40px">&nbsp;</div><div style="float:left;position:relative;z-index:10;">' . $attach_googledoc_link . '</div></td></tr></table></div></td></tr>',
+          );
+
+          fileupload_get_control($form, $form_state, array('main', 'info', 'upload_control')); */
+
+//        if ($status == 1) {
+//            $manage_options = str_replace('@MANAGE_ATTACH_GOOGLE', dlg("Link to a Google Doc", 'ntlp/course/resources/attachment/google', 300, 600, google_attach_link), $manage_options);
+//        } else {
+//            $manage_options = str_replace('@MANAGE_ATTACH_GOOGLE', '', $manage_options);
+//        }
+//
+//        $manage_options = str_replace('@MANAGE_ATTACH_DOCUMENT', , $manage_options);
+
+        $manage_options = array("0" => 'Please Select');
+        
+        if($status == 1){
+            $manage_options[] = dlg("Link to a Google Doc", 'ntlp/course/resources/attachment/google', 300, 600, google_attach_link);
+        }
+        
+        $manage_options[] = dlg('Upload File', 'ntlp/image/uploader/edit', 275, 425);
+
+        $form['main']['info']['documentlink'] = array(
+            '#type' => 'select',
+            '#options' => $manage_options,
+            '#default_value' => '',
+            '#prefix' => '<tr><th style="width:139px;">Attachments</th><td><span class="comboboxBgLeft" style="width:150px;">',
+            '#suffix' => '</span></td></tr></table>',
+            '#attributes' => array('class' => 'my-dropdown'),
+        );
+
+        $form['main']['detail'] = array(
+            '#type' => 'item',
+            '#title' => '',
+            '#tree' => TRUE, // Don't forget to set #tree!
+            '#prefix' => $HTMLform_groupbox_hdr,
+            '#suffix' => $HTMLform_groupbox_ftr,
+        );
+
+        $form['main']['detail']['grades'] = array(
+            '#type' => 'item',
+            '#title' => '',
+            '#collapsible' => TRUE,
+            '#collapsed' => FALSE,
+            '#prefix' => $HTMLform_groupbox_grading_hdr,
+            '#suffix' => $HTMLform_groupbox_grading_ftr,
+        );
+
+//@display_pos_pnt
+
+        $is_graded = $activityObj->is_graded;
+
+        $auto_grading_option = (isset($activityObj) && ($activityObj->submission_type == 'O'));
+
+        $form['main']['detail']['grades']['is_graded'] = array(
+            '#type' => 'radios',
+            '#options' => array('1' => 'Yes', '0' => 'No'),
+            '#default_value' => (isset($activityObj)) ? $is_graded :
+                (($selected_coursetype == 'lo_workshop') ? '0' : '1'),
+            '#prefix' => "<tr><th style='width:139px'>  " . t('Graded') . "</th><td colspan='3'>",
+            '#suffix' => "</td></tr>",
+            '#attributes' => array('onClick' => 'graded_outcomes(this)'),
+        );
+
+
+            $display = "";
+            if (isset($activityObj) && $is_graded == 0)
+                $display = "style='display:none'";
+
+            $form['main']['detail']['grades']['gradingmethod'] = array(
+                '#type' => 'radios',
+                '#options' => array('M' => 'Manual Scoring', 'C' => 'Auto Grading'),
+                '#default_value' => (isset($activityObj)) ? $activityObj->grading_method :
+                    (($selected_coursetype == 'lo_workshop') ? 'C' : 'M'),
+                '#prefix' => "<tr class='row_hide1' " . $display . "><th style='width:139px;'>" . t('Grading Method') . "</th><td colspan='3' style='border:none;'>",
+                '#suffix' => "</td></tr>",
+                '#disabled' => $auto_grading_option,
+            );
+        
+
+//@display_pos_pnt
+
+        if ($is_graded == 0 || $activityObj == null) {
+
+            if ($selected_coursetype == 'lo_workshop')
+                $display = "style='display:none'";
+            else
+                $display = "";
+        }
+        $HTMLform_groupbox_points_hdr = str_replace('@display_pos_pnt', $display, $HTMLform_groupbox_points_hdr);
+
+        $form['main']['detail']['points'] = array(
+            '#type' => 'markup',
+            '#title' => '',
+            '#collapsible' => TRUE,
+            '#collapsed' => FALSE,
+            '#prefix' => $HTMLform_groupbox_points_hdr, // This is our wrapper div.
+            '#suffix' => $HTMLform_groupbox_points_ftr,
+        );
+
+        if (isset($activityObj)) {
+
+# It will Fetch All Outcome Tid's Matching With course ID
+            $outcome_array = get_all_outcomes($course_id);
+
+//  $selected_array = get_activity_outcome($activity_id);
+# It will Fetch Selected Outcome Tid's Matching With Activity ID
+            $selected_array = get_selected_outcomes_tid($activity_id);
+
+            if ($outcome_array != null) {
+                foreach ($outcome_array as $outcome_obj) {
+                    if ($selected_array != null) {
+
+                        $points_val = '';
+                        if (in_array($outcome_obj->tid, $selected_array)) {
+
+                            $select_max_points = get_selected_max_points($outcome_obj->tid, $activity_id);
+
+                            $points_val = ($select_max_points->max_points == null) ? 0 : $select_max_points->max_points;
+                        }
+                    }
+
+                    $form['main']['detail']['points']['outcome_' . $outcome_obj->tid] = array(
+                        '#name' => 'outcome_' . $outcome_obj->tid,
+                        '#name' => 'out[]',
+                        '#type' => 'textfield',
+                        '#size' => 3,
+                        '#maxlength' => 6,
+                        '#value' => $points_val,
+                        '#prefix' => ($is_graded == 0) ? "<div style='float:left;'><table cellpadding='8' cellspacing='0' border='0' width='818px' ><tr class='row_hide1' style='display:none'><th style='width:141px'>" . $outcome_obj->name . "</th><td>" : "<div style='float:left;'><table cellpadding='8' cellspacing='0' border='0' width='818px' ><tr class='row_hide1' style='display:block'><th style='width:141px'>" . $outcome_obj->name . "</th><td style='width:645px !important;'>",
+                        '#suffix' => '</td></tr></table></div>',
+                        '#attributes' => array('onblur' => 'validate_input(this)'),
+                    );
+                }
+            }
+        } else {
+
+            $outcomelist = _load_course_outcomes($course_id);
+        }
+
+        if (isset($outcomelist) && sizeof($outcomelist) > 0) {
+
+            foreach ($outcomelist as $outcome) {
+
+                $form['main']['detail']['points']['outcome_' . $outcome->tid] = array(
+                    '#name' => 'outcome_' . $outcome->tid,
+                    '#name' => 'out[]',
+                    '#type' => 'textfield',
+                    '#size' => 3,
+                    '#maxlength' => 6,
+                    '#default_value' => '',
+                    '#prefix' => "<div style='float:left;'><table cellpadding='8'  cellspacing='0' width='818px'  border='0'><tr class='row_hide1' $display ><th style='width:141px'>" . $outcome->name . ":</th><td>",
+                    '#suffix' => '</td></tr></table></div>',
+                    '#attributes' => array('onblur' => 'validate_input(this)'),
+                );
+
+                if ($selected_coursetype == 'lo_workshop')
+                    $form['main']['detail']['points']['outcome_' . $outcome->tid]['#id'] = 'value';
+            }
+        }
+
+        $form['main']['detail']['curriculum'] = array(
+            '#type' => 'item',
+            '#title' => '',
+            '#prefix' => $HTMLform_groupbox_cmapping_hdr, //'<div id="course-activity-wrapper">', // This is our wrapper div.
+            '#suffix' => $HTMLform_groupbox_cmapping_ftr,
+        );
+
+        #Load All Projects From Database
+        $projectoption = _get_load_projects($course_id);
+
+        foreach ($projectoption as $key => $value) {
+            $title_attr = $value;
+            if (strlen($value) > 25) {
+
+                $new_width = '375px !important';
+                break;
+
+            } else {
+                $new_width = '200px';
+            }
+        }
+
+        $get_unit_topic_name = get_unit_topic_name($activityObj->curriculum_unit_tid);
+
+        $form['main']['detail']['curriculum']['unit'] = array(
+            '#name' => t('unit'),
+            '#prefix' => "<tr><th style='width:139px;'>" . t('Unit/Topic') . "</th><td>",
+            '#suffix' => '</td></tr>',
+            '#type' => 'textfield',
+            '#default_value' => (isset($activityObj)) ? $get_unit_topic_name->name : '',
+            '#size' => 30,
+            '#autocomplete_path' => 'ntlp/unit/autocomplete/' . $course_id,
+        );
+
+        //$dispdiv= $activityObj->project_nid ;
+        if (isset($activity_project) || !empty($activity_project)) {
+            $associate_project = $activity_project;
+        } else {
+            if (isset($activityObj->project_nid) || !empty($activityObj->project_nid)) {
+                $associate_project = $activityObj->project_nid;
+            } else {
+                $associate_project = $project_nid;
+            }
+        }
+
+//        print (" activity_project:" . $activity_project . '|' . $associate_project . '|' . $project_nid);
+        $form['main']['detail']['curriculum']['project'] = array(
+            '#type' => 'select',
+            '#options' => $projectoption,
+            '#default_value' => (isset($activityObj)) ? $activityObj->project_nid : $project_nid,
+            '#ahah' => array(
+                'event' => 'change',
+                'path' => ahah_helper_path(array('main', 'detail', 'curriculum', 'project_row', 'project_div')),
+                'progress' => array('type' => 'none'),
+                'wrapper' => 'add-resource-wrapper',
+            ),
+            '#prefix' => "<tr><th style='width:139px;'>" . t('Associated Project') . "</th><td><span class='comboboxBgLeft' style='width:300px;'>",
+            '#suffix' => '</span></td></tr>',
+            '#attributes' => array('class' => 'my-dropdown'),
+        );
+
+        $projectoption = _get_course_section($associate_project);
+        $notavailable = array("Not Available" => "Not Available");
+
+        $form['main']['detail']['curriculum']['project_row'] = array(
+            '#type' => 'item',
+            '#prefix' => '<tr><th style="width:139px">' . t('Project Category') . '</th><td>',
+            '#suffix' => '</td></tr>',
+        );
+        $form['main']['detail']['curriculum']['project_row']['project_div'] = array(
+            '#type' => 'item',
+            '#prefix' => '<div id="add-resource-wrapper">',
+            '#suffix' => '</div>',
+        );
+
+        $form['main']['detail']['curriculum']['project_row']['project_div']['project_cat'] = array(
+            '#type' => 'select',
+            '#options' => ($projectoption != null) ? $projectoption : $notavailable,
+            '#default_value' => ((isset($activityObj)) ? $activityObj->project_cat : $project_section_tid),
+            '#prefix' => "<span class='comboboxBgLeft' style='width:300px;'>",
+            '#suffix' => '</span>',
+            '#attributes' => array('class' => 'my-dropdown'),
+        );
+
+        $form['main']['detail']['curriculum']['academicstandards'] = array(
+            '#type' => 'textarea',
+            '#prefix' => "<tr><th style='width:139px;'>" . t('Academic Standards') . "</th><td style='border:none;'>",
+            '#suffix' => '</td></tr>',
+            '#wysiwyg' => FALSE,
+            '#rows' => 2,
+            '#default_value' => (isset($activityObj)) ? $activityObj->curriculum_standards : '',
+        );
+
+        
+        $form['students'] = array(
+            '#type' => 'item',
+            '#title' => '',
+            '#tree' => TRUE, // Don't forget to set #tree!
+            '#collapsible' => TRUE,
+            '#collapsed' => FALSE,
+            '#prefix' => '<tr><td colspan="2"><br clear="all" /><h2 style="padding:0px;margin:0px;color:#3570aa">Students Assigned to This Activity</h2><br clear="all" /><div class="view-content"><table class="views-table" align="left"><thead><tr><th align="left" style="text-align:left;width:100px;color:#000;"><a style="text-align:left;width:100px;color:#090;" class="fix_protected" onclick="select_all(true); return false;" >All</a> | <a style="text-align:left;width:100px;color:#090;" class="fix_protected" onclick="select_all(false); return false;">None</a></th><th style="text-align:left;color:#090;" align="left" witdh="20px">Per.</th><th style="text-align:left;color:#090;" align="left">Name</th></tr></thead>',
+            '#suffix' => '</table></div></td></tr>',
+        );
+
+
+        $result = get_course_users($course_id);
+
+        if (!empty($activity_id)) {
+
+            $selected_users = get_selected_course_users($activity_id);
+
+            if (empty($selected_users)) {
+
+                $selected_users = array('0');
+            }
+        }
+
+        while ($rs = db_fetch_object($result)) {
+
+            //Select all students when activity is new
+            //but show only previously saved students as selected in edit mode
+            $user_selected = (empty($activity_id) ||
+                    (!empty($selected_users) && in_array($rs->uid, $selected_users)) || ($editurl == 'new'));
+
+            $form['students'][$rs->uid]['selected'] = array(
+                    '#type' => 'checkbox',
+                    '#name' => 'students_uid[]',
+                    '#prefix' => "<tbody><tr><td align='left'>",
+                    '#suffix' => '</td>',
+                    '#return_value' => $rs->uid,
+                    '#default_value' => $user_selected,
+                );
+
+            $form['students'][$rs->uid]['period'] = array(
+                '#prefix' => "<td align='center' width='20px'>",
+                '#suffix' => '</td>',
+                '#value' => empty($rs->period) ? '*' : $rs->period);
+
+            $form['students'][$rs->uid]['name'] = array(
+                '#prefix' => "<td align='left'>",
+                '#suffix' => '</td></tr></tbody>',
+                '#value' => $rs->last_name . ', ' . $rs->first_name);
+        }
+        
+        return $form;
+    } else {
+
+        drupal_set_message('This course is not available', 'error');
+    }
+}
+
+function course_activity_submit($form, $form_state) {
+    global $user;
+
+//    watchdog('info', 'inside course_activity_submit method '. print_r($form_state, true));
+    $course_id = $form_state['clicked_button']['#post']['main']['courseid'];
+    $button = $form_state['clicked_button']['#post']['op'];
+
+    $pointskey = $form_state['values']['main']['detail']['points'];
+
+    $dateformat = "%Y-%m-%d %H:%M:%S";
+
+    $activityname = $form_state['clicked_button']['#post']['main']['info']['activityname'];
+    $activityid = $form_state['clicked_button']['#post']['main']['activityid'];
+    $school_id = $form_state['clicked_button']['#post']['main']['school_nid'];
+    $update = $form_state['clicked_button']['#post']['main']['update'];
+    $activitytype = $form_state['clicked_button']['#post']['main']['activitytype'];
+    $submissiontype = $form_state['clicked_button']['#post']['main']['info']['submissiontype'];
+    $rubric_style = $form_state['clicked_button']['#post']['main']['info']['rubric_style'];
+    $allowsubmissionreview = $form_state['clicked_button']['#post']['main']['info']['allow_student_resubmit'];
+    $availabilitymode = $form_state['clicked_button']['#post']['main']['info']['availabilitymode'];
+    $allow_late_submission = $form_state['clicked_button']['#post']['main']['info']['allow_late_submission'];
+
+    $description = $form_state['clicked_button']['#post']['main']['info']['description'];
+
+    $response_type = $form_state['clicked_button']['#post']['main']['info']['responsetype'];
+    $response_length = $form_state['clicked_button']['#post']['main']['info']['responselength'];
+
+    if (!isset($response_type))
+        $response_type = 0;
+    if (!isset($response_length))
+        $response_length = 0;
+
+    $is_graded = $form_state['clicked_button']['#post']['main']['detail']['grades']['is_graded'];
+//    echo '<br> '.$is_graded;
+//    die();
+    $self_evaluation = $form_state['clicked_button']['#post']['main']['detail']['grades']['self_evaluation'];
+    $require_stu_comments = $form_state['clicked_button']['#post']['main']['detail']['grades']['require_stu_comments'];
+    $auto_calc = $form_state['clicked_button']['#post']['main']['detail']['grades']['auto_calc'];
+    $outcome_name = $form_state['clicked_button']['#post']['main']['detail']['grades']['outcome_name'];
+    $grading_method = $form_state['clicked_button']['#post']['main']['detail']['grades']['gradingmethod'];
+
+//$availability = $form_state['clicked_button']['#post']['main']['info']['availability'];
+
+    $school_term_tid = $form_state['clicked_button']['#post']['main']['info']['course_term'];
+    $project = $form_state['clicked_button']['#post']['main']['detail']['curriculum']['project'];
+    $project_cat = $form_state['clicked_button']['#post']['main']['detail']['curriculum']['project_row']['project_div']['project_cat'];
+
+    $activity_order = 0;
+    watchdog('Project', $project . '|' . $project_cat);
+
+    $flag = false;
+    if ($project > 0) {
+
+        if ($activityid > 0) { // for edit activity
+            $activityObj = get_activity_record($activityid);
+
+            // if user change the project on edit activity
+            if ($activityObj->project_nid != $project) {
+                $flag = true;
+            } else {
+                if ($activityObj->project_cat != $project_cat) {
+                    $flag = true;
+                } else {
+                    $activity_order = $activityObj->activity_order;
+                }
+            }
+        } else {
+            $flag = true;
+        }
+
+        if ($flag) {
+            $record = _get_resource_order($course_id, $project_cat);
+
+            if ($record != false) {
+                $activity_order = $record->resource_order + 1;
+            }
+        }
+    } else {
+        $project = 0;
+        $project_cat = 0;
+    }
+
+    watchdog('activity_save', 'project nid ' . $project . ' project_cat ' . $project_cat . ' $activity order ' . $activity_order);
+
+
+    $acadmicstandards = $form_state['clicked_button']['#post']['main']['detail']['curriculum']['academicstandards'];
+
+    $unit = $form_state['clicked_button']['#post']['unit'];
+    $postarray = $form_state['clicked_button']['#post'];
+    $points = $form_state['clicked_button']['#post']['out'];
+    $attach_files = $form_state['clicked_button']['#post']['main']['info']['file_fid'];
+    $attachmentdata = $form_state['clicked_button']['#post']['main']['info']['hAttachedFiles'];
+    $duedate = $form_state['clicked_button']['#post']['main']['info']['duedate'];
+
+    $last_state_url = $form_state['clicked_button']['#post']['main']['last_state_url'];
+
+    $outcomes = $form_state['clicked_button']['#post']['out'];
+    $level = $form_state['clicked_button']['#post']['leve'];
+//    print_r($level);
+//    echo '<br>';
+    $level_percent = $form_state['clicked_button']['#post']['level_percent'];
+
+//    print_r($level_percent);
+    $category = $form_state['clicked_button']['#post']['category'];
+    $possible_points = $form_state['clicked_button']['#post']['ppoints'];
+    $level_desc = array(
+        $form_state['clicked_button']['#post']['level1_descriptors'],
+        $form_state['clicked_button']['#post']['level2_descriptors'],
+        $form_state['clicked_button']['#post']['level3_descriptors'],
+        $form_state['clicked_button']['#post']['level4_descriptors'],
+    );
+
+    $total_count = count($level);
+    $totalCat = count($category);
+
+    if ($button == "Cancel") {
+        if ($activityid != 0 && $last_state_url == 'ACTIVITY') {
+            drupal_goto('ntlp/courses/activity/view/' . $course_id . "/" . $activityid);
+        } else {
+            drupal_goto('ntlp/goback');
+        }
+    } else {
+
+        if (isset($form_state['clicked_button']['#post']['students_uid'])) {
+            $selectedstudent = $form_state['clicked_button']['#post']['students_uid'];
+
+//            while ( list($key) = each($selectedstudent)) {
+//                $activity_student_list[] = $key;
+//
+//            }
+
+            foreach ($selectedstudent as $key => $uid) {
+                $activity_student_list[] = $uid;
+            }
+        }
+
+        list($duemonth, $dueday, $dueyear) = split("/", $duedate);
+
+        $duehour = $form_state['clicked_button']['#post']['main']['info']['duedate_hour'];
+        $dueminute = $form_state['clicked_button']['#post']['main']['info']['duedate_minute'];
+        $meridian = $form_state['clicked_button']['#post']['main']['info']['duedate_meridian'];
+
+        $linksarray = get_links($attachmentdata);
+
+        $fids = ltrim($attach_files, ",");
+        $attach_fids = explode(',', $fids);
+
+        /* Adding Unit taxonomy */
+        $vocab_str = 'NTLP Course Unit';
+        $unit_topic = add_taxonomy_for_unit($vocab_str, $unit, $course_id);
+
+        if ($meridian == 'PM' && $duehour < 12) {
+            $duehour +=12;
+        } else if ($meridian == 'AM' && $duehour == 12) {
+            $duehour = 0;
+        }
+
+//        if($duehour == 24){
+//            $duehour = 0;
+//        }
+
+        $duedate_value = strftime($dateformat, strtotime($dueyear . '/' . $duemonth . '/' . $dueday . ' ' . $duehour . ':' . $dueminute . ':00 '));
+        /*
+         * availabe form by using publish date..
+         */
+
+        $publishondate = $form_state['clicked_button']['#post']['main']['info']['publishondate'];
+
+        list($publishonmonth, $publishonday, $publishonyear) = split("/", $publishondate);
+
+        $publishhour = $form_state['clicked_button']['#post']['main']['info']['publishondate_hour'];
+        $publishminute = $form_state['clicked_button']['#post']['main']['info']['publishondate_minute'];
+        $publishmeridian = $form_state['clicked_button']['#post']['main']['info']['publishondate_meridian'];
+        if ($publishmeridian == 'PM')
+            $publishhour +=12;
+
+
+        $publishdate_value = strftime($dateformat, strtotime($publishonyear . '/' . $publishonmonth . '/' . $publishonday . ' ' . $publishhour . ':' . $publishminute . ':00'));
+
+
+        /*
+         * availabe to by using hideon date..
+         */
+
+        $hidedate = $form_state['clicked_button']['#post']['main']['info']['hideondate'];
+
+        list($hideonmonth, $hideonday, $hideonyear) = split("/", $hidedate);
+        $hidehour = $form_state['clicked_button']['#post']['main']['info']['hideondate_hour'];
+        $hideminute = $form_state['clicked_button']['#post']['main']['info']['hideondate_minute'];
+        $hidemeridian = $form_state['clicked_button']['#post']['main']['info']['hideondate_meridian'];
+        if ($hidemeridian == 'PM')
+            $hidehour +=12;
+
+        $hidedate_value = strftime($dateformat, strtotime($hideonyear . '/' . $hideonmonth . '/' . $hideonday . ' ' . $hidehour . ':' . $hideminute . ':00'));
+
+        $availability = $availabilitymode;
+
+        if (isset($availabilitymode)) {
+            $availabilitymode = 'S';
+        } else {
+            $availabilitymode = 'M';
+        }
+
+        $publishdate_value = '0000-00-00 00:00:00';
+        $hidedate_value = '0000-00-00 00:00:00';
+
+        if ($availability == 1) {
+            $term_data = get_school_term_data($school_term_tid);
+            if ($term_data) {
+                $publishdate_value = $term_data->date_started;
+                $hidedate_value = $term_data->date_closed;
+
+                $publishdate_value = set_tz($school_id, "Y-m-d H:i:s", $publishdate_value);
+                $hidedate_value = set_tz($school_id, "Y-m-d H:i:s", $hidedate_value);
+            }
+        }
+
+        /* fetching a outcome values form submited form and
+         * filling into the separate array;
+         */
+
+# Seprating Index From Points Array
+        $activityoutcome = _load_course_outcomes($course_id);
+
+        $arr = array();
+        if ($pointskey != null) {
+            $l = 0;
+            while (list($key, $val) = each($pointskey)) {
+
+                $arr[$l] = $key;
+
+                $l++;
+            }
+        }
+
+
+        if ($arr != null) {
+            $com = array_combine($arr, $points);
+            while (list($key, $val) = each($com)) {
+
+                foreach ($activityoutcome as $outcome) {
+
+                    if ($key == 'outcome_' . $outcome->tid) {
+
+                        $activityoutcomearray[$outcome->tid] = $val; //($val?$val:'');
+                    }
+                }
+            }
+        }
+        $dateformat = "%Y-%m-%d %H:%M:%S";
+        $ctime = strftime($dateformat, strtotime(date('Y-m-d')));
+
+        if (isset($activityid)) {
+            $activity_node = node_load($activityid);
+        } else {
+            $activity_node = new stdClass();
+        }
+
+        $activity_node->title = $activityname;
+
+        if ($activityid == 0 || empty($activityid)) {
+            watchdog('act-node', 'Activity does not exists:' . $activityid);
+            $activity_node->type = $activitytype;   // Your specified content type
+        } else {
+            watchdog('act-node', 'Activity exists:' . $activityid);
+            $activitytype = $activity_node->type;
+        }
+        $activity_node->created = $ctime;
+        $activity_node->changed = $ctime;
+        $activity_node->body = $description;
+        $activity_node->status = 1;
+        $activity_node->promote = 0;
+        $activity_node->sticky = 0;
+        $activity_node->format = 1;       // Filtered HTML
+        $activity_node->uid = $user->uid; // UID of content owner
+        $activity_node->context =  'node_id';
+        
+        node_save($activity_node);
+
+        $actvitynodeid = $activity_node->nid;
+
+        /* Default values for rubric */
+
+        /* explicitly mark Online submission for journal and rubric */
+        if ($activitytype == 'lo_journal') {
+            $submissiontype = 'D';
+        }
+
+//handling offline activity
+        /*
+         * if offline option is selected then mark grading method equal to Manual
+         */
+        if ($submissiontype == 'O') { // O is equal to Offline
+            $grading_method = 'M';
+            $allowsubmissionreview = 0;
+            $allow_late_submission = 0;
+        }
+
+        $duedate_value = set_tz($school_id, "Y-m-d H:i:s", $duedate_value);
+
+        if ($activityid != 0) {
+
+            db_query("UPDATE {ntlp_course_activity} SET nid =%d, course_nid =%d, project_nid=%d, activity_order=%d, submission_type ='%s', allow_resubmission ='%s',
+        availability_mode='%s', available_from='%s', available_to='%s', due_date='%s', is_graded=%d, grading_method='%s', curriculum_unit_tid='%s',
+        curriculum_standards='%s', school_term_tid='%s', timecreated='%s', timemodified='%s', created_by='%s', modified_by='%s' ,project_cat='%d' , allow_late_submission = '%d'
+        WHERE nid ={$activityid}", $activity_node->nid, intval($course_id), $project, $activity_order, $submissiontype, $allowsubmissionreview, $availabilitymode, $publishdate_value, $hidedate_value, $duedate_value, $is_graded, $grading_method, $unit_topic->tid, $acadmicstandards, $school_term_tid, strftime($dateformat, time()), strftime($dateformat, time()), $user->uid, $user->uid, $project_cat, $allow_late_submission);
+
+
+        } else {
+            // Inserting a record into ntlp_course_activity for activities.. value..
+
+            db_query("INSERT INTO {ntlp_course_activity} (nid, course_nid, project_nid, activity_order, submission_type, allow_resubmission,
+        availability_mode, available_from, available_to, due_date, is_graded, grading_method, curriculum_unit_tid,
+        curriculum_standards, school_term_tid, timecreated, timemodified, created_by, modified_by, is_published,project_cat, allow_late_submission)
+        VALUES(%d, %d, %d, %d, '%s', '%s', '%s', '%s', '%s', '%s', %d, '%s',
+        %d, '%s', %d, '%s', '%s', %d, %d, %d, %d ,%d)", $activity_node->nid, intval($course_id), $project, $activity_order, $submissiontype, $allowsubmissionreview, $availabilitymode, $publishdate_value, $hidedate_value, $duedate_value, $is_graded, $grading_method, $unit_topic->tid, $acadmicstandards, $school_term_tid, strftime($dateformat, time()), strftime($dateformat, time()), $user->uid, $user->uid, 0, $project_cat, $allow_late_submission);
+
+        }
+
+//TRIGGER_POINT: DELETE/INSERT ALL STUDENT RECORDS IN THIS COURSE FOR THIS ACTIVITY TERM
+        dw_setall_student_course_grade_toupdate($course_id, $school_term_tid, $school_id, 1);
+
+        /* adding outcome for activity into dpl_ntlp_gb_activity_outcome
+         * if outcome value is equal to 0 then it will not save..
+         */
+
+# It will Check the if the activity has outcomes and on edit activity page When we select not graded then it will remove the outcomes of that activity
+
+        if ($activityid != 0 && $is_graded == 0) {
+
+            $activity_outcome_status = check_outcomes($activityid);
+
+            if ($activity_outcome_status == true) {
+                db_query('DELETE FROM {ntlp_gb_activity_outcome} WHERE activity_nid = %d', $activityid);
+            }
+        }
+
+
+        if ($is_graded != 0) {  // 0 is equal to do not grade this activity
+            if (isset($activityid)) {
+                db_query('DELETE FROM {ntlp_gb_activity_outcome} WHERE activity_nid = %d', $activityid);
+            }
+
+            if ($activityoutcomearray != null) {
+
+                while (list($key, $val) = each($activityoutcomearray)) {
+//                    echo "<br>Key:$key, Val:".($val!='' ? "Yes" : "No");
+//Add outcome only when max score is non-empty value, even add if it is zero
+                    if ($val != '') {
+                        db_query("INSERT INTO {ntlp_gb_activity_outcome} VALUES (%d, %d, %d )", $key, $activity_node->nid, $val);
+                    }
+                }
+            }
+        }
+
+
+        /*         * ******** START Activity Selected User...  Handling ******** */
+
+        if (isset($activityid)) {
+            db_query('DELETE FROM {ntlp_activity_user} WHERE activity_nid  = %d', $activityid);
+        }
+        if ($activity_student_list != null) {
+            
+            $act_user_query = "INSERT INTO {ntlp_activity_user} VALUES ";
+            $act_user_values = array();
+
+            foreach ($activity_student_list as $student_uid) {
+                //Associate the selected student with this activity
+                $act_user_values[] = "($actvitynodeid, $student_uid)";
+                
+            }
+
+
+            if (count($act_user_values) > 0) {
+                $act_user_query .= implode(",", $act_user_values);
+                db_query($act_user_query);
+            }
+
+
+            if ($activityid <= 0) { //new activity
+                module_invoke_all('ntlpcontent', $activity_node, 'content_posted');
+            }
+        }
+        
+        /*         * ******* END Activity Selected User...  Handling ******** */
+
+        /*         * *********************** Start Link and Google Docs Handling *************************** */
+        if ($activityid != 0) {
+
+            if ($linksarray != null || !empty($linksarray)) {
+                foreach ($linksarray as $l) {
+
+                    if (sizeOf($l) >= 4)
+                        list($type, $id, $name, $url) = $l;
+                    else
+                        list($type, $id, $url) = $l;
+
+                    if ($type == 'F' || $type == 'L' || $type == 'G' || $type == 'X') {
+
+                        insert_activity_attachment_records($activity_node->nid, $type, $url, $id, $name);
+                    }
+                }
+            }
+        } else {
+            if ($attachmentdata != null) {
+                $l = 0;
+
+                foreach ($linksarray as $l) {
+
+                    if (sizeOf($l) >= 4)
+                        list($type, $id, $name, $url) = $l;
+                    else
+                        list($type, $id, $url) = $l;
+
+                    if ($type == 'F') {
+                        insert_activity_attachment_records($activity_node->nid, $type, $url, $id, $name);
+                    }
+
+                    if ($type == 'L' || $type == 'G' || $type == 'X') {
+                        insert_activity_attachment_records($activity_node->nid, $type, $url, -1, $name);
+                    }
+                }
+            }
+        }
+        /*         * *********************** End Link and Google Docs Handling *************************** */
+        /* Rubric Data Insertion START */
+
+        if ($activitytype == 'lo_rubric') {
+
+            if ($activityid != 0) {
+                watchdog('upate_case', 'activityid ' . $activityid);
+                db_query("UPDATE {ntlp_course_activity_rubric}
+                        SET  rubric_style = %d, outcome_tid = %d, self_evaluation = %d, automatic_evaluation =%d, require_stu_comments =%d where activity_nid = %d", $rubric_style, $outcome_name, $self_evaluation, $auto_calc, $require_stu_comments, $activityid);
+
+                for ($j = 0; $j < $total_count; $j++) {
+
+                    if (!empty($level[$j]) || $level[$j] != null) {
+                        $rs = db_query("select level_name from {ntlp_activity_rubric_level} where activity_nid = %d  and level_order = %d", $activityid, $j + 1);
+                        if ($rs->num_rows > 0) {
+                            db_query("UPDATE {ntlp_activity_rubric_level} SET  level_name = '%s', level_percent = %d where activity_nid = %d and level_order =%d ", $level[$j], $level_percent[$j], $activityid, $j + 1);
+                        } else {
+                            db_query("insert into {ntlp_activity_rubric_level} (activity_nid, level_order, level_name, level_percent)
+                             values (%d, %d, '%s', %d)", $activityid, $j + 1, $level[$j], $level_percent[$j]);
+                        }
+                    } else {
+                        db_query("delete from {ntlp_activity_rubric_level}  where activity_nid = %d  and level_order = %d", $activityid, $j + 1);
+                    }
+                }
+
+                for ($c = 0; $c < $totalCat; $c++) {
+
+                    if (!empty($category[$c]) || $category[$c] != null) {
+
+                        $CatRs = db_query("select category_name from {ntlp_activity_rubric_category} where  activity_nid = %d and category_order = %d", $activityid, $c + 1);
+
+                        if ($CatRs->num_rows > 0) {
+                            db_query("UPDATE  {ntlp_activity_rubric_category}
+                                     SET   max_points = %d, category_name ='%s' where activity_nid = %d and category_order = %d", $possible_points[$c], $category[$c], $activityid, $c + 1);
+                        } else {
+
+                            db_query("insert into {ntlp_activity_rubric_category}
+                                    (activity_nid, category_order, max_points, category_name)
+                                    values
+                                    (%d, %d, %d, '%s')", $activityid, $c + 1, $possible_points[$c], $category[$c]);
+                        }
+                    } else {
+
+                        db_query("delete from {ntlp_activity_rubric_category} where  activity_nid = %d and category_order = %d", $activityid, $c + 1);
+                    }
+                    for ($l = 0; $l < $total_count; $l++) {
+
+                        $rubric_levelID = ge_rebric_levelid($activity_node->nid, $l + 1);
+                        $rubric_catID = ge_rebric_catid($activity_node->nid, $c + 1);
+                        
+                        $LevelCat = db_query("select category_ID from {ntlp_activity_rubric_level_category} where  category_ID = %d and level_ID = %d ", $rubric_catID, $rubric_levelID);
+
+                        if ($LevelCat->num_rows > 0) {
+                            db_query("UPDATE {ntlp_activity_rubric_level_category} SET  description = '%s' where category_ID = %d and level_ID = %d ", $level_desc[$l][$c], $rubric_catID, $rubric_levelID);
+                        } else {
+
+                            db_query("insert into {ntlp_activity_rubric_level_category}(category_ID, level_ID, description)
+                              values
+                             (%d, %d, '%s')", $rubric_catID, $rubric_levelID, $level_desc[$l][$c]);
+                        }
+                    }
+                }
+            } else {
+                watchdog('new_case', 'activityid ' . $activityid);
+                db_query("insert into {ntlp_course_activity_rubric}
+                    (activity_nid, rubric_style, outcome_tid, self_evaluation, automatic_evaluation, require_stu_comments)
+                    values
+                    (%d, %d, %d, %d, %d, %d)", $activity_node->nid, $rubric_style, $outcome_name, $self_evaluation, $auto_calc, $require_stu_comments);
+
+                for ($j = 0; $j < $total_count; $j++) {
+
+                    if (!empty($level[$j]) || $level[$j] != null) {
+
+                        db_query("insert into {ntlp_activity_rubric_level} (activity_nid, level_order, level_name, level_percent)
+                            values (%d, %d, '%s', %d)", $activity_node->nid, $j + 1, $level[$j], $level_percent[$j]);
+                    }
+                }
+
+                for ($c = 0; $c < $totalCat; $c++) {
+
+                    if (!empty($category[$c]) || $category[$c] != null) {
+
+                        db_query("insert into {ntlp_activity_rubric_category}
+                        (activity_nid, category_order, max_points, category_name)
+                        values
+                        (%d, %d, %d, '%s')", $activity_node->nid, $c + 1, $possible_points[$c], $category[$c]);
+                    }
+
+                    for ($l = 0; $l < $total_count; $l++) {
+
+                        $rubric_levelID = ge_rebric_levelid($activity_node->nid, $l + 1);
+                        $rubric_catID = ge_rebric_catid($activity_node->nid, $c + 1);
+                        
+                        if (!empty($rubric_levelID) && !empty($rubric_catID)) {
+                            db_query("insert into {ntlp_activity_rubric_level_category}(category_ID, level_ID, description)
+                                values
+                                (%d, %d, '%s')", $rubric_catID, $rubric_levelID, $level_desc[$l][$c]);
+                        }
+                    }
+                }
+            }
+        }
+
+        /* Rubric Data Insertion END */
+
+//        drupal_set_message('Activity is successfully saved', 'info');
+        if ($last_state_url == 'ACTIVITY') {
+            drupal_goto('ntlp/courses/activity/view/' . $course_id . '/' . $activity_node->nid);
+        } else {
+            drupal_goto('ntlp/goback');
+        }
+    }
+}
+
+
+function course_activity_cancel($form, $form_state) {
+    $course_id = $form_state['clicked_button']['#post']['main']['courseid'];
+    drupal_goto('ntlp/goback');
+//    drupal_goto('ntlp/courses/activity/new/' . $course_id);
+}
+
+function insert_activity_attachment_records($nid, $type, $url, $id, $filename="") {
+//                    watchdog('fileupload: ',$fid);
+
+    if ($id < 0) {
+        if ($type != 'X') {
+
+            db_query("INSERT INTO {ntlp_activity_attachment} (activity_nid, type, attachment_name, path, is_deleted,fid )
+                            VALUES(%d, '%s', '%s', '%s', %d, %d)", $nid, $type, $filename, $url, 0, abs($id));
+        }
+    } else {
+        if ($type == 'X') {
+            db_query("UPDATE {ntlp_activity_attachment} SET type = '%s', is_deleted = %d  WHERE id = %d", $type, 1, $id);
+        }
+    }
+}
+
+function ntlp_courses_activity_block($op = 'list', $delta = 'tab', $edit = array()) {
+// The $op parameter determines what piece of information is being requested.
+    switch ($op) {
+        case 'list':
+// If $op is "list", we just need to return a list of block descriptions.
+// This is used to provide a list of possible blocks to the administrator,
+// end users will not see these descriptions.
+            $blocks['tab'] = array('tab' => array(
+                    'info' => t('Course Tabs'),
+                    'status' => TRUE,
+                    'weight' => 0,
+                    'visibility' => 1,
+                    'pages' => 'node/*',
+                    ));
+
+            $block[0] = array(
+                'info' => t('NTLP: Course Activity Filter'),
+            );
+
+            return $blocks;
+//        case 'configure':
+// If $op is "configure", we need to provide the administrator with a
+// configuration form. The $delta parameter tells us which block is being
+// configured. In this example, we'll allow the administrator to customize
+// the text of the first block.
+            $form = array();
+        /*      if ($delta == 0) {
+          // All we need to provide is a text field, Drupal will take care of
+          // the other block configuration options and the save button.
+          $form['ntlp_blocks_string'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Block contents'),
+          '#size' => 60,
+          '#description' => t('This string will appear in the example block.'),
+          '#default_value' => variable_get('block_example_string',  t('Some example content.')),
+          );
+          } */
+//            return $form;
+//        case 'save':
+        /*      // If $op is "save", we need to save settings from the configuration form.
+          // Since the first block is the only one that allows configuration, we
+          // need to check $delta to make sure we only save it.
+          if ($delta == 0) {
+          // Have Drupal save the string to the database.
+          variable_set('block_example_string', $edit['block_example_string']);
+          }
+          return; */
+        case 'view': default:
+// If $op is "view", then we need to generate the block for display
+// purposes. The $delta parameter tells us which block is being requested.
+            switch ($delta) {
+                case 'tab':
+// The subject is displayed at the top of the block. Note that it
+// should be passed through t() for translation.
+                    $block['subject'] = t('Course Tabs');
+
+                    $block['content'] = ntlp_courses_activity_tabs();
+
+                    break;
+                case 0:
+                    $block['subject'] = t('NTLP: Course Activity Filter');
+                    $block['content'] = ntlp_courses_activity_activity_filter();
+                    break;
+            }
+            return $block;
+    }
+}
+
+//Get Topic/Unit Id by Name
+function get_topic_unit_byname($topic_name) {
+
+    $sql = db_query("SELECT tid from {term_data} where vid = %d  AND name = '%s' ", NTLP_VOCABULARY_C_UNIT, $topic_name);
+    $result = db_fetch_object($sql);
+
+    if ($sql->num_rows > 0) {
+        return $result->tid;
+    } else {
+        return 0;
+    }
+}
+
+/* Adding and updating Taxonomy for course settings page */
+
+function add_taxonomy_for_unit($vocab_str, $string, $course_id) {
+
+//    $post_vocab_Object = _get_lib_vocabulary_vid($vocab_str);
+
+    $sql = db_query("SELECT tid from {term_data} where vid = %d  AND name = '%s' ", NTLP_VOCABULARY_C_UNIT, $string);
+
+    $result = db_fetch_object($sql);
+    if ($sql->num_rows > 0) {
+
+        $unit_topic = new stdClass();
+        $unit_topic->tid = $result->tid;
+        $unit = $unit_topic;
+    } else {
+
+        $new_unit = array('vid' => NTLP_VOCABULARY_C_UNIT, 'name' => $string);
+
+        $new_unit['description'] = $string;
+
+        if (taxonomy_save_term($new_unit)) {
+
+            $unit_topic = new stdClass();
+            $unit_topic->tid = $new_unit['tid'];
+            $unit = $unit_topic;
+        }
+
+
+        db_query('INSERT INTO {term_node} (nid, vid, tid) VALUES (%d, %d, %d)', $course_id, NTLP_VOCABULARY_C_UNIT, $unit_topic->tid);
+    }
+
+    return $unit;
+}
+
+function course_activity_validate($form, $form_state) {
+
+    $course_id = $form_state['clicked_button']['#post']['main']['courseid'];
+    $activityid = $form_state['clicked_button']['#post']['main']['activityid'];
+    $button = $form_state['clicked_button']['#post']['op'];
+
+    if ($button == "Cancel") {
+
+        if ($activityid != 0) {
+            drupal_goto('ntlp/courses/activity/view/' . $course_id . "/" . $activityid);
+        } else {
+            drupal_goto('ntlp/goback');
+        }
+    }
+
+    $memcache_object = Array();
+
+    $points = $form_state['clicked_button']['#post']['out'];
+
+    $pointskey = $form_state['values']['main']['detail']['points'];
+
+    $outcomes = $form_state['clicked_button']['#post']['out'];
+
+    $memcache_object['level'] = $form_state['clicked_button']['#post']['leve'];
+    $memcache_object['level_percent'] = $form_state['clicked_button']['#post']['level_percent'];
+
+    $memcache_object['category'] = $form_state['clicked_button']['#post']['category'];
+    $memcache_object['possible_points'] = $form_state['clicked_button']['#post']['ppoints'];
+    $memcache_object['level_desc'] = array(
+        $form_state['clicked_button']['#post']['level1_descriptors'],
+        $form_state['clicked_button']['#post']['level2_descriptors'],
+        $form_state['clicked_button']['#post']['level3_descriptors'],
+        $form_state['clicked_button']['#post']['level4_descriptors'],
+    );
+
+
+    if (isset($form_state['action'])) {
+        $form['#action'] = $form_state['action'];
+    }
+
+    $selected_activity_type = $form_state['clicked_button']['#post']['main']['activitytype'];
+
+    $project = $form_state['clicked_button']['#post']['main']['detail']['curriculum']['project'];
+
+    if ($project == '---') {
+        $form_state['clicked_button']['#post']['main']['detail']['curriculum']['project'] = '0';
+    }
+
+    if ($form_state['clicked_button']['#post']['main']['info']['activityname'] == '')
+        $message .= "<li>Activity Name</li>";
+
+    if ($form_state['clicked_button']['#post']['main']['info']['course_term'] == '')
+        $message .= "<li>Course Term</li>";
+
+    if ($form_state['clicked_button']['#post']['main']['info']['duedate'] == '')
+        $message .= "<li>" . (($selected_activity_type == 'lo_workshop') ? "Worshop Date" : "Due Date") . '</li>';
+
+
+
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/modalframe_setup.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/ntlp_courses_activity.js');
+    drupal_add_js(drupal_get_path('module', 'image_uploader') . '/image_uploader.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/date_picker.js');
+
+    jquery_ui_add(array('ui.dialog', 'ui.draggable', 'ui.datepicker'));
+
+    modalframe_parent_js();
+
+
+    $activityoutcome = _load_course_outcomes($course_id);
+
+    $arr = array();
+    if ($pointskey != null) {
+        $l = 0;
+        while (list($key, $val) = each($pointskey)) {
+
+            $arr[$l] = $key;
+
+            $l++;
+        }
+    }
+
+    if ($arr != null) {
+        $com = array_combine($arr, $points);
+        while (list($key, $val) = each($com)) {
+
+            foreach ($activityoutcome as $outcome) {
+
+                if ($key == 'outcome_' . $outcome->tid) {
+
+                    $activityoutcomearray[$outcome->tid] = $val; //($val?$val:'');
+                }
+            }
+        }
+    }
+
+//    watchdog('$form_state', print_r($form_state, true));
+    //save assigned student list to cache for form re-loading
+    $memcache_object['students'] = $form_state['clicked_button']['#post']['students_uid'];
+//    watchdog('setting students', print_r($memcache_object['students'], true));
+    //save outcome values to cache for form re-loading
+    $memcache_object['outcomes'] = $activityoutcomearray;
+//    watchdog('setting outcomes', print_r($memcache_object['outcomes'], true));
+
+    $memcache_object['activity_type'] = $selected_activity_type;
+
+    cache_set('Edit Activity' . session_id() . $activityid, $memcache_object, 'cache', time() + 30);
+    
+    if ($message)
+        form_set_error('', 'The following fields are required: <ul>' . $message . '</ul>');
+//    watchdog('Edit Activity cache check: ', print_r(cache_get('Edit Activity' . session_id() . $activityid), true));
+}
+
+function ntlp_courses_activity_Adduser($activity_id, $feedback_by, $user_ids) {
+
+    $recipient_ids = explode(",", $user_ids);
+
+    if ($activity_id != null) {
+        foreach ($recipient_ids as $uid) {
+
+            if (!empty($uid)) {
+                $check_user = check_user_rubric_activity($feedback_by, $uid, $activity_id);
+                if ($check_user == true) {
+
+                    watchdog('course activity ', 'activity id' . $activity_id . '    user id' . $uid);
+                    db_query("INSERT INTO {ntlp_rubric_selected_user} VALUES (%d, %d, %d )", $activity_id, $uid, $feedback_by);
+                }
+            }
+        }
+    }
+}
+
+function ntlp_courses_activity_Deleteuser($course_id, $activity_id, $feedback_for) {
+
+    $feedback_by = check_plain(arg(7));
+
+    if ($feedback_for != null && $activity_id != null) {
+
+        db_query("Delete from {ntlp_rubric_selected_user} where activity_nid = %d and user_uid = %d and added_by_uid = %d  ", $activity_id, $feedback_for, $feedback_by);
+
+        $submission_ids = get_rubric_submission_record($activity_id, $feedback_by, $feedback_for);
+
+        if (!empty($submission_ids)) {
+
+            db_query("Delete from {ntlp_activity_rubric_submission} where submission_nid = %d", $submission_ids);
+            db_query("Delete from {node} where nid = %d", $submission_ids);
+            db_query("Delete from {ntlp_activity_rubric_submission_for} where submission_nid = %d", $submission_ids);
+        }
+
+//        drupal_set_message('User deleted successfully from this activity');
+    }
+
+
+//    drupal_goto('ntlp/courses/activity/view/' . $course_id . '/' . $activity_id, array('tab' => 'work'));
+//    drupal_goto('ntlp/courses/activity/rubric/view/' . $course_id . '/' . $activity_id);
+}
+
+
+function ntlp_publish_grade($activity_nid, $status) {
+//No need to set grades trigger point here
+
+    global $user;
+
+    $published_date = '';
+
+    if ($status == 1) {
+        $published_status = 0;
+        $publish_status = "Unpublish Grades";
+
+// updating a publish status.
+        db_query("UPDATE {ntlp_course_activity} SET is_published = %d, published_date = NOW() WHERE nid = %d", $status, $activity_nid);
+
+//get the published date.
+        $result = db_result(db_query("SELECT published_date FROM {ntlp_course_activity} WHERE nid = %d", $activity_nid));
+        $published_date = 'Published ' . get_tz(get_user_school($user->uid), DATE_FORMAT_LAST_SAVED, $result);
+
+
+        $graded_user_result = get_graded_students_on_activity($activity_nid);
+        if ($graded_user_result->num_rows > 0) {
+            while ($record = db_fetch_object($graded_user_result)) {
+                ntlpsubmissionactivity_submit("grade", $activity_nid, $record->user_uid, $user->uid);
+            }
+        }
+    } else {
+        $published_status = 1;
+        $publish_status = "Publish Grades";
+
+// updating a publish status.
+        db_query("UPDATE {ntlp_course_activity} SET is_published = %d, published_date = null WHERE nid = %d", $status, $activity_nid);
+    }
+
+    $css_class = '';
+    if ($published_status == 1) {
+        $css_class = '<div class="Activity_grade_Published" style="float: left;">';
+    } else {
+        $css_class = '<div class="Activity_grade_Published published_grade_box" style="float: left;">';
+    }
+    $html = $css_class
+            . $published_date . '&nbsp;&nbsp;
+            </div><div style="float: left;">&nbsp;&nbsp;</div>
+            <div style="float: left;" align="right">
+                <a onmousedown=this.className="SubmitAssignmentBtnClicked" onmouseup=this.className="SubmitAssignmentBtn" onclick="publish_this_activity(' . $activity_nid . ',' . $published_status . '); return false;" class="SubmitAssignmentBtn">' . $publish_status . '</a>
+            </div>';
+
+    print $html;
+}
+
+function clean_score($score) {
+    if (empty($score)) {
+        $score = "";
+    } else if (intval($score) == 0) {
+        $score = 0;
+    } else {
+        if (strpos($score, '.')) {
+            $score = rtrim(trim($score, '0'), '.');
+        }
+    }
+    return $score;
+}
+
+$rubric_text = array();
+
+function get_rubric_level_percent_text($txtno) {
+    if (!$rubric_text) {
+        $rubric_text[0] = "0";
+        $rubric_text[1] = "60";
+        $rubric_text[2] = "90";
+        $rubric_text[3] = "";
+    }
+    return $rubric_text[$txtno];
+}
+
+function get_rubric_category_points_text($txtno) {
+    if (!$rubric_text) {
+        $rubric_text[0] = "25";
+        $rubric_text[1] = "25";
+        $rubric_text[2] = "50";
+        $rubric_text[3] = "";
+    }
+    return $rubric_text[$txtno];
+}
+
+function get_rubric_category_text($txtno) {
+    if (!$rubric_text) {
+        $rubric_text[0] = "Leadership and Initiative";
+        $rubric_text[1] = "Facilitation and Support";
+        $rubric_text[2] = "Contributions and Work Ethic";
+        $rubric_text[3] = "";
+    }
+    return $rubric_text[$txtno];
+}
+
+function get_rubric_level_text($txtno) {
+    if (!$rubric_text) {
+        $rubric_text[0] = "Unsatisfactory";
+        $rubric_text[1] = "Proficient";
+        $rubric_text[2] = "Advanced";
+        $rubric_text[3] = "";
+    }
+    return $rubric_text[$txtno];
+}
+
+function get_rubric_text($txtno) {
+
+    if (!$rubric_text) {
+        $rubric_text[0] = "Group member played a passive role, generating few new ideas; tended to only do what they were told to do by others, or did not seek help when needed.";
+        $rubric_text[1] = "Group member played an active role in generating new ideas, took initiative in getting tasks organized, and completed and sought help when needed.";
+        $rubric_text[2] = "In addition to the “Proficient” qualities, the group member provided leadership to the group by thoughtfully organizing and dividing the work, checking on progress, or providing focus and direction for the project.  ";
+        $rubric_text[3] = "";
+        $rubric_text[4] = "Group member seemed unable or unwilling to help others, made non-constructive criticisms toward the project or other group members, or was distracted by other members.";
+        $rubric_text[5] = "Group member demonstrated willingness to help other group members when asked, actively listened to the ideas of others, and helped create a positive work environment.";
+        $rubric_text[6] = "In addition to the “Proficient” qualities, the group member actively checked with others to understand how each member was progressing and how he or she may be of help.";
+        $rubric_text[7] = "";
+        $rubric_text[8] = "Group member was often off task, did not complete assignments or duties, or had attendance problems that significantly impeded progress on project.  May have worked hard but on relatively unimportant parts of the project.";
+        $rubric_text[9] = "Group member was prepared to work each day, met due dates by completing assignments/duties, and worked hard on the project most of the time. If absent, other group members knew the reason and progress was not significantly impeded.";
+        $rubric_text[10] = "In addition to the “Proficient” qualities, the group member made up for work left undone by other group members, demonstrated willingness to spend significant time outside of class/school to complete the project.";
+        $rubric_text[11] = "";
+        $rubric_text[12] = "";
+        $rubric_text[13] = "";
+        $rubric_text[14] = "";
+        $rubric_text[15] = "";
+        $rubric_text[16] = "";
+        $rubric_text[17] = "";
+        $rubric_text[18] = "";
+        $rubric_text[19] = "";
+    }
+//print_r($rubric_text);
+    return $rubric_text[$txtno];
+}
+
+function ntlp_activity_last_graded_update_date($activity_nid) {
+    global $user;
+
+    if (isset($activity_nid) && $activity_nid != 0) {
+        //Save scores from cache to database
+        ntlp_courses_activity_grade_all_table_save($activity_nid);
+
+        $result = get_activity_students_last_graded_date($activity_nid);
+
+        $data = db_fetch_object($result);
+        $data_graded = (isset($data->date_graded) ? ('Last saved ' . get_tz(get_user_school($user->uid), DATE_FORMAT_LAST_SAVED, time())) : "");
+    } else {
+        $data_graded = 'Last saved ' . get_tz(get_user_school($user->uid), DATE_FORMAT_LAST_SAVED, time());
+    }
+
+    print $data_graded;
+}
+function ntlp_autosave_student_course($student_uid, $course_nid, $term_tid) {
+    global $user;
+
+    //Save scores from cache to database
+    ntlp_student_courses_grade_all_table_save($student_uid, $course_nid, $term_tid, $user->uid);
+
+    $result = get_course_activity_last_graded_date($term_tid, $course_nid, $student_uid);
+
+    $data = db_fetch_object($result);
+    $data_graded = (isset($data->date_graded) ? ('Last saved ' . get_tz(get_user_school($user->uid), DATE_FORMAT_LAST_SAVED, time())) : "");
+
+    print $data_graded;
+}
+
+function get_response_type_text($response_type) {
+    switch($response_type) {
+        case 1: return ACT_RES_TYPE_EXP;
+        case 2: return ACT_RES_TYPE_NAR;
+        case 3: return ACT_RES_TYPE_ARG;
+        default: return "";
+    }
+}
+
+function get_response_length_text($response_length) {
+    switch ($response_length) {
+        case 1: return ACT_RES_LEN_1;
+        case 2: return ACT_RES_LEN_2_4;
+        case 3: return ACT_RES_LEN_5_10;
+        case 4: return ACT_RES_LEN_10;
+        default: return "";
+    }
+}
+
+function get_act_description_heading($selected_coursetype) {
+    
+    if ($selected_coursetype == 'lo_journal')
+        $description_heading = 'Journal Prompt';
+    else
+        $description_heading = 'Description';
+
+    return $description_heading;
+}
+
+function accrodion_example_form2() {
+
+    jquery_ui_add('ui.accordion');
+
+    drupal_add_js('$(function() {
+      $( "#accordion" ).accordion({
+     });
+     });', 'inline');
+
+    $html = '<div class="demo">
+
+<div id="accordion">
+	<h3><a href="#">Section 1</a></h3>
+	<div>
+		<p>
+		Mauris mauris ante, blandit et, ultrices a, suscipit eget, quam. Integer
+		ut neque. Vivamus nisi metus, molestie vel, gravida in, condimentum sit
+		amet, nunc. Nam a nibh. Donec suscipit eros. Nam mi. Proin viverra leo ut
+		odio. Curabitur malesuada. Vestibulum a velit eu ante scelerisque vulputate.
+		</p>
+	</div>
+	<h3><a href="#">Section 2</a></h3>
+	<div>
+		<p>
+		Sed non urna. Donec et ante. Phasellus eu ligula. Vestibulum sit amet
+		purus. Vivamus hendrerit, dolor at aliquet laoreet, mauris turpis porttitor
+		velit, faucibus interdum tellus libero ac justo. Vivamus non quam. In
+		suscipit faucibus urna.
+		</p>
+                <p>
+		Mauris mauris ante, blandit et, ultrices a, suscipit eget, quam. Integer
+		ut neque. Vivamus nisi metus, molestie vel, gravida in, condimentum sit
+		amet, nunc. Nam a nibh. Donec suscipit eros. Nam mi. Proin viverra leo ut
+		odio. Curabitur malesuada. Vestibulum a velit eu ante scelerisque vulputate.
+		</p>
+	</div>
+	<h3><a href="#">Section 3</a></h3>
+	<div>
+		<p>
+		Nam enim risus, molestie et, porta ac, aliquam ac, risus. Quisque lobortis.
+		Phasellus pellentesque purus in massa. Aenean in pede. Phasellus ac libero
+		ac tellus pellentesque semper. Sed ac felis. Sed commodo, magna quis
+		lacinia ornare, quam ante aliquam nisi, eu iaculis leo purus venenatis dui.
+		</p>
+		<ul>
+			<li>List item one</li>
+			<li>List item two</li>
+			<li>List item three</li>
+			<li>List item one</li>
+			<li>List item two</li>
+			<li>List item three</li>
+			<li>List item one</li>
+			<li>List item two</li>
+			<li>List item three</li>
+			<li>List item one</li>
+			<li>List item two</li>
+			<li>List item three</li>
+			<li>List item one</li>
+			<li>List item two</li>
+			<li>List item three</li>
+
+		</ul>
+	</div>
+	<h3><a href="#">Section 4</a></h3>
+	<div>
+		<p>
+		Cras dictum. Pellentesque habitant morbi tristique senectus et netus
+		et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis in
+		faucibus orci luctus et ultrices posuere cubilia Curae; Aenean lacinia
+		mauris vel est.
+		</p>
+		<p>
+		Suspendisse eu nisl. Nullam ut libero. Integer dignissim consequat lectus.
+		Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
+		inceptos himenaeos.
+		</p>
+	</div>
+</div>
+
+</div><!-- End demo -->
+
+<div class="demo-description" style="display: none; ">
+<p>
+Click headers to expand/collapse content that is broken into logical sections, much like tabs.
+Optionally, toggle sections open/closed on mouseover.
+</p>
+<p>
+The underlying HTML markup is a series of headers (H3 tags) and content divs so the content is
+usable without JavaScript.
+</p>
+</div><!-- End demo-description -->';
+
+
+    $form['example'] = array(
+        '#type' => 'item',
+        '#value' => $html,
+    );
+
+    return $form;
+}
+
+function accrodion_example_form() {
+
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/nefarioustim-jquery-accordion/css/reset.css');
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/nefarioustim-jquery-accordion/css/core.css');
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/nefarioustim-jquery-accordion/css/accordion.core.css');
+
+    drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/nefarioustim-jquery-accordion/js/jquery-1.4.2.min.js', 'footer');
+    drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/nefarioustim-jquery-accordion/js/jquery.easing.min.js', 'footer');
+    drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/nefarioustim-jquery-accordion/js/jquery.accordion.2.0.min.js', 'footer');
+
+    drupal_add_js('
+         $(document).ready(function() {
+         alert("here i a");
+$("#activities").accordion({
+    handle: ".handle", //ljklkj
+    canToggle: true,
+    canOpenMultiple: true
+
+});
+alert("method found");
+});
+      ', 'inline');
+
+
+    $html = '
+
+
+<ul class="accordion" id="activities">
+    <li>
+        <div class="handle">Handle 1</div>
+        <div class="panel loading">
+            <p>A panel filled with text.</p>
+        </div>
+    </li>
+    <li>
+        <div class="handle">Handle 2</div>
+        <ul class="panel loading">
+            <li>How about&hellip;</li>
+            <li>&hellip; a list &hellip;</li>
+            <li>&hellip; of items?</li>
+        </ul>
+    </li>
+    <li>
+        <div class="handle">Handle 3</div>
+        <p class="panel loading">
+            <img src="/a/i/spa.png" alt="" width="220" height="220">
+            An image in a paragraph.
+        </p>
+    </li>
+    <li>
+        <div class="handle">Handle 4</div>
+        <div class="panel loading">
+            <h4>A nested list of items</h4>
+            <ul>
+                <li>Item 1</li>
+                <li>Item 2
+                    <ul>
+                        <li>Subitem 1</li>
+                        <li>Subitem 2</li>
+                        <li>Subitem 3</li>
+                    </ul>
+                </li>
+                <li>Item 3</li>
+                <li>Item 4</li>
+                <li>Item 5</li>
+            </ul>
+        </div>
+    </li>
+            </ul>
+            ';
+
+    $form['example'] = array(
+        '#type' => 'item',
+        '#default_value' => $html,
+    );
+//
+    return $form;
+}

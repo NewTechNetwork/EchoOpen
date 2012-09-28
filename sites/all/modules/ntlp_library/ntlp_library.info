@@ -1,0 +1,7 @@
+; $Id: ntlp_library.info,v .01 $
+name = NTLP Library Maintenance
+description = Allows maintenance of NTLP Library
+package = NTLP
+core = 6.x
+version = "6.x-0.1"
+

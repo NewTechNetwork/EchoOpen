@@ -1,0 +1,154 @@
+/*// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+
+/* $Id: modalframe.parent.css,v 1.1.2.4 2010/01/02 06:07:14 markuspetrux Exp $ */
+
+/**
+ * jQuery UI Dialog classes.
+ */
+.modalframe {
+  color: #000000;
+  background-color: #ffffff;
+}
+body.popups-processed {
+   background-image: none !important;
+   background-color: #fff !important;
+}
+.modalframe .ui-dialog-titlebar {
+  position: relative;
+  cursor: move;
+  height: 26px;
+  white-space: nowrap;
+  vertical-align: top;
+}
+/*.modalframe .ui-dialog-title {
+  display: block;
+  position: absolute;
+  top: 0; left: 0;
+  margin: 0.2em 0.5em;
+  padding: 0;
+  color: #d9d9d9;
+}*/
+.modalframe .ui-dialog-titlebar-close {
+  display: block;
+  position: absolute !important;
+  top: 0; right: 0;
+  margin: 2px 2px 2px 0.5em;
+  padding: 0 !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: url(../images/new-close.png) no-repeat 0 0 !important;
+}
+.modalframe .ui-dialog-titlebar-close:hover {
+  display: block;
+  position: absolute !important;
+  top: 0; right: 0;
+  margin: 2px 2px 2px 0.5em;
+  padding: 0 !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: url(../images/new-close.png) no-repeat 0px -14px !important;
+}
+
+.modalframe .ui-dialog-titlebar-close span {
+  display: none !important;
+}
+.modalframe .ui-dialog-titlebar-close span:hover {
+  display: none !important;
+}
+.modalframe .ui-dialog-content {
+  color: #292929;
+  background-color: #f8f8f8;
+}
+
+/**
+ * ui-dialog overlay.
+ */
+.ui-widget-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: #aaaaaa;
+  opacity: 0.4;
+  filter: alpha(opacity=40);
+}
+
+/**
+ * Dialog content.
+ */
+#modalframe-container {
+  margin: 0;
+  padding: 0;
+  background: url(../images/loading.gif) no-repeat 50% 50%;
+  overflow: visible;
+  border: none;
+}
+#modalframe-container.modalframe-loaded {
+  background: none;
+}
+#modalframe-element {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+/**
+ * Helpers to enhance the Modal Frame API.
+ */
+
+.ui-dialog {
+    height:auto !important;
+    border: 2px solid #3591CB !important;
+}
+.ui-state-hover {
+    border: none !important;
+}
+
+.ui-state-default, .ui-widget-content, .ui-state-default {
+    background-color:#fff;
+    padding:5px;
+/*    border:none !important;*/
+    color:#222222;
+}
+.ui-widget-header {
+  background:none !important;
+  border: none !important;
+  background-color:#fff !important;
+  background-image: none !important;
+}
+.ui-icon-closethick {
+    display: none !important;
+}
+.ui-icon-closethick:hover {
+    display: none !important;
+}
+.ui-dialog-buttonpane {
+    background-color:#fff;
+    position:absolute;
+    bottom:0px;
+    right:0px;
+}
+.ui-dialog-content p {
+    background-color:#fff;
+    margin:0px;
+    padding:5px 0px 5px 0px;
+    border: none;
+}
+.ui-dialog-title {
+    color:#3570AA;
+    font-size:14px;
+    font-weight:bold
+}
+
+.ui-dialog .ui-dialog-titlebar-close {
+  display: block;
+  position: absolute !important;
+  top: 0; right: 0;
+  margin: 2px 2px 2px 0.5em;
+  padding: 0 !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: url(../images/new-close.png) no-repeat 0 0 !important;
+}

@@ -1,0 +1,74 @@
+<?php
+/* 
+ * gmail - Gmail block for NTLP with OAuth3
+ * Copyright © 2009 Shahbaz Ahmer <shahbaz.ahmer@parallelmode.com>
+ * 
+ * $Id: gmail.info 11 2009-12-20 03:15:00Z shahbaz.ahmer@parallelmode.com $
+ * 
+ */
+
+require_once("gmail.contents.inc");
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the gmail module
+*/
+
+function gmail_perm() {
+  return array('view gmail block');
+} // function gmail_perm()
+
+/**
+* Display help and module information
+* @param path which path of the site we're displaying help
+* @param arg array that holds the current path as would be returned by arg()
+* @return help text for the path
+*/
+function gmail_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#gmail":
+      $output = '<p>'.  t("Gmail block for NTLP with OAuth3") .'</p>';
+      break;
+    case "admin/settings/gmail":
+      $output = t(<<<END
+<p>Gmail block for NTLP with OAuth3</p>
+END
+);
+      break;
+  }
+  return $output;
+} // function gmail_help
+
+/**
+* Menu items for this module
+* @return array An array of menu items
+*/
+function gmail_menu() {
+  $items = array();
+  $items['gmail/authorize'] = array(
+    'title' => t('Request authorization token from Gmail'),
+    'page callback' => 'gmail_request_token',
+    'access arguments' => array('view gmail block'),
+    'file' => 'gmail.sso.inc',
+    'type' => MENU_CALLBACK,
+  );
+/*$items['gmail/obtainauth/%'] = array(
+    'title' => t('Provide Gmail authorization token'),
+    'page callback' => 'gmail_obtain_auth',
+    'page arguments' => array(2),
+    'access arguments' => array('view gmail block'),
+    'file' => 'gmail.sso.inc',
+    'type' => MENU_CALLBACK,
+  ); */
+/*  $items['admin/settings/gmail'] = array(
+    'title' => t('gmail settings'),
+    'description' => 'Gmail Configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gmail_admin_settings'),
+    'access arguments' => array('administer gmail'),
+	'block callback' => 'system_admin_theme_settings',
+	'file' => 'gmail.admin.inc',
+   );
+*/
+  return $items;
+} // function gmail_menu

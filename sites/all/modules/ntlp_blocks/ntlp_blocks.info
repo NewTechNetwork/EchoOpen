@@ -1,0 +1,6 @@
+; $Id: ntlp_blocks.info,v .01 $
+name = NTLP UI Blocks
+description = Enables NTLP modules to be displayed in Drupal Blocks
+package = NTLP
+core = 6.x
+version = "6.x-0.1"

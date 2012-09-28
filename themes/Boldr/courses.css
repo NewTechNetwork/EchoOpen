@@ -1,0 +1,3873 @@
+/* // Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+/* --------- Courses Panel --------- */
+.CoursesMainDiv {
+	background-color:#3570aa;
+	width:612px;
+}
+.CoursesHeading {
+	float:left;
+	width:411px;
+	height:52px;
+	background-image:url(Images/CoursesHeadingBg.jpg);
+	background-position:top left;
+	background-repeat:repeat-x;
+}
+.CoursesHeading div {
+	font-size:17px;
+	color:#FFF;
+	font-weight:bold;
+	padding:15px 0 0 10px;
+}
+
+.CoursesTabLeft {
+	float:left;
+	width:10px;
+	height:52px;
+	background-image:url(Images/CoursesTabPanelLeft.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+.CoursesTabCenter {
+	float:left;
+	width:142px;
+	height:52px;
+	background-image:url(Images/CoursesTabPanelCenterBg.jpg);
+	background-position:bottom left;
+	background-repeat:repeat-x;
+}
+.CoursesTabCenter div {
+	float:left;
+	padding:15px 0 0 0;
+}
+.CoursesTabCenter div ul {
+	padding:0px;
+	margin:0px;
+}
+.CoursesTabCenter div  ul  li {
+	list-style:none;
+	float:left;
+            font-weight:bold;
+	color:#5ba6d5;
+	padding:0 2px 0 2px;
+}
+.CoursesTabCenter div  ul  li a.CoursesTabActive,.CoursesTabCenter div  ul  li a.CoursesTabActive:hover,.CoursesTabCenter div  ul  li a.CoursesTabActive:visited {
+	color:#3570aa;
+	font-weight:bold;
+	text-decoration:none;
+}
+
+.CoursesTabCenter div  ul  li a {
+	font-size:15px;
+	font-weight:normal;
+	color:#80d23d;
+	text-decoration:none;
+}
+.CoursesTabCenter div  ul  li a:hover {
+	color:#80d23d;
+	text-decoration:underline;
+}
+
+.CoursesTabRight {
+	float:left;
+	width:5px;
+	height:52px;
+	background-image:url(Images/CoursesTabPanelRight.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+.ContentbottomLeftCorner {
+	background-image:url(Images/bottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+	float:left;
+}
+.ContentbottomRightCorner {
+	background-image:url(Images/bottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	padding:0 0 0 10px;
+	float:left;
+	width:602px;
+}
+/* Courses Inner Panel Boxes */
+.CoursesInnerHeadingBg {
+	background-image:url(Images/CoursesInnerBg.jpg);
+	background-repeat:repeat-x;
+	background-position:top left;
+	height:56px;
+	float:left;
+	width:291px;
+}
+.CoursesInnerHeadingBgLeftCorner {
+	
+}
+.CoursesInnerPeriodsHeading {
+	float:left;
+	background-image:url(Images/CoursesInnerBgLeft.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	width:169px;
+
+}
+.CoursesInnerPeriodsHeading div {
+	color:#000;
+	font-size:13px;
+	padding:5px 0 0 5px;
+}
+
+.CoursesInnerTabs {
+	float:right;
+}
+.CoursesInnerTabsLeftBg {
+	background-image:url(Images/CoursesInnerTabLeft.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:25px;
+	width:10px;
+	float:left;
+	
+}
+.CoursesInnerTabsCenterBg {
+	float:left;
+	background-color:#9fc1d6;
+	width:106px;
+	height:25px;
+
+}
+.CoursesInnerTabsCenterBg div {
+	color:#339900;
+	font-size:12px;
+	padding:5px 0 0 0;
+}
+.CoursesInnerTabsCenterBg a,.CoursesInnerTabsCenterBg a:visited {
+	color:#339900;
+	font-size:12px;
+	text-decoration:none;
+}
+.CoursesInnerTabsCenterBg a:hover {
+	text-decoration:underline;
+}
+
+.CoursesInnerTabsRightBg {
+	background-image:url(Images/CoursesinnerTabRight.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:25px;
+	width:6px;
+	float:right;
+
+}
+.CoursesInnerDataHeading {
+	font-size:15px;
+	font-weight:bold;
+	color:#339900;
+	padding:0 0 0 5px;
+}
+.CoursesInnerDataHeading a,.CoursesInnerDataHeading a:visited {
+	font-size:15px;
+	font-weight:bold;
+	color:#339900;
+	text-decoration:none;
+}
+.CoursesInnerDataHeading a:hover {
+	text-decoration:underline;
+}
+
+.CoursesInnerDataActivitiesAndItems {
+	font-size:11px;
+	padding:0 0 0 5px;
+}
+.CoursesInnerDataActivitiesAndItems b {
+	color:#e59657;
+}
+.CoursesInnerDataActivitiesAndItems a,.CoursesInnerDataActivitiesAndItems a:visited {
+	color:#e59657;
+	text-decoration:none;
+}
+.CoursesInnerDataActivitiesAndItems a:hover {
+	color:#e59657;
+	text-decoration:underline;
+}
+
+.CoursesInnerDataActivitiesAndItems span {
+	color:#97b6c8;
+}
+.CoursesInnerDataContentBottomCornerleft {
+	background-image:url(Images/CoursesInnerBottomCornerLeft.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+	background-color:#FFF;
+}
+.CoursesInnerDataContentBottomCornerright {
+	background-image:url(Images/CoursesInnerBottomCornerRight.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom right;
+	padding:5px;
+}
+
+.CoursesInnerDataContentAnnouncement {
+	font-size:13px;
+	font-weight:bold;
+	color:#3570aa;
+}
+.CoursesInnerDataContentAnnouncement a,.CoursesInnerDataContentAnnouncement a:visited {
+	font-size:13px;
+	font-weight:bold;
+	color:#3570aa;
+	text-decoration:none;
+}
+.CoursesInnerDataContentAnnouncement a:hover{
+	text-decoration:underline;
+}
+
+.CoursesInnerDataContentFieldTrip {
+	font-size:12px;
+	font-weight:normal;
+	color:#ef7d23;
+}
+.CoursesInnerDataContentFieldTrip a,.CoursesInnerDataContentFieldTrip a:visited {
+	font-size:12px;
+	font-weight:normal;
+	color:#ef7d23;
+	text-decoration:none;
+}
+.CoursesInnerDataContentFieldTrip a:hover {
+	font-size:12px;
+	font-weight:normal;
+	color:#ef7d23;
+	text-decoration:underline;
+}
+
+.CoursesInnerDataContentTodaysAgenda {
+	font-size:11px;
+	font-weight:normal;
+	color:#595959;
+}
+.CoursesInnerDataContentFranz {
+	font-size:13px;
+	font-weight:bold;
+	color:#4da620;
+}
+.CoursesInnerDataContentFranz a,.CoursesInnerDataContentFranz a:visited {
+	font-size:13px;
+	font-weight:bold;
+	color:#4da620;
+	text-decoration:none;
+}
+.CoursesInnerDataContentFranz a:hover {
+	text-decoration:underline;
+}
+
+.CoursesContentInnerItems {
+	width:291px;
+	padding:0 10px 10px 0;
+	float:left;
+}
+.CoursesEmptyContentBoxLeftTop {
+	background-image:url(Images/CoursesEmptyBoxTopLeft.jpg);
+	background-repeat:no-repeat;
+	background-position: top left;
+	background-color:#9fc1d6;
+	height:6px;
+
+}
+.CoursesEmptyContentBoxRightTop {
+	background-image:url(Images/CoursesEmptyBoxTopRight.jpg);
+	background-repeat:no-repeat;
+	background-position: top right;
+	height:6px;
+	width:6px;
+	float:right;
+
+}
+.CoursesEmptyContentBoxLeftBottom {
+	background-image:url(Images/CoursesEmptyBoxBottomLeft.jpg);
+	background-repeat:no-repeat;
+	background-position: bottom left;
+	height:6px;
+	background-color:#9fc1d6;
+
+}
+.CoursesEmptyContentBoxRightBottom {
+	background-image:url(Images/CoursesEmptyBoxBottomRight.jpg);
+	background-repeat:no-repeat;
+	background-position: bottom right;
+	height:6px;
+	width:6px;
+	float:right;
+}
+.CoursesEmptyContentBox {
+	float:left;
+	padding:0 10px 10px 0;
+	
+}
+.CoursesEmptyContentBox table {
+	float:left;
+	height:129px;
+	
+}
+
+#CoursesEmptyBox {
+	background-color:#9fc1d6;
+
+}
+#AgendaMainPanel {
+	width:612px;
+}
+#AgendaMainPanel .AgendaHeading {
+	width:612px;
+}
+#AgendaMainPanel .AgendaHeadingIcon {
+
+	background-repeat:no-repeat;
+	background-position:top left;
+	float:left;
+	height:42px;
+	width:46px;
+}
+#AgendaMainPanel .AgendaHeadingData {
+
+	background-repeat:repeat-x;
+	background-position:top left;
+	height:27px;
+	float:left;
+	width:117px;
+	padding:15px 0 0 0;
+}
+#AgendaMainPanel .AgendaHeadingData h1 {
+	color:#FFF;
+	font-weight:bold;
+	font-size:17px;
+	padding:0px;
+	margin:0px;
+
+}
+#AgendaMainPanel .AgendaHeadingLinksPanel {
+	float:right;
+
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelLeftBg {
+	float:left;
+	background-image:url(Images/AgendaLinksLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:42px;
+	width:4px;
+
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg {
+	float:left;
+	background-image:url(Images/AgendaLinksBg.jpg);
+	background-position:top left;
+	background-repeat:repeat-x;
+	height:42px;
+	width:436px;
+
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div {
+	padding:17px 0 0 0;
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div ul {
+	padding:0px;
+	margin:0px;
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li {
+	list-style:none;
+	z-index:-900px;
+	float:left;
+	border-right:#b5cee4 1px solid;
+	font-size:11px;
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li.first {
+}
+
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li.last {
+	border-right:none;
+
+}
+
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a,#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a:visited{
+	color:#4d9f30;
+	text-decoration:none;                                
+	font-size:11px;
+	font-weight:bold;
+	padding:0 3px 0 3px;
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a:hover {
+	text-decoration:underline;                                
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a.active,#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a:visited.active,#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a:hover.active {
+	color:#FFF;
+	text-decoration:none;
+	font-weight:bold;
+	padding:0 3px 0 3px;
+}
+
+#AgendaMainPanel .AgendaHeadingLinksPanelRightBg {
+	float:left;
+	background-image:url(Images/AgendaLinksRightCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:42px;
+	width:9px;
+}
+
+#AgendaMainPanel .AgendaHeadingLinksPanelRightBg {
+	float:left;
+	background-image:url(Images/AgendaLinksRightCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:42px;
+	width:9px;
+}
+#AgendaMainPanel .AgendaInnerContent {
+	background-image:url(Images/AgendaBottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	background-color:#cee5f3;
+	width:612px;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg {
+	background-image:url(Images/AgendaBottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+	width:612px;
+	padding:0 0 2px 0;
+
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg div {
+	width:612px;
+}
+
+#AgendaMainPanel .AgendaInnerLeftCornerBg div h2 {
+	font-size:16px;
+	color:#666;
+	margin:0px;
+	padding:45px 0 0 15px;
+}
+
+#AgendaMainPanel .AgendaInnerLeftCornerBg div ul {
+	margin:0px 10px 0 0px;
+	padding:5px 5px 5px 15px;
+}
+
+#AgendaMainPanel .AgendaInnerLeftCornerBg div li {
+	list-style:decimal;
+	font-size:12px;
+	color:#666;
+	list-style-position:inside;
+	background-image:url(Images/AgendaDottedLine.jpg);
+	background-position:bottom left;
+	background-repeat:repeat-x;
+	line-height:25px;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg div li.last {
+	background:none;
+	border-bottom:1px solid #b7cedc;
+
+}
+
+#AgendaMainPanel .AgendaInnerLeftCornerBg div li a,#AgendaMainPanel .AgendaInnerLeftCornerBg div li a:visited {
+	color:#090;
+	text-decoration:none;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg div li a:hover {
+	color:#090;
+	text-decoration:underline;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg div .AgendaViewMoreViewAll {
+	padding:0 0 10px 0;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg div .AgendaViewMoreViewAll a,#AgendaMainPanel .AgendaInnerLeftCornerBg div .AgendaViewMoreViewAll a:visited {
+	color:#090;
+	text-decoration:none;
+	font-size:12px;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg .AgendaViewMoreViewAll a:hover {
+	color:#090;
+	text-decoration:underline;
+	font-size:12px;	
+}
+
+#AgendaAnnouncement {
+	width:612px;
+}
+#AgendaAnnouncement .TopRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	background-color:#ee7f23;
+}
+#AgendaAnnouncement .TopLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+#AgendaAnnouncement .TopLeftOrangeCorner div.AnnouncementHeadingMainDiv {
+	padding:5px;
+
+}
+#AgendaAnnouncement .TopLeftOrangeCorner div.AnnouncementHeadingMainDiv .AgendaIconDiv {
+ 	width:30px;
+	float:left;
+}
+#AgendaAnnouncement .TopLeftOrangeCorner div.AnnouncementHeadingMainDiv .AgendaOrangeBoxHeading {
+}
+#AgendaAnnouncement .TopLeftOrangeCorner div.AnnouncementHeadingMainDiv .AgendaOrangeBoxHeading h2 {
+	padding:0px;
+	margin:0px;
+	color:#fff;
+	font-size:16px;
+}
+#AgendaAnnouncement .MiddleLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleLeftCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+}
+#AgendaAnnouncement .MiddleCenterOrangeCorner {
+	background-color:#fef9c1;
+}
+#AgendaAnnouncement .MiddleCenterOrangeCorner p {
+	font-size:12px;
+	color:#666;
+	font-weight:bold;
+}
+#AgendaAnnouncement .MiddleCenterOrangeCorner .EditLink {
+	text-align:right;
+}
+#AgendaAnnouncement .MiddleCenterOrangeCorner .EditLink a,#AgendaAnnouncement .MiddleCenterOrangeCorner .EditLink a:visited {
+	color:#090;
+	text-decoration:none;
+	font-size:12px;
+}
+#AgendaAnnouncement .MiddleCenterOrangeCorner .EditLink a:hover {
+	text-decoration:underline;
+}
+
+
+
+#AgendaAnnouncement .MiddleRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+}
+
+#AgendaAnnouncement .BottomRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+}
+#AgendaAnnouncement .BottomCenterOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomCenterCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-x;
+	height:5px;
+}
+#AgendaAnnouncement .BottomLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomLeftCorner.jpg);
+	background-position:0 100%;
+	background-repeat:no-repeat;
+}
+#AgendaActivitiesAndNotisfication {
+	width:218px;
+}
+#AgendaActivitiesAndNotisfication .TopRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	background-color:#ee7f23;
+}
+#AgendaActivitiesAndNotisfication .TopLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+#AgendaActivitiesAndNotisfication .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication {
+	padding:5px;
+
+}
+#AgendaActivitiesAndNotisfication .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaIconDiv {
+ 	width:30px;
+	float:left;
+}
+#AgendaActivitiesAndNotisfication .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaOrangeBoxHeading {
+}
+#AgendaActivitiesAndNotisfication .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaOrangeBoxHeading h2 {
+	padding:0px;
+	margin:0px;
+	color:#fff;
+	font-size:16px;
+}
+#AgendaActivitiesAndNotisfication .MiddleLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleLeftCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+}
+#AgendaActivitiesAndNotisfication .MiddleCenterOrangeCorner {
+	background-color:#fef9c1;
+}
+
+#AgendaActivitiesAndNotisfication .MiddleCenterOrangeCorner ul.Notisfication,#AgendaActivitiesAndNotisfication .MiddleCenterOrangeCorner ul.Activities {
+	margin:0 3px 0 3px;
+	padding:0px;
+}
+#AgendaActivitiesAndNotisfication .MiddleCenterOrangeCorner ul.Notisfication li {
+	list-style:decimal;
+	list-style-position:inside;
+	background-image:url(Images/AgendaActivitiesAndNotisficationBottomBorder.jpg);
+	background-repeat:repeat-x;
+	padding:4px 0 4px 0;
+	background-position:bottom left;
+	color:#090;
+	font-weight:bold;
+	font-size:14px;
+}
+#AgendaActivitiesAndNotisfication .MiddleCenterOrangeCorner ul.Activities li {
+	list-style:none;
+	background-image:url(Images/AgendaActivitiesAndNotisficationBottomBorder.jpg);
+	background-repeat:repeat-x;
+	padding:4px 0 4px 0;
+	background-position:bottom left;
+	color:#090;
+	font-weight:bold;
+	font-size:14px;
+}
+
+
+
+#AgendaActivitiesAndNotisfication .MiddleRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+}
+
+#AgendaActivitiesAndNotisfication .BottomRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+}
+#AgendaActivitiesAndNotisfication .BottomCenterOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomCenterCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-x;
+	height:5px;
+}
+#AgendaActivitiesAndNotisfication .BottomLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomLeftCorner.jpg);
+	background-position:0 100%;
+	background-repeat:no-repeat;
+}
+
+/*-----------------Agenda----------------*/
+#AgendaMainPanel {
+	width:612px;
+	margin:0 0 10px 0;	
+
+}
+#AgendaMainPanel .AgendaHeading {
+	width:612px;
+}
+#AgendaMainPanel .AgendaHeadingIcon {
+	background-image:url(Images/AgendaIcon.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	float:left;
+	height:42px;
+	width:46px;
+}
+#AgendaMainPanel .AgendaHeadingData {
+	background-image:url(Images/AgendaHeadingBg.jpg);
+	background-repeat:repeat-x;
+	background-position:top left;
+	height:27px;
+	float:left;
+	width:117px;
+	padding:15px 0 0 0;
+}
+#AgendaMainPanel .AgendaHeadingData h1 {
+	color:#FFF;
+	font-weight:bold;
+	font-size:17px;
+	padding:0px;
+	margin:0px;
+
+}
+#AgendaMainPanel .AgendaHeadingLinksPanel {
+	float:right;
+
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelLeftBg {
+	float:left;
+	background-image:url(Images/AgendaLinksLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:42px;
+	width:4px;
+
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg {
+	float:left;
+	background-image:url(Images/AgendaLinksBg.jpg);
+	background-position:top left;
+	background-repeat:repeat-x;
+	height:42px;
+	width:436px;
+
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div {
+	padding:17px 0 0 0;
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div ul {
+	padding:0px;
+	margin:0px;
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li {
+	list-style:none;
+	z-index:-900px;
+	float:left;
+	border-right:#b5cee4 1px solid;
+	font-size:11px;
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li.first {
+}
+
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li.last {
+	border-right:none;
+
+}
+
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a,#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a:visited{
+	color:#4d9f30;
+	text-decoration:none;                                
+	font-size:11px;
+	font-weight:bold;
+	padding:0 3px 0 3px;
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a:hover {
+	text-decoration:underline;                                
+}
+#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a.active,#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a:visited.active,#AgendaMainPanel .AgendaHeadingLinksPanelCenterBg div li a:hover.active {
+	color:#FFF;
+	text-decoration:none;
+	font-weight:bold;
+	padding:0 3px 0 3px;
+}
+
+#AgendaMainPanel .AgendaHeadingLinksPanelRightBg {
+	float:left;
+	background-image:url(Images/AgendaLinksRightCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:42px;
+	width:9px;
+}
+
+#AgendaMainPanel .AgendaHeadingLinksPanelRightBg {
+	float:left;
+	background-image:url(Images/AgendaLinksRightCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:42px;
+	width:9px;
+}
+#AgendaMainPanel .AgendaInnerContent {
+	background-image:url(Images/AgendaBottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	background-color:#cee5f3;
+	width:612px;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg {
+	background-image:url(Images/AgendaBottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+	width:612px;
+	padding:0 0 2px 0;
+
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg div {
+	width:612px;
+}
+
+#AgendaMainPanel .AgendaInnerLeftCornerBg div h2 {
+	font-size:16px;
+	color:#666;
+	margin:0px;
+	padding:45px 0 0 15px;
+}
+
+#AgendaMainPanel .AgendaInnerLeftCornerBg div ul {
+	margin:0px 10px 0 0px;
+	padding:5px 5px 5px 15px;
+}
+
+#AgendaMainPanel .AgendaInnerLeftCornerBg div li {
+	list-style:decimal;
+	font-size:12px;
+	color:#666;
+	list-style-position:inside;
+	background-image:url(Images/AgendaDottedLine.jpg);
+	background-position:bottom left;
+	background-repeat:repeat-x;
+	line-height:25px;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg div li.last {
+	background:none;
+	border-bottom:1px solid #b7cedc;
+
+}
+
+#AgendaMainPanel .AgendaInnerLeftCornerBg div li a,#AgendaMainPanel .AgendaInnerLeftCornerBg div li a:visited {
+	color:#090;
+	text-decoration:none;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg div li a:hover {
+	color:#090;
+	text-decoration:underline;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg div .AgendaViewMoreViewAll {
+	padding:0 0 10px 0;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg div .AgendaViewMoreViewAll a,#AgendaMainPanel .AgendaInnerLeftCornerBg div .AgendaViewMoreViewAll a:visited {
+	color:#090;
+	text-decoration:none;
+	font-size:12px;
+}
+#AgendaMainPanel .AgendaInnerLeftCornerBg .AgendaViewMoreViewAll a:hover {
+	color:#090;
+	text-decoration:underline;
+	font-size:12px;
+}
+
+#AgendaAnnouncement {
+	width:612px;
+}
+#AgendaAnnouncement .TopRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	background-color:#ee7f23;
+}
+#AgendaAnnouncement .TopLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+#AgendaAnnouncement .TopLeftOrangeCorner div.AnnouncementHeadingMainDiv {
+	padding:5px;
+
+}
+#AgendaAnnouncement .TopLeftOrangeCorner div.AnnouncementHeadingMainDiv .AgendaIconDiv {
+ 	width:30px;
+	float:left;
+}
+#AgendaAnnouncement .TopLeftOrangeCorner div.AnnouncementHeadingMainDiv .AgendaOrangeBoxHeading {
+}
+#AgendaAnnouncement .TopLeftOrangeCorner div.AnnouncementHeadingMainDiv .AgendaOrangeBoxHeading h2 {
+	padding:0px;
+	margin:0px;
+	color:#fff;
+	font-size:16px;
+}
+#AgendaAnnouncement .MiddleLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleLeftCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+	font-size:0px;
+
+}
+#AgendaAnnouncement .MiddleCenterOrangeCorner {
+	background-color:#fef9c1;
+}
+#AgendaAnnouncement .MiddleCenterOrangeCorner p {
+	font-size:12px;
+	color:#666;
+	font-weight:bold;
+}
+#AgendaAnnouncement .MiddleCenterOrangeCorner .EditLink {
+	text-align:right;
+}
+#AgendaAnnouncement .MiddleCenterOrangeCorner .EditLink a,#AgendaAnnouncement .MiddleCenterOrangeCorner .EditLink a:visited {
+	color:#090;
+	text-decoration:none;
+	font-size:12px;
+}
+#AgendaAnnouncement .MiddleCenterOrangeCorner .EditLink a:hover {
+	text-decoration:underline;
+}
+
+
+
+#AgendaAnnouncement .MiddleRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+	font-size:0px;
+
+}
+
+#AgendaAnnouncement .BottomRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+	font-size:0px;
+
+}
+#AgendaAnnouncement .BottomCenterOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomCenterCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-x;
+	height:5px;
+	font-size:0px;
+
+}
+#AgendaAnnouncement .BottomLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomLeftCorner.jpg);
+	background-position:0 100%;
+	background-repeat:no-repeat;
+	font-size:0px;
+}
+#AgendaActivitiesAndNotisfication {
+	width:218px;
+	margin:0 0 10px 0; 
+}
+#AgendaActivitiesAndNotisfication .TopRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	background-color:#ee7f23;
+
+}
+#AgendaActivitiesAndNotisfication .TopLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+#AgendaActivitiesAndNotisfication .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication {
+	padding:5px;
+
+}
+#AgendaActivitiesAndNotisfication .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaIconDiv {
+ 	width:30px;
+	float:left;
+}
+#AgendaActivitiesAndNotisfication .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaOrangeBoxHeading {
+}
+#AgendaActivitiesAndNotisfication .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaOrangeBoxHeading h2 {
+	padding:0px;
+	margin:0px;
+	color:#fff;
+	font-size:16px;
+}
+#AgendaActivitiesAndNotisfication .MiddleLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleLeftCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+	font-size:0px;
+
+}
+#AgendaActivitiesAndNotisfication .MiddleCenterOrangeCorner {
+	background-color:#fef9c1;
+}
+
+#AgendaActivitiesAndNotisfication .MiddleCenterOrangeCorner ul.Notisfication,#AgendaActivitiesAndNotisfication .MiddleCenterOrangeCorner ul.Activities {
+	margin:0 3px 0 3px;
+	padding:0px;
+}
+#AgendaActivitiesAndNotisfication .MiddleCenterOrangeCorner ul.Notisfication li {
+	list-style:decimal;
+	list-style-position:inside;
+	background-image:url(Images/AgendaActivitiesAndNotisficationBottomBorder.jpg);
+	background-repeat:repeat-x;
+	padding:4px 0 4px 0;
+	background-position:bottom left;
+	color:#090;
+	font-weight:bold;
+	font-size:14px;
+}
+#AgendaActivitiesAndNotisfication .MiddleCenterOrangeCorner ul.Activities li {
+	list-style:none;
+	background-image:url(Images/AgendaActivitiesAndNotisficationBottomBorder.jpg);
+	background-repeat:repeat-x;
+	padding:4px 0 4px 0;
+	background-position:bottom left;
+	color:#090;
+	font-weight:bold;
+	font-size:14px;
+}
+#AgendaActivitiesAndNotisfication .MiddleCenterOrangeCorner ul.Activities li a {
+	color:#090;
+}
+
+
+#AgendaActivitiesAndNotisfication .MiddleRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+	font-size:0px;
+
+}
+
+#AgendaActivitiesAndNotisfication .BottomRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+	font-size:0px;
+
+}
+#AgendaActivitiesAndNotisfication .BottomCenterOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomCenterCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-x;
+	height:5px;
+	font-size:0px;
+
+}
+#AgendaActivitiesAndNotisfication .BottomLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomLeftCorner.jpg);
+	background-position:0 100%;
+	background-repeat:no-repeat;
+	font-size:0px;
+}
+/*---------------------GroupsAndEvents------------------------*/
+
+
+
+#GroupsAndEvents {
+	width:416px;
+}
+#GroupsAndEvents .GroupAndEventsLeftBottomCorner .EventsData {
+}
+#GroupsAndEvents .GroupAndEventsLeftBottomCorner .GroupsData {
+}
+#GroupsAndEvents .GroupAndEventsLeftBottomCorner .GroupsData h3 {
+	padding:0px;
+	margin:0px;
+	font-size:12px;
+	font-weight:normal;
+}
+#GroupsAndEvents .GroupAndEventsLeftBottomCorner .GroupsData a,#GroupsAndEvents .GroupAndEventsLeftBottomCorner .GroupsData a:visited {
+	font-size:12px;
+	text-decoration:none;
+	color:#090;
+}
+#GroupsAndEvents .GroupAndEventsLeftBottomCorner .GroupsData a:hover {
+	text-decoration:underline;
+}
+#GroupsAndEvents .GroupsData td {
+	background-image:url(Images/GroupsAndEventsDottedLine.jpg);
+	background-position:bottom;
+	background-repeat:repeat-x;
+	line-height:26px;
+	
+
+}
+#GroupsAndEvents .EventsData {
+	margin:5px 0 0 0;
+}
+
+#GroupsAndEvents .GroupsData .ViewAllGroups {
+	background:none;
+}
+
+#GroupsAndEvents .EventsData td {
+	background-image:url(Images/GroupsAndEventsDottedLine.jpg);
+	background-position:bottom;
+	background-repeat:repeat-x;
+	line-height:5px;
+	padding:7px 0 0 0;
+	
+
+}
+#GroupsAndEvents .EventsData .ViewAllEvents {
+	background:none;
+}
+#GroupsAndEvents .EventsData .ViewAllEvents a,#GroupsAndEvents .EventsData .ViewAllEvents a:visited {
+	color:#090;
+	text-decoration:none;
+	font-size:12px;
+}
+#GroupsAndEvents .EventsData .ViewAllEvents a:hover {
+	text-decoration:underline;
+}
+#GroupsAndEvents .GroupAndEventsLeftBottomCorner .EventsData h5 {
+	padding:0px;
+	margin:0px;
+	font-size:12px;
+}
+#GroupsAndEvents .GroupAndEventsLeftBottomCorner .EventsData h5 a {
+	color:#090;
+	font-size:12px;
+	font-weight:bold;
+	text-decoration:none;
+}
+#GroupsAndEvents .GroupAndEventsLeftBottomCorner .EventsData h5 a:hover {
+	text-decoration:underline;
+}
+#GroupsAndEvents .GroupAndEventsLeftBottomCorner .EventsData span {
+	font-size:11px;
+	font-weight:bold;
+	color:#666;
+}
+#GroupsAndEvents .GroupAndEventsLeftBottomCorner .EventsData .Date {
+	font-size:12px;
+	color:#666;
+}
+
+#GroupsAndEvents .GroupsAndEventsHeadingBg {
+	background-image:url(Images/GroupsAndEventsHeadingBg.jpg);
+	background-repeat:repeat-x;
+	background-position:top left;
+	float:left;
+	width:367px;
+	height:39px;
+}
+#GroupsAndEvents .GroupsAndEventsHeadingBg h2 {
+	color:#FFF;
+	font-size:16px;
+	padding:0 0 0 10px;
+}
+
+#GroupsAndEvents .GroupsAndEventsTopRightCorner {
+	background-image:url(Images/GroupsAndEventsTopRightCorner.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	float:left;
+	width:4px;
+	height:39px;
+}
+#GroupsAndEvents .GroupAndEventsRightBottomCorner {
+	background-image:url(Images/GroupsAndEventsBottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	background-color:#cde5f3;
+}
+#GroupsAndEvents .GroupAndEventsLeftBottomCorner {
+	background-image:url(Images/GroupsAndEventsBottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+	padding:10px;
+	height:178px;
+
+}
+
+/*HomePage Features*/
+
+
+
+/*New Updates By Ahmer*/
+.NoticficationMainContent .MiddleCenterOrangeCorner .Feature {
+	padding:10px 0 0px 0;
+	
+}
+.NoticficationMainContent .MiddleCenterOrangeCorner .FeatureFlashPanel {
+	
+}
+.NoticficationMainContent .MiddleCenterOrangeCorner .FeatureFlashPanelContent {
+	padding:10px 0 0 0;
+}
+.NoticficationMainContent .MiddleCenterOrangeCorner .FeatureFlashPanelContent .FeatureFlashPanelHeading  {
+	float:left;
+	width:140px;
+	padding:0 0 0 5px;
+}
+.NoticficationMainContent .MiddleCenterOrangeCorner .FeatureFlashPanelContent .FeatureFlashPanelHeading h6 {
+	font-size:13px;
+	color:#090;
+	font-weight:bold;
+	padding:0px;
+	margin:0px;
+}
+.NoticficationMainContent .MiddleCenterOrangeCorner .FeatureFlashPanelContent .FeatureFlashPanelNextLink {
+	float:right;
+	padding:18px 6px 0 0;
+}
+.NoticficationMainContent .MiddleCenterOrangeCorner .FeatureFlashPanelContent .FeatureFlashPanelNextLink a,.NoticficationMainContent .MiddleCenterOrangeCorner .FeatureFlashPanelContent .FeatureFlashPanelNextLink a:visited {
+	color:#090;
+	font-size:12px;
+	text-decoration:none;
+}
+.NoticficationMainContent .MiddleCenterOrangeCorner .FeatureFlashPanelContent .FeatureFlashPanelNextLink a:hover {
+	text-decoration:underline;
+}
+/*Agenda Polls*/
+
+#AgendaPolls {
+	width:218px;
+}
+#AgendaPolls .TopRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	background-color:#ee7f23;
+}
+#AgendaPolls .TopLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+#AgendaPolls .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication {
+	padding:5px;
+
+}
+#AgendaPolls .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaIconDiv {
+ 	width:30px;
+	float:left;
+}
+#AgendaPolls .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaOrangeBoxHeading {
+}
+#AgendaPolls .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaOrangeBoxHeading h2 {
+	padding:0px;
+	margin:0px;
+	color:#fff;
+	font-size:16px;
+}
+#AgendaPolls .MiddleLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleLeftCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+	font-size:0px;
+}
+#AgendaPolls .MiddleCenterOrangeCorner {
+	background-color:#fef9c1;
+}
+
+#AgendaPolls .MiddleCenterOrangeCorner h5 {
+	padding:0px;
+	margin:10px 0 10px 0;
+}
+#AgendaPolls .MiddleCenterOrangeCorner .AgendaPollsRadioButton{
+	float:left;
+}
+#AgendaPolls .MiddleCenterOrangeCorner .AgendaPollsRadioButtonText{
+	float:left;
+	width:185px;
+	font-size:12px;
+	padding:3px 0 0 0;
+}
+#AgendaPolls .MiddleCenterOrangeCorner .AgendaPollsChangeLinkAndSubmitBtn {
+}
+		
+#AgendaPolls .MiddleCenterOrangeCorner .AgendaPollsChangeLinkAndSubmitBtn .AgendaPollsSubmitBtn {
+	float:right;
+}
+
+#AgendaPolls .MiddleCenterOrangeCorner .AgendaPollsChangeLinkAndSubmitBtn .ChangeLink {
+	float:left;
+	padding:5px 0 0 0; 
+}
+#AgendaPolls .MiddleCenterOrangeCorner .AgendaPollsChangeLinkAndSubmitBtn .ChangeLink a,#AgendaPolls .MiddleCenterOrangeCorner .AgendaPollsChangeLinkAndSubmitBtn .ChangeLink a:visited {
+	color:#090;
+	text-decoration:none;
+	font-size:12px;
+}
+#AgendaPolls .MiddleCenterOrangeCorner .AgendaPollsChangeLinkAndSubmitBtn .ChangeLink a:hover {
+	text-decoration:underline;
+}
+
+
+#AgendaPolls .MiddleRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+	font-size:0px;
+
+}
+
+#AgendaPolls .BottomRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+	font-size:0px;
+
+}
+#AgendaPolls .BottomCenterOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomCenterCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-x;
+	height:5px;
+	font-size:0px;
+
+}
+#AgendaPolls .BottomLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomLeftCorner.jpg);
+	background-position:0 100%;
+	background-repeat:no-repeat;
+	font-size:0px;
+
+}
+
+.HomePageGroups {
+	padding:0 0 8px 15px;
+}
+.HomePageFeatures, .HomePagePolls {
+	padding:0px 0 0 5px;
+}
+.panels-flexible-column-12-7-middle {
+	padding:0px;
+	margin:0px;
+}
+
+<!--Agenda Share Stuff-->
+#AgendaShareStuff {
+	width:612px;
+}
+#AgendaShareStuff #AgendaShareStuffHeading {
+	width:612px;
+}
+#AgendaShareStuff #AgendaShareStuffHeading .AgendaShareStuffIcon {
+	float:left;
+	background-image:url(Images/AgendaShareStuffIcon.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	width:42px;
+	height:44px;
+}
+#AgendaShareStuff #AgendaShareStuffHeading .AgendaShareStuffHeading {
+	float:left;
+	background-image:url(Images/AgendaShareStuffHeadingBg.jpg);
+	background-position:top left;
+	background-repeat:repeat-x;
+	height:44px;
+	width:565px;
+}
+#AgendaShareStuff #AgendaShareStuffHeading .AgendaShareStuffHeading h2 {
+	font-size:16px;
+	color:#FFF;
+	padding:5px 0 0 10px;
+}
+#AgendaShareStuff #AgendaShareStuffHeading .AgendaShareStuffTopRightCorner {
+	background-image:url(Images/AgendaShareStuffTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	width:5px;
+	height:44px;
+	float:left;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaShareStuffBottomRightCorner {
+	background-image:url(Images/AgendaShareStuffBottomRightCorner.jpg);
+	background-position:bottom right;
+	background-color:#3570aa;
+	background-repeat:no-repeat;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaShareStuffBottomLeftCorner {
+	background-image:url(Images/AgendaShareStuffBottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+	padding:0 7px 7px 7px;
+}
+#AgendaShareStuff #AgendaShareStuffContent {
+	width:612px;
+}
+#AgendaShareStuff #AgendaShareStuffContent .StatusField {
+	overflow:hidden;
+	width:575px;
+	height:60px;
+	border-top:1px solid #696564;
+	border-bottom:1px solid #cccacd;
+	border-left:1px solid #ccc;
+	border-right:1px solid #cbcbcb;
+	padding:10px;
+
+}
+#AgendaShareStuff #AgendaShareStuffContent .ShareLinks {
+}
+#AgendaShareStuff #AgendaShareStuffContent .ShareLinks a {
+	margin:0 3px 0 0;
+}
+#AgendaShareStuff #AgendaShareStuffContent .ShareLinks img {
+	border:none;
+}
+
+#AgendaShareStuff #AgendaShareStuffContent .ShareLinksAndPostBtn {
+	padding:5px 0 0 0;
+}
+#AgendaShareStuff #AgendaShareStuffContent .ShareLinksAndPostBtn .ShareLinks {
+	float:left;
+}
+#AgendaShareStuff #AgendaShareStuffContent .ShareLinksAndPostBtn .PostBtn {
+	padding:0 0px 0 0;
+}
+
+#AgendaShareStuff #AgendaShareStuffContent .WhiteBoxMainDiv {
+	padding:5px 0 0 0;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaTopLeftWhiteCorner {
+	background-image:url(Images/WhiteTopLeftCorner.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	height:5px;
+	width:5px;
+}
+.CommentBtn {
+	padding:5px 0 0 0;
+}
+.LightGreenBoxTopLeft {
+	background-image:url(Images/LightGreenBoxTopLeft.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+}
+.LightGreenBoxTopRight {
+	background-image:url(Images/LightGreenBoxTopRight.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+}
+.LightGreenBoxBottomLeft {
+	background-image:url(Images/LightGreenBoxBottomLeft.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+}
+.LightGreenBoxBottomRight {
+	background-image:url(Images/LightGreenBoxBottomRight.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+}
+.LightGreenBoxDeletebtn {
+	width:20px;
+	
+}
+.LightGreenBox {
+	padding:0 0 5px 0;
+}
+.LightGreenBoxPerson {
+	width:40px;
+}
+.LightGreenBoxText {
+}
+.LightGreenBoxText h6 {
+	font-size:14px;
+	font-weight:bold;
+	color:#666;
+	padding:0px 0 0px 0px;
+	margin:0px;
+}
+.LightGreenBoxText h6 span {
+	font-size:12px;
+	font-weight:normal;
+	color:#666;
+	padding: 0px 0px 0px 5px;
+	margin:0px;
+}
+
+.LightGreenBoxText p {
+	font-size:12px;
+	color:#666;
+	padding:0px;
+	margin:0px;
+	font-style:italic;
+}
+
+.LightGreenBoxDeletebtn a {
+	background-image:url(Images/LightGreenBoxDeleteButton.jpg);
+	height:14px;
+	width:14px;
+	display:block;
+	
+}
+
+.CommentBtn a {
+	background-image:url(Images/CommentBtn.jpg);
+	height:23px;
+	width:81px;
+	display:block;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaTopRightWhiteCorner {
+	background-image:url(Images/WhiteTopRightCorner.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	height:5px;
+	width:5px;
+}
+
+#AgendaShareStuff #AgendaShareStuffContent .AgendaBottomLeftWhiteCorner {
+	background-image:url(Images/WhiteBottomLeftCorner.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	height:5px;
+	width:5px;
+}
+
+#AgendaShareStuff #AgendaShareStuffContent .AgendaBottomRightWhiteCorner {
+	background-image:url(Images/WhiteBottomRightCorner.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	height:5px;
+	width:5px;
+}
+#AgendaShareStuff #AgendaShareStuffContent table .AgendaPersonInformation {
+}
+#AgendaShareStuff #AgendaShareStuffContent table .AgendaDeleteBtn {
+	float:right;
+}
+#AgendaShareStuff #AgendaShareStuffContent table .TotalPersonLike {
+	float:right;
+	background-image:url(Images/link.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+	font-style:italic;
+	color:#666;
+	font-size:12px;
+	padding:15px 20px 0 18px;
+}
+#AgendaShareStuff #AgendaShareStuffContent table .TotalPersonLike a {
+	color:#090;
+	text-decoration:none;
+	font-size:12px;
+	font-style:normal;
+}
+#AgendaShareStuff #AgendaShareStuffContent table .TotalPersonLike a:hover {
+	text-decoration:underline;
+}
+
+#AgendaShareStuff #AgendaShareStuffContent table .AgendaDeleteBtn a {
+	background-image:url(Images/DeleteIcon.jpg);
+	height:14px;
+	width:14px;
+	display:block;
+	background-repeat:no-repeat;
+}
+#AgendaShareStuff #AgendaShareStuffContent table .PersonImage {
+	float:left;
+}
+#AgendaShareStuff #AgendaShareStuffContent table .PersonInformation {
+	float:left;
+	padding:0 0 0 5px;
+}
+
+#AgendaShareStuff #AgendaShareStuffContent table .PersonInformation .PersonName {
+	font-size:14px;
+	color:#090;
+	font-weight:bold;
+}
+#AgendaShareStuff #AgendaShareStuffContent table .PersonInformation .UploadTime {
+	font-size:11px;
+	color:#666;
+	font-style:italic;
+}
+.clearAll {
+	clear:both;
+}
+#AgendaShareStuff #AgendaShareStuffContent .CommentArrow {
+	background-image:url(Images/02_Boldr_Course_Start_Teacher_Final_a_36.jpg);
+	height:12px;
+	width:70px;
+	background-repeat:no-repeat;	
+	background-position: right;
+	
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueTopLeftCorner {
+	background-image:url(Images/LightBlueTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:4px;
+	width:4px;
+
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueTopRightCorner {
+	background-image:url(Images/LightBlueTopRightCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:4px;
+	width:4px;
+
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueBottomLeftCorner {
+	background-image:url(Images/LightBlueBottomLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:4px;
+	width:4px;
+
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueBottomRightCorner {
+	background-image:url(Images/LightBlueBottomRightCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:4px;
+	width:4px;
+
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent {
+	padding:5px;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent .PDFFiles {
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent .PDFFiles .PDFIcon {
+	float:left;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent .PDFFiles .PDFFileLink {
+	float:left;
+	padding:3px 0 0 5px;
+}
+.AgendaTextArea textarea {
+	overflow:hidden;
+	width:582px;
+}
+
+
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent .PDFFiles .PDFFileLink a,#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent .PDFFiles .PDFFileLink a:visited {
+	font-size:12px;
+	color:#090;
+	font-weight:bold;
+	text-decoration:none;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent .PDFFiles .PDFFileLink a:hover {
+	text-decoration:underline;
+}
+
+
+
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent .Image {
+	width:108px;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent .Flash {
+	width:235px;
+}
+
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent .Content {
+	float:left;
+	padding:0 0 0 0px; 
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent .Content h4 {
+	padding:0px;
+	margin:0px;
+	color:#090;
+	font-size:14px;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaLightBlueMiddleContent .Content p {
+	padding:0px;
+	margin:0px;
+	color:#666;
+	text-align:justify;
+	font-size:12px;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaAction {
+	padding:5px 0px 0 0px;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaAction a {
+	padding:0 5px 0 5px;
+}
+#AgendaShareStuff #AgendaShareStuffContent .AgendaAction img {
+	border:none;
+}
+.gap {
+	height:7px;
+}
+/*HeaderPanel*/
+.Agenda {
+}
+.AgendaMenu {
+	background-image:url(Images/AgendaMenuBg.jpg);
+	background-position:bottom left;
+	height:35px;
+	background-repeat:repeat-x;
+}
+.AgendaMenu ul {
+	padding:0px;
+	margin:0px;
+	list-style:none;
+}
+.AgendaMenu li {
+	background-image:url(Images/AgendaMenuRight.jpg);
+	background-position:top right;
+	height:35px;
+	background-repeat:no-repeat;
+	padding:0px;
+	margin:0px 0px 0px 3px;
+	float:left;
+}
+.AgendaMenu a,.AgendaMenu a:link,.AgendaMenu a:visited {
+	background-image:url(Images/AgendaMenuLeft.jpg);
+	background-position:top left;
+	padding:8px 7px 11px 7px;
+	display:block;
+	background-repeat:no-repeat;
+	color:#fff;
+	font-size:14px;
+	font-weight:bold;
+	text-decoration:none;
+
+}
+.AgendaMenu li.active {
+	background-image:url(Images/AgendaMenuActiveRight.jpg);
+	background-position:top right;
+	height:35px;
+	margin:0px -3px 0px 0px;
+	background-repeat:no-repeat;
+	float:left;
+}
+.AgendaMenu a.active {
+	background-image:url(Images/AgendaMenuActiveLeft.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	color:#3591CB;
+	padding:8px 10px 11px 10px;
+	font-size:14px;
+	text-decoration:none;
+	font-weight:bold;
+
+}
+.AgendaMenu .AgendaRightShade {
+	background-image:url(Images/AgendaMenuRightShade.jpg);
+	background-repeat:no-repeat;
+	float:right;
+	height:35px;
+	width:10px;
+}
+.AgendaContents .AgendaMainContentAreaMiddleLeftCorner {
+	background-image:url(Images/AgendaMainContentAreaTopLeftCorner.png);
+	background-repeat:repeat-y;
+	background-position:top left;
+	width:10px;
+	height:10px;
+       font-size:0px;
+}
+.AgendaContents .AgendaMainContentAreaMiddleCenterCorner {
+	background-color:#FFF;
+       font-size:0px;
+	height:10px;
+
+}
+.AgendaContents .AgendaMainContentAreaMiddleRightCorner {
+	background-image:url(Images/AgendaMainContentAreaTopRightCorner.jpg);
+	background-repeat:no-repeat;
+	background-position:top right;
+	width:10px;
+       font-size:0px;
+	height:10px;
+}
+
+
+/*------------------- PROJECTS --------------------*/
+#BoldrProject {
+	width:840px;
+	font:12px;
+}
+#BoldrProject .mainProjectHeading {
+	padding:0 0 10px 0;
+	float:left;
+	width:650px;
+}
+#BoldrProject .mainProjectHeading .BrandCrumb{
+	padding:0 0 5px 0;
+}
+
+#BoldrProject .mainProjectHeading .BrandCrumb a {
+	color:#090;
+	text-decoration:none;
+	font-size:12px;
+}
+#BoldrProject .mainProjectHeading .BrandCrumb a:hover {
+	color:#090;
+	text-decoration:underline;
+}
+
+#BoldrProject .mainProjectHeading .Heading {
+	font-size:18px;
+	color:#3570aa;
+}
+
+#BoldrProject .clearall {
+	clear:both;
+}
+#BoldrProject .ProjectResources {
+	width:840px;
+}
+#BoldrProject .ProjectResources .DataGap {
+	padding:0 10px 0 10px ;
+	background-color:#3591cb;
+}
+
+#BoldrProject .ProjectResources .Project-BriefCaseHeading {
+	
+}
+#BoldrProject .ProjectResources .Project-BriefCaseHeading h2 {
+	padding:0px 0 8px 0;
+	margin:0px;
+	font-size:18px;
+	font-weight:bold;
+	color:#3570aa;
+	
+}
+#BoldrProject .ProjectResources .ProjectResources-BottomRightCornerBg {
+	background-image:url(Images/ProjectsImages/ProjectResourcesBottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	background-color:#3591cb;
+}
+#BoldrProject .ProjectResources .ProjectResources-BottomLeftCornerBg {
+	background-image:url(Images/ProjectsImages/ProjectResourcesBottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+	height:10px;
+	font-size:0px;
+}
+
+#BoldrProject .ProjectResources .ProjectResources-TopRightCornerBg {
+	background-image:url(Images/ProjectsImages/ProjectResourcesTopRightCorner.jpg.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	background-color:#3591cb;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg {
+	background-image:url(Images/ProjectsImages/ProjectResourcesTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+/*Project Resources Heading*/
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-HeadingAndEditBtn {
+	height:40px;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Heading {
+	width:785px;
+	float:left;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-EditBtn {
+	width:55px;
+	float:right;
+	padding:8px 0 0 0; 
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-EditBtn a {
+	background-image:url(Images/ProjectsImages/ProjectResource-EditBtn.jpg);
+	width:45px;
+	height:23px;
+	background-position:bottom left;
+	display:block;
+	text-decoration:none;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-EditBtn a:hover {
+	background-position:top left;	
+}
+
+
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Heading h3 {
+	padding:10px;
+	margin:0px;
+	font-size:15px;
+	color:#FFF;
+	font-weight:bold;
+}
+/*Facilitator Materials*/
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content {
+	padding:0 10px 0 10px;
+	 color:#FFF;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .FacilitatorMaterials {
+	padding:0 0 10px 0;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .FacilitatorMaterials .FacilitatorMaterials-TopRightCorner{
+	background-image:url(Images/ProjectsImages/ProjectResources-LightGreenTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	background-color:#c6e7bb;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .FacilitatorMaterials .FacilitatorMaterials-TopRightCorner .FacilitatorMaterials-TopLeftCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-LightGreenTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .FacilitatorMaterials .FacilitatorMaterials-TopRightCorner .FacilitatorMaterials-TopLeftCorner .Project-FacilitatorMaterialsHeading {
+	padding:8px 0 6px 10px; 
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .FacilitatorMaterials .FacilitatorMaterials-TopRightCorner .FacilitatorMaterials-TopLeftCorner .Project-FacilitatorMaterialsHeading h3 {
+	padding:0px;
+	margin:0px;
+	font-size:14px;
+	font-weight:bold;
+	color:#3570aa;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .FacilitatorMaterials .FacilitatorMaterials-TopRightCorner .FacilitatorMaterials-TopLeftCorner .Project-FacilitatorMaterialsContent {
+	background-color:#FFF;
+	color:#000;
+	padding:0px 0 0px 0px; 
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .FacilitatorMaterials .FacilitatorMaterials-TopRightCorner .FacilitatorMaterials-TopLeftCorner .Project-FacilitatorMaterialsContent table {
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .FacilitatorMaterials .FacilitatorMaterials-TopRightCorner .FacilitatorMaterials-TopLeftCorner .Project-FacilitatorMaterialsContent td {
+	border-bottom:1px solid #c6e7bb;
+	padding:5px 0 5px 0;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .FacilitatorMaterials .FacilitatorMaterials-TopRightCorner .FacilitatorMaterials-TopLeftCorner .Project-FacilitatorMaterialsContent td div.Icon {
+	float:left;
+	padding:0 0 0 10px;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .FacilitatorMaterials .FacilitatorMaterials-TopRightCorner .FacilitatorMaterials-TopLeftCorner .Project-FacilitatorMaterialsContent td div.text {
+	float:left;
+	padding:3px 0 0 5px;
+	color:#339900;
+	font-weight:bold;
+
+}
+/*Student Materials*/
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content {
+	padding:0 10px 0 10px;
+	 color:#FFF;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .StudentMaterials {
+	padding:0 0 10px 0;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .StudentMaterials .StudentMaterials-TopRightCorner{
+	background-image:url(Images/ProjectsImages/ProjectResources-LightBlueTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	background-color:#cfe6f4;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .StudentMaterials .StudentMaterials-TopRightCorner .StudentMaterials-TopLeftCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-LightBlueTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .StudentMaterials .StudentMaterials-TopRightCorner .StudentMaterials-TopLeftCorner .Project-StudentMaterialsHeading {
+	padding:8px 0 6px 10px; 
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .StudentMaterials .StudentMaterials-TopRightCorner .StudentMaterials-TopLeftCorner .Project-StudentMaterialsHeading h3 {
+	padding:0px;
+	margin:0px;
+	font-size:14px;
+	font-weight:bold;
+	color:#3570aa;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .StudentMaterials .StudentMaterials-TopRightCorner .StudentMaterials-TopLeftCorner .Project-StudentMaterialsContent {
+	background-color:#FFF;
+	color:#000;
+	padding:0px 0 0px 0px; 
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .StudentMaterials .StudentMaterials-TopRightCorner .StudentMaterials-TopLeftCorner .Project-StudentMaterialsContent table {
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .StudentMaterials .StudentMaterials-TopRightCorner .StudentMaterials-TopLeftCorner .Project-StudentMaterialsContent td {
+	border-bottom:1px solid #cfe6f4;
+	padding:5px 0 5px 0;
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .StudentMaterials .StudentMaterials-TopRightCorner .StudentMaterials-TopLeftCorner .Project-StudentMaterialsContent td div.Icon {
+	float:left;
+	padding:0 0 0 10px;
+
+}
+#BoldrProject .ProjectResources .ProjectResources-TopLeftCornerBg .ProjectResources-Content .StudentMaterials .StudentMaterials-TopRightCorner .StudentMaterials-TopLeftCorner .Project-StudentMaterialsContent td div.text {
+	float:left;
+	padding:3px 0 0 5px;
+	color:#339900;
+	font-weight:bold;
+
+}
+
+#BoldrProject .ProjectResources .ProjectResources-Activities {
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteTopLeftCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-WhiteTopLeftCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteTopCenterCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-WhiteTopCenterCorner.jpg);
+	background-position:top;
+	background-repeat:repeat-x;
+	height:5px;
+
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteTopRightCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-WhiteTopRightCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteMiddleLeftCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-WhiteMiddleLeftCorner.jpg);
+	background-position:top right;
+	background-repeat:repeat-y;
+	width:5px;
+
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteMiddleCenterCorner {
+	background-color:#FFF;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteMiddleRightCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-WhiteMiddleRightCorner.jpg);
+	background-position:top left;
+	background-repeat:repeat-y;
+	width:5px;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteBottomLeftCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-WhiteBottomLeftCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteBottomCenterCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-WhiteBottomCenterCorner.jpg);
+	background-position:bottom;
+	background-repeat:repeat-x;
+	height:5px;
+
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteBottomRightCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-WhiteBottomRightCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+
+}
+
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteMiddleCenterCorner {
+}
+
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteMiddleCenterCorner .Project-ActivitiesHeading {
+	padding:8px 0 6px 10px; 
+	float:left;
+
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteMiddleCenterCorner .Project-Btns {
+	float:right;
+
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteMiddleCenterCorner .Project-Btns a.AddExistingActivityBtn {
+	height:23px;
+	width:154px;
+	background-image:url(Images/ProjectsImages/AddExistingActivity.jpg);
+	display:block;
+	text-decoration:none;
+	margin:5px 5px 5px 0;
+	float:left;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteMiddleCenterCorner .Project-Btns a.AddNewActivityBtn {
+	height:23px;
+	width:134px;
+	background-image:url(Images/ProjectsImages/AddNewActivity.jpg);
+	display:block;
+	text-decoration:none;
+	float:left;
+	margin:5px 5px 5px 0;
+
+}
+
+
+
+#BoldrProject .ProjectResources .ProjectResources-Activities .ProjectResources-WhiteMiddleCenterCorner .Project-ActivitiesHeading h3 {
+	padding:0px;
+	margin:0px;
+	font-size:14px;
+	font-weight:bold;
+	color:#3570aa;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesFilter {
+	padding:0 5px 0 5px;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesFilter .ProjectResources-YellowTopLeftCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-YellowTopleftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	padding:10px;
+
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesFilter .ProjectResources-YellowTopRightCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-YellowTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesFilter .ProjectResources-YellowBottomLeftCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-YellowBottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesFilter .ProjectResources-YellowBottomRightCorner {
+	background-image:url(Images/ProjectsImages/ProjectResources-YellowBottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	background-color:#fff9c2;
+}
+
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesFilter .Project-ActivitiesFilterHeading {
+	float:left;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesFilter .Project-ActivitiesFilterHeading h4 {
+	padding:0px;
+	margin:0px;
+	color:#3590c9;	
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesFilter .Project-ActivitiesFilterCloseLink {
+	float:right;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesFilter .Project-ActivitiesFilterCloseLink a {
+	color:#090;
+	text-decoration:none;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesFilter .Project-ActivitiesFilterCloseLink a:hover {
+	text-decoration:underline;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesStatusType .yellowDottedLine {
+	background-position:bottom;
+	background-image:url(Images/ProjectsImages/yellowDottedLine.jpg);
+	background-repeat:repeat-x;
+	font-size:1px
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesStatusType {
+	color:#000;
+}
+
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesStatusType .StatusHeading {
+	font-weight:bold;
+	color:#666;
+	width:60px;
+	padding:3px 0 3px 0;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesStatusType .ChkBox {
+	float:left;
+	padding:0 10px 0 0;
+}
+
+#BoldrProject .ProjectResources .ProjectResources-Activities .Project-ActivitiesStatusType .TypeHeading {
+	font-weight:bold;
+	color:#666;
+	width:60px;
+	padding:3px 0 3px 0;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ActivityGrid {
+	
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ActivityGrid th {
+	font-weight:bold;
+	color:#339933;
+	height:40px;
+	background-color:#d6e9f5;
+	padding:0 0 0 10px;	
+	border-left:1px solid #fff;
+	border-right:1px solid #fff;
+	border-collapse:collapse;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ActivityGrid td {
+	padding:5px 0 5px 10px;
+	color:#000;
+	background-image:url(Images/ProjectsImages/blueDottedLine.jpg);
+	background-position:bottom;
+	background-repeat:repeat-x;
+	border-left:1px solid #d6e9f7;
+	border-right:1px solid #d6e9f7;
+	border-collapse:collapse;
+	
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ActivityGrid td.ActivitiesTitle {
+	color:#090;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ActivityGrid td.ActivitiesTitle a {
+	color:#090;
+	text-decoration:none;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .ActivityGrid td.ActivitiesTitle a:hover {
+	text-decoration:underline;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .bottomPager {
+	float:right;
+	padding:5px 10px 0 0;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .bottomPager 	span {
+	font-weight:bold;
+	color:#3570aa;
+}
+
+#BoldrProject .ProjectResources .ProjectResources-Activities .bottomPager 	a {
+	color:#339900;
+	text-decoration:none;
+}
+#BoldrProject .ProjectResources .ProjectResources-Activities .bottomPager 	a:hover {
+	color:#339900;
+	text-decoration:underline;
+}
+
+#BoldrProject .DrivingQuestion {
+}
+#BoldrProject .DrivingQuestion .LightestBlueBottomRightCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueBottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	background-color:#d5e9f5;
+}
+#BoldrProject .DrivingQuestion .LightestBlueBottomLeftCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueBottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+#BoldrProject .DrivingQuestion .LightestBlueTopRightCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+#BoldrProject .DrivingQuestion .LightestBlueTopLeftCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	padding:8px;
+}
+#BoldrProject .DrivingQuestion .DrivingQuestion-Heading {
+	width:750px;
+	float:left;	
+}
+#BoldrProject .DrivingQuestion .DrivingQuestion-Heading h3 {
+	padding:0px;
+	margin:0px;
+	font:14px;
+	font-weight:bold;
+	color:#3570aa;
+	
+}
+#BoldrProject .DrivingQuestion .Content {
+	width:750px;
+	float:left;
+}
+
+#BoldrProject .DrivingQuestion .DrivingQuestion-Content {
+}
+
+#BoldrProject .DrivingQuestion .DrivingQuestion-ContentMainDiv {
+
+}
+#BoldrProject .DrivingQuestion .DrivingQuestion-Content p {
+	padding:3px 0 0 0;
+	margin:0px;
+	font:12px;
+	font-weight:normal;
+	color:#000;
+	
+}
+#BoldrProject .DrivingQuestion .DrivingQuestion-EditBtn {
+	width:45px;
+	float:right;
+}
+#BoldrProject .DrivingQuestion .DrivingQuestion-EditBtn a {
+	background-image:url(Images/ProjectsImages/EditBtn2.jpg);
+	background-position:top left;
+	height:23px;
+	width:45px;
+	display:block;
+	text-decoration:none;
+}
+#BoldrProject .DrivingQuestion .DrivingQuestion-EditBtn a:hover {
+	background-image:url(Images/ProjectsImages/EditBtn2.jpg);
+	background-position:bottom left;
+	height:23px;
+	width:45px;
+}
+#BoldrProject .LearningOutcomes {
+}
+#BoldrProject .LearningOutcomes .LightestBlueBottomRightCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueBottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	background-color:#d5e9f5;
+}
+#BoldrProject .LearningOutcomes .LightestBlueBottomLeftCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueBottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+#BoldrProject .LearningOutcomes .LightestBlueTopRightCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+#BoldrProject .LearningOutcomes .LightestBlueTopLeftCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	padding:8px;
+}
+#BoldrProject .LearningOutcomes .LearningOutcomes-Heading {
+	width:750px;
+	float:left;
+}
+#BoldrProject .LearningOutcomes .LearningOutcomes-Heading h3 {
+	padding:0px;
+	margin:0px;
+	font:14px;
+	font-weight:bold;
+	color:#3570aa;
+	
+}
+#BoldrProject .LearningOutcomes .Content {
+	width:750px;
+	float:left;
+}
+
+#BoldrProject .LearningOutcomes .LearningOutcomes-Content {
+}
+
+#BoldrProject .LearningOutcomes .LearningOutcomes-ContentMainDiv {
+	width:750px;
+	float:left;
+	padding:0px 0 0 0;
+
+}
+#BoldrProject .LearningOutcomes .LearningOutcomes-ContentMainDiv .RepeatDiv {
+	float:left;
+	padding:5px 0 0 0;
+	width:187px;
+}
+#BoldrProject .LearningOutcomes .LearningOutcomes-ContentMainDiv .RepeatDiv .Icon {
+	float:left;
+	padding:0 5px 0 0;
+}
+#BoldrProject .LearningOutcomes .LearningOutcomes-ContentMainDiv .RepeatDiv .text {
+	color:#3591cb;
+}
+#BoldrProject .LearningOutcomes .LearningOutcomes-ContentMainDiv .RepeatDiv .text a {
+	color:#3591cb;
+	text-decoration:none;
+}
+#BoldrProject .LearningOutcomes .LearningOutcomes-ContentMainDiv .RepeatDiv .text a:hover {
+	color:#3591cb;
+	text-decoration:underline;
+}
+
+#BoldrProject .LearningOutcomes .LearningOutcomes-EditBtn {
+	width:45px;
+	float:right;
+}
+#BoldrProject .LearningOutcomes .LearningOutcomes-EditBtn a {
+	background-image:url(Images/ProjectsImages/EditBtn2.jpg);
+	background-position:top left;
+	height:23px;
+	width:45px;
+	display:block;
+	text-decoration:none;
+}
+#BoldrProject .LearningOutcomes .LearningOutcomes-EditBtn a:hover {
+	background-image:url(Images/ProjectsImages/EditBtn2.jpg);
+	background-position:bottom left;
+	height:23px;
+	width:45px;
+}
+
+#BoldrProject .AcademicStandardsCovered  {
+}
+#BoldrProject .AcademicStandardsCovered .LightestBlueBottomRightCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueBottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	background-color:#d5e9f5;
+}
+#BoldrProject .AcademicStandardsCovered .LightestBlueBottomLeftCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueBottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+#BoldrProject .AcademicStandardsCovered .LightestBlueTopRightCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+#BoldrProject .AcademicStandardsCovered .LightestBlueTopLeftCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	padding:8px;
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-Heading {
+	width:750px;
+	float:left;
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-Heading h3 {
+	padding:0px;
+	margin:0px;
+	font:14px;
+	font-weight:bold;
+	color:#3570aa;
+	
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-Content {
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-Content .Content {
+	width:750px;
+	float:left;
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-ContentMainDiv {
+	width:750px;
+	float:left;
+	padding:0px 0 0 0;
+
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-ContentMainDiv .RepeatDiv {
+	padding:5px 40px 0 0;
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-ContentMainDiv .RepeatDiv .Icon {
+	float:left;
+	padding:0 5px 0 0;
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-ContentMainDiv .RepeatDiv .Text {
+	float:left;
+	color:#3591cb;
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-ContentMainDiv .RepeatDiv .Text a {
+	color:#3591cb;
+	text-decoration:none;
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-ContentMainDiv .RepeatDiv .Text a:hover {
+	color:#3591cb;
+	text-decoration:underline;
+}
+
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-EditBtn {
+	width:45px;
+	float:right;
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-EditBtn a {
+	background-image:url(Images/ProjectsImages/EditBtn2.jpg);
+	background-position:top left;
+	height:23px;
+	width:45px;
+	display:block;
+	text-decoration:none;
+}
+#BoldrProject .AcademicStandardsCovered .AcademicStandardsCovered-EditBtn a:hover {
+	background-image:url(Images/ProjectsImages/EditBtn2.jpg);
+	background-position:bottom left;
+}
+
+
+
+
+
+#BoldrProject .ProjectDetail  {
+}
+#BoldrProject .ProjectDetail .LightestBlueBottomRightCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueBottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	background-color:#d5e9f5;
+}
+#BoldrProject .ProjectDetail .LightestBlueBottomLeftCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueBottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+#BoldrProject .ProjectDetail .LightestBlueTopRightCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+#BoldrProject .ProjectDetail .LightestBlueTopLeftCorner {
+	background-image:url(Images/ProjectsImages/LightestBlueTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	padding:8px;
+}
+#BoldrProject .ProjectDetail .HeadingAndEditBtn {
+}
+#BoldrProject .ProjectDetail .Heading {
+	float:left;
+}
+#BoldrProject .ProjectDetail .Heading h3 {
+	padding:0px;
+	margin:0px;
+	font:14px;
+	font-weight:bold;
+	color:#3570aa;
+	
+}
+#BoldrProject .ProjectDetail .EditBtn {
+	width:45px;
+	float:right;
+}
+#BoldrProject .ProjectDetail .EditBtn a {
+	background-image:url(Images/ProjectsImages/EditBtn2.jpg);
+	background-position:top left;
+	height:23px;
+	width:45px;
+	display:block;
+	text-decoration:none;
+}
+#BoldrProject .ProjectDetail .EditBtn a:hover {
+	background-image:url(Images/ProjectsImages/EditBtn2.jpg);
+	background-position:bottom left;
+}
+#BoldrProject .ProjectDetail .ProjectDetail-Table {
+	padding:6px 0 0 0;
+}
+#BoldrProject .ProjectDetail .ProjectDetail-Table table {	
+	border-width:1px;
+	border-style:solid;
+	border-color:#9ecce9;
+	border-collapse:collapse;
+}
+#BoldrProject .ProjectDetail .ProjectDetail-Table table th {
+	background-color:#9ecce9;
+	color:#427cb2;
+	text-align:right;
+	height:30px;
+	width:90px;
+}
+#BoldrProject .ProjectDetail .ProjectDetail-Table table th.whiteBorder {
+	border-top:1px solid #fff;
+	border-collapse:collapse;
+}
+#BoldrProject .ProjectDetail .ProjectDetail-Table table td {
+	width:150px;
+	border-bottom-width:1px;
+	border-bottom-style:solid;
+	border-bottom-color:#9ecce9;
+	border-collapse:collapse;
+}
+#BoldrProjectFirstColumn {
+	width:556px;
+	float:left;
+}
+#BoldrProjectFirstColumn .LightestGreenBottomRightCorner {
+	background-image:url(Images/ProjectsImages/LightestGreenBottomRight.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	background-color:#ddf5d5;
+
+}
+#BoldrProjectFirstColumn .LightestGreenBottomLeftCorner {
+	background-image:url(Images/ProjectsImages/LightestGreenBottomLeft.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+#BoldrProjectFirstColumn .LightestGreenTopRightCorner {
+	background-image:url(Images/ProjectsImages/LightestGreenTopRight.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner {
+	background-image:url(Images/ProjectsImages/LightestGreenTopLeft.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	padding:10px;
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .NeedToKnow {
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .NeedToKnow .Heading {
+	padding:5px 0 8px 0;
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .NeedToKnow .Heading h3 {
+	padding:0px;
+	margin:0px;
+	font-size:14px;
+	color:#3570aa;
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .NeedToKnow .textBox {
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .NeedToKnow .textBox i {
+	color:#666;
+	font-size:11px;
+}
+
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .NeedToKnow .PostBtn a {
+	width:49px;
+	height:23px;
+	display:block;
+	text-decoration:none;
+	background-image:url(Images/ProjectsImages/postBtn.jpg);
+	background-repeat:no-repeat;
+}
+
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .NeedToKnow .textBox .field {
+	width:99.8%;
+	border-top:1px solid #666666;
+	border-bottom:1px solid #cccccc;
+	border-right:1px solid #cccccc;
+	border-left:1px solid #cccccc;
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .BorderBottom {
+	border-bottom:1px solid #fff;
+	font-size:8px;
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .BtnCancel {
+	width:20px;
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .BtnCancel a {
+	background-image:url(Images/ProjectsImages/CancelBtn.jpg);
+	height:14px;
+	width:14px;
+	display:block;
+	text-decoration:none;
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .Headlink {
+	
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .Headlink a {
+	color:#339900;
+	text-decoration:none;
+	
+}
+#BoldrProjectFirstColumn .LightestGreenTopLeftCorner .Headlink a:hover {
+	color:#339900;
+	text-decoration:underline;
+	
+}
+
+.NeedToKnow table td {
+	height:30px;
+	background-image:url(Images/ProjectsImages/greenDotedborder.jpg);
+	background-repeat:repeat-x;
+	background-position:bottom;
+	
+}
+.NeedToKnow table td.ViewAll {
+	background-image:none;
+	height:20px;
+}
+.NeedToKnow table td.ViewAll a {
+	color:#090;
+	text-decoration:none;
+}
+.NeedToKnow table td.ViewAll a:hover {
+	text-decoration:underline;
+}
+#BoldrProjectSecondColumn {
+	width:274px;
+	float:right;
+}
+#BoldrProjectSecondColumn .TopRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	background-color:#ee7f23;
+}
+#BoldrProjectSecondColumn .TopLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+#BoldrProjectSecondColumn .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication {
+	padding:5px;
+
+}
+#BoldrProjectSecondColumn .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaIconDiv {
+ 	width:30px;
+	float:left;
+}
+#BoldrProjectSecondColumn .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaOrangeBoxHeading {
+}
+#BoldrProjectSecondColumn .TopLeftOrangeCorner div.AgendaActivitiesAndNotisfication .AgendaOrangeBoxHeading h2 {
+	padding:0px;
+	margin:0px;
+	color:#fff;
+	font-size:16px;
+}
+#BoldrProjectSecondColumn .MiddleLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleLeftCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+}
+#BoldrProjectSecondColumn .MiddleCenterOrangeCorner {
+	background-color:#fef9c1;
+}
+
+#BoldrProjectSecondColumn .MiddleRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesMiddleRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-y;
+	width:5px;
+}
+
+#BoldrProjectSecondColumn .BottomRightOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomRightCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:no-repeat;
+	height:5px;
+	width:5px;
+}
+#BoldrProjectSecondColumn .BottomCenterOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomCenterCorner.jpg);
+	background-position:100% 100%;
+	background-repeat:repeat-x;
+	height:5px;
+}
+#BoldrProjectSecondColumn .BottomLeftOrangeCorner {
+	background-image:url(Images/AgendaOrageBoxesBottomLeftCorner.jpg);
+	background-position:0 100%;
+	background-repeat:no-repeat;
+}
+#BoldrProjectSecondColumn .ProjectGroup .GroupNameAndNewPostLinks {
+	padding:5px;
+	background-image:url(Images/ProjectsImages/yellowDottedLine.jpg);
+	background-position:bottom;
+	background-repeat:repeat-x;
+	
+}
+#BoldrProjectSecondColumn .ProjectGroup .GroupNameAndNewPostLinks {
+	padding:5px;
+	background-image:url(Images/ProjectsImages/yellowDottedLine.jpg);
+	background-position:bottom;
+	background-repeat:repeat-x;
+	
+}
+
+#BoldrProjectSecondColumn .ProjectGroup .GroupNameAndNewPostLinks .NewPostLinks {
+}
+#BoldrProjectSecondColumn .ProjectGroup .GroupNameAndNewPostLinks .NewPostLinks a {
+	color:#090;
+	text-decoration:none;
+}
+#BoldrProjectSecondColumn .ProjectGroup .GroupNameAndNewPostLinks .NewPostLinks a:hover {
+	text-decoration:underline;
+}
+#BoldrProjectSecondColumn .ProjectGroup .ViewAllLink {
+}
+
+#BoldrProjectSecondColumn .ProjectGroup .ViewAllLink a {
+	color:#090;
+	text-decoration:none;
+}
+
+#BoldrProjectSecondColumn .ProjectGroup .ViewAllLink a:hover {
+	text-decoration:underline;
+}
+
+
+#ActivitiesCSS {
+	width:842px;
+	font-size:12px;
+        margin:0px 0px 7px 0px;
+}
+#ActivitiesCSS .HeadingPanel {
+}
+#ActivitiesCSS .HeadingPanel .Headings {
+	float:left;
+}
+#ActivitiesCSS .HeadingPanel .Dropdrown {
+}
+#ActivitiesCSS .HeadingPanel .Headings .BrandCrumb {
+	color:#090;
+	padding:0 0 5px 0;
+	font-size:12px;
+}
+#ActivitiesCSS .HeadingPanel .BrandCrumb a {
+	color:#090;
+	text-decoration:none;
+	font-size:12px;
+}
+#ActivitiesCSS .HeadingPanel .BrandCrumb a:hover {
+	color:#090;
+	text-decoration:underline;
+}
+
+#ActivitiesCSS .HeadingPanel  .Heading {
+	color:#3570aa;
+	font-size:18px;
+}
+#ActivitiesCSS .HeadingPanel .Heading b {
+}
+#ActivitiesCSS .HeadingPanel .Dropdrown {
+	float:right;
+}
+#ActivitiesCSS .LightBlueBottomRightCorner {
+	background-image:url(Images/ActivitiesImages/LightBluebottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	background-color:#d5e9f5;
+}
+#ActivitiesCSS .LightBlueBottomLeftCorner {
+	background-image:url(Images/ActivitiesImages/LightBluebottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+#ActivitiesCSS .LightBlueTopRightCorner {
+	background-image:url(Images/ActivitiesImages/LightBluetopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+#ActivitiesCSS .LightBlueTopLeftCorner {
+	background-image:url(Images/ActivitiesImages/LightBluetopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	padding:10px;
+	font-size:12px;
+
+}
+#ActivitiesCSS a.greenLink {
+
+    color:#090;
+    text-decoration:none;
+}
+#ActivitiesCSS a.greenLink:hover {
+
+    color:#090;
+    text-decoration:underline;
+}
+
+#ActivitiesCSS .ActivitiesAssignment {
+
+}
+#ActivitiesCSS .ActivitiesAssignment table.table {
+	border:1px solid #9ecce9;
+        border-collapse: collapse;
+}
+#ActivitiesCSS .ActivitiesAssignment th {
+	background-color:#9ecce9;
+	border-bottom:1px solid #d5e9f5;
+	color:#3570aa;
+        border-collapse: collapse;
+	text-align:right;
+	vertical-align:top;
+
+}
+#ActivitiesCSS .ActivitiesAssignment td {
+	border-bottom:1px solid #9ecce9;
+        border-collapse: collapse;
+
+}
+
+
+#ActivitiesCSS .ActivitiesAssignment div.FileIcon {
+	background-image:url(Images/ActivitiesImages/DocumentIcon.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:20px;
+	padding:3px 0 0 25px;
+	float:left;
+}
+#ActivitiesCSS .ActivitiesAssignment div.ImageIcon {
+	background-image:url(Images/ActivitiesImages/ImageIcon.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	height:20px;
+	padding:3px 0 0 25px;
+	float:left;
+}
+#ActivitiesCSS .ActivitiesAssignment div.ImageIcon a {
+	color:#090;
+	text-decoration:none;
+}
+#ActivitiesCSS .ActivitiesAssignment div.ImageIcon a:hover {
+	color:#090;
+	text-decoration:underline;
+}
+#ActivitiesCSS .InnerHeading {
+	padding:0 0 5px 0;
+	float:left;
+}
+#ActivitiesCSS .InnerHeading h4 {
+	padding:0px;
+	margin:0px;
+	color:#3570aa;
+	font-size:14px;
+}
+#ActivitiesCSS .GradeAll {
+	float:right
+}
+#ActivitiesCSS .GradeAll a.GradeAllBtn {
+	background-image:url(Images/ActivitiesImages/GradeAllBtn.jpg);
+	width:77px;
+	height:23px;
+	display:block;
+	text-decoration:none;
+}
+
+#ActivitiesCSS .clearall {
+	clear:both;
+}
+
+#ActivitiesCSS .BlueBorderBgTopCenter {
+	background-image:url(Images/ActivitiesImages/blueBorderBgTopCenter.jpg);
+	background-repeat:repeat-x;
+	background-position:top;
+}
+#ActivitiesCSS .BlueBorderBgMiddleRight {
+	background-image:url(Images/ActivitiesImages/blueBorderBgMiddleRight.jpg);
+	background-repeat:repeat-y;
+	background-position:top right;
+}
+#ActivitiesCSS .BlueBorderBgBottomCenter {
+	background-image:url(Images/ActivitiesImages/blueBorderBgBottomCenter.jpg);
+	background-repeat:repeat-x;
+	background-position:bottom;
+}
+#ActivitiesCSS .BlueBorderBgMiddleLeft {
+	background-image:url(Images/ActivitiesImages/blueBorderBgMiddleLeft.jpg);
+	background-repeat:repeat-y;
+	background-position:top left;
+}
+#ActivitiesCSS .BlueBorderBgTopRightCorner {
+	background-image:url(Images/ActivitiesImages/blueBorderBgTopRight.jpg);
+	background-repeat:no-repeat;
+	background-position:top right;
+}
+#ActivitiesCSS .BlueBorderBgBottomRightCorner {
+	background-image:url(Images/ActivitiesImages/blueBorderBgBottomRight.jpg);
+	background-repeat:no-repeat;
+	background-position:Bottom right;
+}
+#ActivitiesCSS .BlueBorderBgBottomLeftCorner {
+	background-image:url(Images/ActivitiesImages/blueBorderBgBottomLeft.jpg);
+	background-repeat:no-repeat;
+	background-position:Bottom left;
+}
+#ActivitiesCSS .BlueBorderBgTopLeftCorner {
+	background-image:url(Images/ActivitiesImages/blueBorderBgTopLeft.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	padding:10px;
+}
+#ActivitiesCSS .Filter {
+}
+#ActivitiesCSS .yellowTopRightCorner {
+	background-image:url(Images/ActivitiesImages/yellowTopRightCorner.jpg);
+	background-repeat:no-repeat;
+	background-position:top right;
+	background-color:#fff9c2;
+}
+#ActivitiesCSS .yellowBottomRightCorner {
+	background-image:url(Images/ActivitiesImages/yellowBottomRightCorner.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom right;
+}
+#ActivitiesCSS .yellowBottomLeftCorner {
+	background-image:url(Images/ActivitiesImages/yellowBottomLeftCorner.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom left;
+}
+#ActivitiesCSS .yellowTopLeftCorner {
+	background-image:url(Images/ActivitiesImages/yellowTopLeftCorner.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	padding:5px;
+}
+#ActivitiesCSS .FilterHeading {
+	float:left;
+}
+#ActivitiesCSS .FilterHeading h5 {
+	padding:0px;
+	margin:0px;
+	font-size:12px;
+	color:#3570aa;
+}
+#ActivitiesCSS .CloseLink {
+	float:right;
+}
+#ActivitiesCSS .CloseLink a {
+	color:#090;
+	text-decoration:none;
+}
+#ActivitiesCSS .CloseLink a:hover {
+	text-decoration:underline;
+}
+#ActivitiesCSS .Status {
+	padding:5px 0 0 0;
+}
+#ActivitiesCSS .Status div b {
+	color:#333;
+	padding:0px;
+	margin:0px;
+	font-size:12px;
+	font-weight:bold;
+}
+#ActivitiesCSS .Status div {
+	float:left;
+	padding:0 10px 0 0;
+}
+#ActivitiesCSS .Status div span {
+	height:25px;
+	padding:0 50px 0 5px;
+}
+#ActivitiesCSS .Status div input {
+}
+#ActivitiesCSS .ReportView {
+    overflow-x: auto;
+}
+#ActivitiesCSS .ReportView table {
+}
+#ActivitiesCSS .ReportView tr {
+}
+#ActivitiesCSS .ReportView th {
+	border-right:1px solid #fff;
+	background-color:#d6e9f5;
+	text-align:left;
+	color:#52a82e;
+}
+#ActivitiesCSS .ReportView th a {
+	padding:0 0 0 5px;
+
+}
+#ActivitiesCSS .ReportView td {
+	border-right:1px solid #d6e9f5;
+	text-align:left;
+	background-image:url(Images/ActivitiesImages/DottedBorderBottom.jpg);
+	background-repeat:repeat-x;
+	background-position:bottom;
+	color:#666;
+	height:25px;
+}
+#ActivitiesCSS .ReportView td a {
+	color:#090;
+	text-decoration:none;
+}
+#ActivitiesCSS .ReportView td a:hover {
+	color:#090;
+	text-decoration:underline;
+}
+#ActivitiesCSS .ReportView td a.GradeBtn {
+	background-image:url(Images/ActivitiesImages/GradeBtn.jpg);
+	background-position:top left;
+	height:23px;
+	width:60px;
+	display:block;
+	text-decoration:none;
+}
+#ActivitiesCSS .ReportView div {
+}
+.views-field-title {
+    width:300px;
+}
+#ActivitiesCSS .bottomPager {
+	float:right;
+	padding:5px 10px 0 0;
+}
+#ActivitiesCSS .bottomPager 	span {
+	font-weight:bold;
+	color:#3570aa;
+}
+
+#ActivitiesCSS .bottomPager 	a {
+	color:#339900;
+	text-decoration:none;
+}
+#ActivitiesCSS .bottomPager 	a:hover {
+	color:#339900;
+	text-decoration:underline;
+}
+fieldset.collapsible {
+position:static;
+}
+
+fieldset {
+border:none;
+margin:0;
+padding:0;
+}
+.BlueBorderBgTopLeftCorner .view-content .views-table {
+}
+.BlueBorderBgTopLeftCorner .view-content .views-table .views-field-due-date {
+	background-color:#fff;
+}
+.BlueBorderBgTopLeftCorner .view-content .views-table .views-field-type,.BlueBorderBgTopLeftCorner .view-content .views-table .views-field-title,.BlueBorderBgTopLeftCorner .view-content .views-table .views-field-due-date {
+	white-space:nowrap;
+}
+.BlueBorderBgTopLeftCorner .view-content .views-table th a  {
+	color:#090;
+
+}
+.BlueBorderBgTopLeftCorner .view-content .views-table td {
+	padding:5px;
+}
+
+.BlueBorderBgTopLeftCorner .view-content .views-table th {
+	border-bottom:none;
+	height:50px;
+	color:#090;
+
+}
+
+.ReportView {
+	width:822px !important; 
+	height:auto !important;
+	overflow-x:scroll !important;
+}
+.form-checkboxes .form-item, .form-radios .form-item {
+float:left;
+margin-bottom:0.4em;
+margin-top:0.4em;
+}
+
+/*------------- Courses Grades ---------------*/
+#Courses-Grades {
+	width:842px;
+}
+
+#Courses-Grades .mid-right-blueCorner {
+	background-image:url(images/CoursesGradebluemidRightImage.jpg);
+	background-position:top right;
+	background-repeat:repeat-y;
+}
+
+#Courses-Grades .mid-left-blueCorner {
+	background-image:url(images/CoursesGradebluemidLeftImage.jpg);
+	background-position:top left;
+	background-repeat:repeat-y;
+}
+
+#Courses-Grades .top-right-blueCorner {
+	background-image:url(images/CoursesGradebluetopRightImage.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	background-color:#d5e9f5;
+
+}
+
+#Courses-Grades .top-left-blueCorner {
+	background-image:url(images/CoursesGradebluetopLeftImage.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+#Courses-Grades .bottom-right-blueCorner {
+	background-image:url(images/CoursesGradebluebotRightImage.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+
+}
+#Courses-Grades .bottom-left-blueCorner {
+	background-image:url(images/CoursesGradebluebotLeftImage.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+
+}
+#Courses-Grades .bottom-center-blueCorner {
+	background-image:url(images/CoursesGradebluebotCenterImage.jpg);
+	background-position:bottom left;
+	background-repeat:repeat-x;
+
+}
+#Courses-Grades a.greenlink {
+	color:#009900;
+	text-decoration:none;
+}
+#Courses-Grades a.greenlink:hover {
+	color:#009900;
+	text-decoration:underline;
+}
+#Courses-Grades .StudentGradeMainPanel { 
+	padding:17px 7px 7px 7px;
+}
+#Courses-Grades .RunReportBtn {
+	background-image:url(images/CoursesGradeRunReportBtn.jpg);
+	display:block;
+	height:23px;
+	width:89px;
+	text-decoration:none;
+}
+#Courses-Grades .student {
+	padding:5px 0 0 0;
+}
+#Courses-Grades .StudentHeading {
+	background-color:#b2d5eb;
+	height:50px;
+	padding:9px;
+	border:1px solid #b2d5eb;
+}
+#Courses-Grades .StudentHeading h2 {
+	padding:15px 0 0 10px;
+	margin:0px;
+	color:#339900;
+	font-size:16px;
+}
+#Courses-Grades .StudentDetail table,#Courses-Grades .StudentDetail td {
+	border:1px dotted #9ecce9;
+	border-bottom:none;
+	border-collapse:collapse;
+	
+}
+
+#Courses-Grades .GradeBlock {
+	padding:5px;
+}
+#Courses-Grades .GradeBlock  div.whitebg {
+	background-color:#FFFFFF;
+	height:177px;
+	padding:10px 0 0 0;
+}
+#Courses-Grades .GradeBlock .current-grade {
+	font-size:15px;
+	color:#3591cb;
+	font-weight:bold;
+}
+#Courses-Grades .GradeBlock .grade {
+	font-size:47px;
+	color:#ef7c23;
+	font-weight:bold;
+
+}
+#Courses-Grades .GradeBlock .percent {
+	font-size:25px;
+	color:#ef7c23;
+	font-weight:bold;
+	line-height:18px;
+}
+#Courses-Grades .StudentDetail .innertable {
+border:none;
+}
+#Courses-Grades .StudentDetail .innertable td {
+border-left:none;
+border-right:none;
+border-top:none;
+border-bottom:1px dotted #9ecce9;
+padding:5px 8px 5px 8px;
+
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv {
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentHeading {
+	float:left;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentHeading h4 {
+	padding:3px 0 0 0;
+	margin:0px;
+	font-size:12px;
+	color:#3570aa;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentlistbg {
+	background-image:url(images/percentImgBgcenter.jpg);
+	background-position:top left;
+	background-repeat:repeat-x;
+	float:right;
+	width:500px;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentlistRightbg {
+	background-image:url(images/percentImgBgright.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentlistLeftbg {
+	background-image:url(images/percentImgBgleft.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentlist {
+	background-image:url(images/percentImg.jpg);
+	background-position:top left;
+	background-repeat:repeat-x;
+	height:22px;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentlisttext {
+	margin-top:-19px;
+	position:absolute;
+	padding:0 0 0 5px;
+	font-weight:bold;
+	color:#ad2b2b;
+}
+#Courses-Grades .ActivitiesHeading {
+
+}
+#Courses-Grades .ActivitiesHeading h3 {
+	font-size:18px;
+	color:#3570aa;
+	padding:0px;
+	margin:0px;
+}
+#Courses-Grades .ActivitiesPanel {
+	padding:17px 7px 0 7px;
+}
+#Courses-Grades .ActivitiesTable thead {
+}
+#Courses-Grades .ActivitiesTable thead th {
+	background-color:#d6e9f5;
+	border:1px solid #fff;
+	border-left:1px solid #d6e9f5;
+	border-right:1px solid #d6e9f5;
+	border-bottom:none;
+	text-align:left;
+	height:44px;
+	color:#009900;
+	font-weight:bold;
+	padding:0 0 0 5px;
+}
+#Courses-Grades .ActivitiesTable tbody {
+}
+#Courses-Grades .ActivitiesTable tbody td {
+	border:1px solid #d6e9f5;
+	border-top:none;
+	text-align:left;
+	padding:0 0 0 5px;
+	height:44px;
+	font-size:14px;
+	color:#666666;
+	border-collapse:collapse;
+}
+#Courses-Grades .ActivitiesTable tbody td a {
+	color:#009900;
+	text-decoration:none;
+}
+
+#Courses-Grades .ActivitiesTable tbody td a:hover {
+	color:#009900;
+	text-decoration:underline;
+}
+#Courses-Grades .ActivitiesPanel .pager {
+	float:right;
+}
+
+#Courses-Grades .ActivitiesPanel .pager span {
+	font-weight:bold;
+	color:#4279af;
+}
+#Courses-Grades .ActivitiesPanel .pager a {
+	color:#009900;
+	text-decoration:none;
+
+}
+#Courses-Grades .ActivitiesPanel .pager a:hover {
+	color:#009900;
+	text-decoration:underline;
+
+}
+
+.ReportView .views-field {
+background-color:#FFFFFF;
+
+}
+.ReportView .views-table {
+border:1px solid #d6e9f5;
+
+}
+.ReportView .views-table th {
+border-right:1px solid #d6e9f5;
+
+}
+.contentMiddleCenterbg fieldset {
+border:none;
+}
+#ActivitiesCSS .DarkBlueCornerBottomRight {
+	background-image:url(Images/Activities_Student_Submission_Bot_RightCorner.jpg);
+        background-position:bottom right;
+        background-repeat: no-repeat;
+        background-color:#3591cb;
+}
+#ActivitiesCSS .DarkBlueCornerTopRight {
+	background-image:url(Images/Activities_Student_Submission_Top_RightCorner.jpg);
+        background-position:top right;
+        background-repeat: no-repeat;
+
+}
+#ActivitiesCSS .DarkBlueCornerBottomLeft {
+	background-image:url(Images/Activities_Student_Submission_Bot_LeftCorner.jpg);
+        background-position:bottom left;
+        background-repeat: no-repeat;
+
+}
+#ActivitiesCSS .DarkBlueCornerTopLeft {
+	background-image:url(Images/Activities_Student_Submission_Top_LeftCorner.jpg);
+        background-position:top left;
+        background-repeat: no-repeat;
+        padding: 10px;
+}
+#ActivitiesCSS a.PreviousBtn {
+	background-image:url(Images/Activities_Student_Submission_PreviousBtn.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:83px;
+        display: block;
+        float:left;
+        margin-right:5px;
+}
+#ActivitiesCSS a.NextBtn {
+	background-image:url(Images/Activities_Student_Submission_NextBtn.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:83px;
+        display: block;
+        float:left;
+}
+#ActivitiesCSS .Activities_Submission_Name h1 {
+    padding:0px;
+    margin:0px;
+    color:#fff;
+}
+#ActivitiesCSS .leftcorner {
+	background-image:url(Images/AHeadTopLeft.jpg);
+        background-position: top left;
+        background-repeat:no-repeat;
+        background-color: #cfe6f4;
+}
+#ActivitiesCSS .rightcorner {
+	background-image:url(Images/AHeadTopRight.jpg);
+        background-position: top right;
+        background-repeat:no-repeat;
+        padding:8px 0 8px 5px;
+        border-bottom:1px solid #fff;
+}
+#ActivitiesCSS .Performancetable {
+    background-color: #fff;
+}
+#ActivitiesCSS .Performancetable th {
+     background-color: #cfe6f4;
+     border-bottom:1px solid #fff;
+}
+#ActivitiesCSS .Performancetable td {
+     border-bottom:1px solid #cfe6f4;
+}
+#ActivitiesCSS .Submit_Grade {
+    background-image:url(Images/SubmitGradeBtn.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+    display:block;
+    height:23px;
+    width:103px;
+    color:#fff;
+    background-color:transparent !important;
+    border:none;
+    cursor:pointer;
+}
+#ActivitiesCSS .ActivitiesAssignment fieldset,#ActivitiesCSS .ActivitiesAssignment fieldset .form-item {
+    padding:0px;
+    margin:0px;
+}
+.CancelBtn {
+	background-image:url(Images/CancelBtn.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:61px;
+        display: block;
+        float:right;
+        border:none;
+        margin:0 0px 5px 0;
+        cursor: pointer;
+        color:#1e7701;
+
+}
+.SaveBtn {
+	background-image:url(Images/SaveBtn.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:51px;
+        display: block;
+        float:right;
+        border:none;
+        margin:0 0 5px 0;
+        cursor: pointer;
+        color:#fff;
+}
+.BrowseBtn {
+	background-image:url(Images/BrowseBtn.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:63px;
+        display: block;
+        float:right;
+        border:none;
+        cursor: pointer;
+
+}
+.AttachBtn {
+	background-image:url(Images/AttachBtn.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:61px;
+        display: block;
+        float:left;
+        margin:0 0 0 5px;
+        border:none;
+        cursor: pointer;
+
+}
+#ActivitiesCSS .form-radios .form-item {
+    width:160px;
+}
+#edit-add-resources-selected-type-lo-link-wrapper.form-radios  {
+    width:100px;
+}
+
+.view-content .views-table {
+    border:1px solid #d7e9f5;
+    width:100%;
+    text-align:left;
+    border-collapse: collapse;
+
+}
+
+.view-content .views-table thead tr th {
+    text-align:left;
+    background-color:#d7e9f5;
+    padding:8px;
+    border-left:1px solid #fff;
+    border-collapse: collapse;
+    color:#090;
+
+}
+.view-content .views-table tbody tr td {
+    text-align:left;
+    background-color:#fff;
+    padding:8px;
+    border-left:1px solid #d7e9f5;
+    border-collapse: collapse;
+    color:#000;
+}
+.view-content .views-table a {
+    color:#090;
+    text-decoration: none;
+}
+.view-content .views-table  a:hover {
+    color:#090;
+    text-decoration:underline;
+}
+/*Groups Discription Page*/
+.GroupsDiscriptionTopRightCorner {
+	background-image:url(Images/LightBlueTopRightCorner.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+	background-color:#c5e6f5;
+}
+.GroupsDiscriptionBottomRightCorner {
+	background-image:url(Images/LightBlueBottomRightCorner.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+}
+.GroupsDiscriptionTopLeftCorner {
+	background-image:url(Images/LightBlueTopLeftCorner.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+.GroupsDiscriptionBottomLeftCorner {
+	background-image:url(Images/LightBlueBottomLeftCorner.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+.GroupsDiscription {
+	width:218px;
+	margin-bottom:10px;
+}
+.GroupsDiscription a {
+	color:#009900;
+	text-decoration:none;
+}
+.GroupsDiscription a:hover {
+	color:#009900;
+	text-decoration:underline;
+}
+
+.GroupsDiscription h2 {
+	color:#3570aa;
+	padding:0 0 5px 10px ;
+	margin:0px;
+	font-size:18px;
+}
+.GroupsDiscription h3 {
+	color:#3570aa;
+	padding:5px 0px 0px 10px;
+	margin:0px;
+	font-size:14px;
+}
+.GroupsDiscription p {
+	color:#000;
+	padding:5px 10px 0px 10px;
+	margin:0px;
+	font-size:12px;
+}
+.GroupsDiscription ul {
+	padding:0px;
+	margin:0px;
+	list-style:none;
+}
+.GroupsDiscription li {
+	color:#000;
+	padding:5px 10px 0px 10px;
+	margin:0px;
+	font-size:12px;
+}
+.GroupsDatapanel {
+	padding:10px 0 10px 0;
+}
+.ActivitiesMainContent .Adminspacer {
+	font-size:10px;
+	height:10px;
+	clear:both;
+}
+.ActivitiesMainContent .AdminMainPanel {
+		margin-bottom:10px;
+}
+.ActivitiesMainContent .AdminPersonImg {
+	float:left;
+	width:32px;
+	height:32px;
+}
+.ActivitiesMainContent .AdminPersonNameAndOwner {
+	float:left;
+	padding-left:5px;
+}
+.ActivitiesMainContent .AdminPersonName {
+	color:#090;
+	font-size:13px;
+	font-weight:bold;
+}
+.ActivitiesMainContent .AdminPersonName a {
+	color:#090;
+	font-size:13px;
+	text-decoration:none;
+	font-weight:bold;
+}
+.ActivitiesMainContent .AdminPersonName a:hover {
+	text-decoration:underline;
+}
+.ActivitiesMainContent .AdminPersonOwner {
+	color:#666;
+	font-size:10px;
+}
+.Boldrplayer {
+    display:block;
+    width:230px;
+    height:146px;
+}
+
+.ProjectResourcesSaveBtn {
+        background-image:url(Images/ProjectsImages/SaveBorderGreenBtnBg.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:51px;
+        display: block;
+        float:right;
+        border:none;
+        margin:0 10px 0 0;
+        cursor: pointer;
+        color:#66cc00 !important;
+}
+.ProjectResourcesAddExistingBtn {
+        background-image:url(Images/ProjectsImages/AddExistingResourceGreenBorderBtnBg.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:154px;
+        display: block;
+        float:right;
+        border:none;
+        margin:0 5px 5px 0;
+        cursor: pointer;
+        color:#1e7701;
+}
+.AddSectionGreenBtn {
+        background-image:url(Images/ProjectsImages/AddSectionGreenBtnBg.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:95px;
+        display: block;
+        float:right;
+        border:none;
+        text-align: center;
+        padding:0px 0 0 0;
+        margin:0 5px 5px 0;
+        cursor: pointer;
+        color:#fff !important;
+}
+
+	.CoursesEmptyMain {
+		width:291px;
+		padding:0 10px 10px 0;
+		float:right;
+	}
+	.CoursesEmptyBottomRightCorner {
+		background-image:url(Images/CoursesEmptyBottomRightCorner.jpg);
+		background-position:bottom right;
+		background-repeat:no-repeat;
+		background-color:#9fc1d6;
+	}
+	.CoursesEmptyTopRightCorner {
+		background-image:url(Images/CoursesEmptyTopRightCorner.jpg);
+		background-position:top right;
+		background-repeat:no-repeat;
+	}
+	.CoursesEmptyBottomLeftCorner {
+		background-image:url(Images/CoursesEmptyBottomLeftCorner.jpg);
+		background-position:bottom left;
+		background-repeat:no-repeat;
+	}
+	.CoursesEmptyTopLeftCorner {
+		background-image:url(Images/CoursesEmptyTopLeftCorner.jpg);
+		background-position:top left;
+		background-repeat:no-repeat;
+		height:129px;
+		vertical-align:middle;
+		text-align:center;
+		color:#296299;
+		font-size:14px;
+		font-family:Georgia, "Times New Roman", Times, serif;
+	}
+
+.ProjectResourcesSaveBtn {
+        background-image:url(Images/ProjectsImages/SaveBorderGreenBtnBg.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:51px;
+        display: block;
+        float:right;
+        border:none;
+        margin:0 10px 0 0;
+        cursor: pointer;
+        color:#66cc00 !important;
+}
+.AddNewResourceBtn a,.AddNewResourceBtn a:link,.AddNewResourceBtn a:visited,.AddNewResourceBtn a:hover {
+
+        background-image:url(Images/ProjectsImages/AddExistingResourceGreenBorderBtnBg.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:154px;
+        display: block;
+        float:right;
+        text-align: center;
+        border:none;
+        margin:0 5px 5px 0;
+        cursor: pointer;
+        color:#1e7701;
+}
+.ProjectResourcesAddExistingBtn a,.ProjectResourcesAddExistingBtn a:link,.ProjectResourcesAddExistingBtn a:visited,.ProjectResourcesAddExistingBtn a:hover {
+
+background-image:url(Images/ProjectsImages/AddExistingResourceGreenBorderBtnBg.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:18px;
+        width:154px;
+        display: block;
+        float:right;
+        text-align: center;
+        vertical-align: top;
+        padding:5px 0 0 0;
+        border:none;
+        margin:0 5px 5px 0;
+        cursor: pointer;
+        color:#1e7701;
+}
+
+.AddSectionGreenBtn a,.AddSectionGreenBtn a:link,.AddSectionGreenBtn a:visited,.AddSectionGreenBtn a:hover {
+        background-image:url(Images/ProjectsImages/AddSectionGreenBtnBg.jpg);
+        background-position: top left;
+        background-repeat: no-repeat;
+        height:23px;
+        width:95px;
+        display: block;
+        float:right;
+        border:none;
+        text-align: center;
+        padding:0px 0 0 0;
+        margin:0 5px 5px 0;
+        cursor: pointer;
+        color:#fff !important;
+}
+.GreenBorderBtn {
+        color:#1e7701;
+        border:2px solid #1e7701;
+        background-color: transparent !important;
+        cursor: pointer;
+        dispay:block;
+}
+
+	.CourseSettingLeftNav {
+		width:218px
+	}
+	.CourseSettingLeftNav ul {
+		list-style:none;
+		padding:0px;
+		margin:0px;
+	}
+	.CourseSettingLeftNav li {
+		padding:0 0 1px 0;
+	}
+	.CourseSettingLeftNav a.active {
+		background-repeat:no-repeat;
+		text-decoration:none;
+		color:#FFF;
+		font-size:14px;
+		font-weight:bold;
+	}
+	.CourseSettingLeftNav a.active div.activeArrow {
+		background-image:url(Images/CoursesSettingArrow.jpg);
+		background-position:95% 50%;
+		background-color:#ef7d23 !important;
+		background-repeat:no-repeat;
+
+	}
+	.CourseSettingLeftNav a.active div.activeArrow div.topright {
+		background-image:url(Images/CoursesSettingActiveTopRight.jpg);
+		background-position:top right;
+		background-repeat:no-repeat;
+
+	}
+	.CourseSettingLeftNav a.active div.activeArrow div.topright div.topleft {
+		background-image:url(Images/CoursesSettingActiveTopLeft.jpg);
+		background-position:top left;
+		background-repeat:no-repeat;
+	}
+	.CourseSettingLeftNav a.active div.activeArrow div.topright div.topleft div.bottomright {
+		background-image:url(Images/CoursesSettingActiveBottomright.jpg);
+		background-position:bottom right;
+		background-repeat:no-repeat;
+
+	}
+	.CourseSettingLeftNav a.active div.activeArrow div.topright div.topleft div.bottomright div.bottomleft {
+		background-image:url(Images/CoursesSettingActiveBottomleft.jpg);
+		background-position:bottom left;
+		background-repeat:no-repeat;
+		height:23px;
+		width:208px;
+		padding:8px 0 0 10px;
+	}
+	.CourseSettingLeftNav a {
+		background-repeat:no-repeat;
+		text-decoration:none;
+		color:#FFF !important;
+		font-size:14px;
+		font-weight:bold;
+	}
+	.CourseSettingLeftNav a div.activeArrow {
+		background-color:#3591cb !important;
+	}
+	.CourseSettingLeftNav a div.activeArrow div.topright {
+		background-image:url(Images/CoursesSettingLeftNavTopRight.jpg);
+		background-position:top right;
+		background-repeat:no-repeat;
+
+	}
+	.CourseSettingLeftNav a div.activeArrow div.topright div.topleft {
+		background-image:url(Images/CoursesSettingLeftNavTopLeft.jpg);
+		background-position:top left;
+		background-repeat:no-repeat;
+	}
+	.CourseSettingLeftNav a div.activeArrow div.topright div.topleft div.bottomright {
+		background-image:url(Images/CoursesSettingLeftNavBottomright.jpg);
+		background-position:bottom right;
+		background-repeat:no-repeat;
+
+	}
+	.CourseSettingLeftNav a div.activeArrow div.topright div.topleft div.bottomright div.bottomleft {
+		background-image:url(Images/CoursesSettingLeftNavBottomleft.jpg);
+		background-position:bottom left;
+		background-repeat:no-repeat;
+		height:23px;
+		width:208px;
+		padding:8px 0 0 10px;
+	}

@@ -1,0 +1,1208 @@
+<?php
+
+/**
+ * Implementation of hook_menu().
+ */
+function ntlp_forum_menu() {
+    $items['ntlp/courses/forum/topic/%/%'] = array(
+        'title' => t('New Topic'),
+        'page callback' => 'ntlp_course_forum_topic_manage',
+        'page arguments' => array(4, 5),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+
+    $items['ntlp/groups/forum/topic/%/%'] = array(
+        'title' => t('New Topic'),
+        'page callback' => 'ntlp_course_forum_topic_manage',
+        'page arguments' => array(4, 5),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+
+    $items['ntlp/courses/forum/comment/%/%/%'] = array(
+        'title' => t('New Comment'),
+        'page callback' => '_ntlp_forum_new_comment',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+
+    $items['ntlp/groups/forum/comment/%/%/%'] = array(
+        'title' => t('New Comment'),
+        'page callback' => '_ntlp_forum_new_comment',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+
+    $items['ntlp/courses/forum/reply/%/%/%'] = array(
+        'title' => t('Edit forum'),
+        'page callback' => '_ntlp_forum_comment_reply',
+        'page arguments' => array(3, 4, 5, 6),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+
+
+    $items['ntlp/courses/forum/topic/delete/%'] = array(
+        'title' => t('Edit forum'),
+        'page callback' => 'ntlp_delete_forum_topic',
+        'page arguments' => array(5),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+
+    $items['ntlp/groups/forum/reply/%/%/%'] = array(
+        'title' => t('Edit forum'),
+        'page callback' => '_ntlp_forum_comment_reply',
+        'page arguments' => array(3, 4, 5, 6),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+
+    $items['ntlp/courses/forum/comment/delete/%'] = array(
+        'title' => t('Edit forum'),
+        'page callback' => 'ntlp_delete_forum_comment',
+        'page arguments' => array(5),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+
+    return $items;
+}
+
+function _ntlp_forum_new_comment($course_nid, $topic_nid, $comment_cid) {
+    return drupal_get_form('_ntlp_forum_new_comment_form', $course_nid, $topic_nid, $comment_cid);
+}
+
+function _ntlp_forum_new_comment_form($form_state = null, $course_nid, $topic_nid, $comment_cid) {
+    global $user;
+    include "forum_topics_comments_template.inc";
+    drupal_add_js(drupal_get_path('module', 'ntlp_forum') . '/ntlp_forum.js');
+
+    if (arg(1) == 'groups') {
+
+        $isGroups = true;
+    } else {
+        $isGroups = false;
+    }
+
+    $form['topic'] = array(
+        '#type' => 'fieldset',
+        '#title' => '',
+        '#tree' => TRUE, // Don't forget to set #tree!
+        '#prefix' => '',
+        '#suffix' => '',
+    );
+    if ($comment_cid != 0) {
+        $edit_status = true;
+        $topic_status = 'Edit Comment';
+
+
+
+        /* check url hacking.. */
+        if ($isGroups) {
+
+            if (!is_user_group_admin($course_nid, $user) && !is_comment_owner($comment_cid, $user)) {
+                drupal_goto('ntlp/goback');
+            }
+        } else {
+            if (!is_user_moderator_in_course($course_nid, $user->uid) && !is_comment_owner($comment_cid, $user)) {
+                drupal_goto('ntlp/goback');
+            }
+        }
+
+
+        $comment_obj = _comment_load($comment_cid);
+
+
+        /* show last saved status */
+        $status_html = '<span style="float: left; padding: 5px; margin-left: 300px; margin-top: 10px; margin-bottom: 8px; font-size: 12px; background-color: rgb(239, 239, 222);">';
+        $status_html .=' Last saved ' . get_tz_course($course_nid, DATE_FORMAT_LAST_SAVED, $comment_obj->timestamp);
+        $status_html .= '</span>';
+    } else {
+        $status_html = '';
+        $edit_status = false;
+        $topic_status = 'Post New Comment';
+    }
+    drupal_set_title($topic_status);
+
+    if (!isset($form_state['values'])) {
+        set_item_url_handler('Comment Manage');
+    }
+
+    $form['topic']['topic_status'] = array(
+        '#type' => 'item',
+        '#title' => '',
+        '#prefix' => '<div style="float:left;width:200px;margin-bottom: 10px;margin-top: 10px;" align="left"><font style="color:#3570AA;font-size: 18px;" >' . $topic_status,
+        '#suffix' => '</font></div>',
+    );
+
+
+    $form['topic']['cancel'] = array(
+        '#type' => 'button',
+        '#value' => 'Cancel',
+        '#attributes' => array('class' => 'CancelBtn', 'onclick' => "window.location = '?q=ntlp/goback';return false;"),
+        '#prefix' => $status_html . '<div style=" margin-bottom: 20px;margin-top: 10px; float:right; height: 30px; width:130px;"><span  style="float:right; clear:left;" >',
+        '#suffix' => '</span>',
+    );
+
+    $form['topic']['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Save',
+        '#attributes' => array('class' => 'SaveBtn'),
+        '#prefix' => '<span style="float:left; clear:left;" >',
+        '#suffix' => '</span></div>',
+    );
+
+
+
+    $form['topic']['info'] = array(
+        '#type' => 'markup',
+        '#title' => '',
+        '#tree' => TRUE, // Don't forget to set #tree!
+        '#prefix' => $HTMLform_groupbox_hdr, // This is our wrapper div.
+        '#suffix' => $HTMLform_groupbox_ftr,
+    );
+
+    $form['topic']['info'] ['subject'] = array(
+        '#type' => 'textfield',
+        '#prefix' => '<table cellpadding="8" cellspacing="0" border="0" class="new_table" width="840px" style="float:left" ><tr><th style="width:139px; vertical-align:middle; padding-right:10px;" >' . t('Subject') . '</th><td style="background-color:#cee5f3;"><span style="float:right; margin-top: 6px;">Max characters = 100</span>',
+        '#suffix' => '</td></tr></table>',
+        '#value' => ($edit_status) ? $comment_obj->subject : '',
+        '#size' => 80,
+        '#maxlength' => 100,
+        '#required' => TRUE,
+    );
+
+    $form['topic']['info']['body'] = array(
+        '#type' => 'textarea',
+        '#prefix' => '<table cellpadding="8" cellspacing="0" border="0" class="new_table" width="840px" style="float:left" ><tr><th style="width:139px; vertical-align:top; padding-top:10px; padding-right:10px;" >' . t('Comment') . '</th><td style="background-color:#cee5f3; float:left; width:666px;">',
+        '#suffix' => '</td></tr></table>',
+        '#rows' => 2,
+        '#value' => ($edit_status) ? $comment_obj->comment : '',
+        '#wysiwyg' => True,
+    );
+
+    if ($edit_status) {
+        $attachment_files = load_comment_associated_files($comment_obj->cid);
+
+        foreach ($attachment_files as $file) {
+
+            $hiddendata .= 'F,' . $file->fid . ',' . $file->description . ';';
+            $file_path = '';
+            if ($file_obj = _get_dpl_files_obj($file->fid)) {
+                $file_path = $file_obj->filepath;
+            }
+
+            $attached_files_data .= '<div id="F_' . $file->fid . '"> <a style="vertical-align:middle;" onclick="detele_attach(\'F_' . $file->fid . '\');" ><img src="' . $base_path . 'themes/Boldr/Images/DeleteBtn.png" border="0" width="14" height="14" /></a>&nbsp;&nbsp;<a href="' . $base_path . $file_path . '" target="_blank"><span>' . $file->description . '<span></a></div>';
+        }
+    }
+    $form['#fileupload_embed'] = true;
+    $form['#fileupload_auto_upload'] = true;
+
+    $attach_fileupload_link = '<div id="upload_control_div" style="width: 80px;" ><a style="float:left;text-decoration:none;color: #3399CC;" id="attach_link"><span style="color:#000">+</span>Attach file</a></div>';
+
+    $form['topic']['info']['upload_control'] = array(
+        '#prefix' => '<table cellpadding="8" cellspacing="0" border="0" class="new_table" width="840px" style="float:left" >
+            <tr>
+            <th style="width:139px; vertical-align:top; padding:10px 10px 10px 0;" >' . t('Attachments') . '</th>
+                <td style="background-color:#cfe5f3;cursor:default !important" onmouseover="place_fileupload_control(\'edit-topic-info-upload-control\', this);" onmouseout="place_fileupload_control_mouseout(this);"  >' . $attach_fileupload_link,
+        '#suffix' => '<div><br><div id="attach_links" style="float:left;width:auto;" class="attach_link_forum" >' . $attached_files_data . '</div></div></td></tr></table></div>',
+    );
+
+    fileupload_get_control($form, $form_state, array('topic', 'info', 'upload_control'), '', true);
+
+
+    $form['topic']['info']['attached_files_hidden'] = array(
+        '#type' => 'hidden',
+        '#value' => $hiddendata,
+        '#id' => 'attachted_files_hidden',
+    );
+
+
+    $form['topic']['info']['course_nid'] = array(
+        '#type' => 'hidden',
+        '#value' => $course_nid,
+    );
+
+    $form['topic']['info']['topic_nid'] = array(
+        '#type' => 'hidden',
+        '#value' => $topic_nid,
+    );
+
+    $form['topic']['info']['comment_cid'] = array(
+        '#type' => 'hidden',
+        '#value' => $comment_cid,
+    );
+
+
+    return $form;
+}
+
+function _ntlp_forum_new_comment_form_submit($form, $form_state) {
+    global $user;
+
+
+    $fs = $form_state['clicked_button']['#post']['topic'];
+    $comment_subject = $fs['info']['subject'];
+    $comment_body = $fs['info']['body'];
+    $course_nid = $fs['info']['course_nid'];
+    $topic_nid = $fs['info']['topic_nid'];
+    $comment_cid = $fs['info']['comment_cid'];
+    $attached_data = $fs['info']['attached_files_hidden'];
+
+
+    /* generate a array of attached files */
+    $comments_attachements = get_links($attached_data);
+
+
+    $new_comment = array(
+        'subject' => $comment_subject,
+        'comment' => $comment_body,
+        'uid' => $user->uid,
+        'nid' => $topic_nid,
+        'status' => COMMENT_PUBLISHED,
+        'timestamp' => time(),
+        'cid' => $comment_cid,
+        'pid' => 0,
+        'format' => FILTER_FORMAT_DEFAULT,
+        'node-context' => 'node_uid'
+    );
+
+    $new_comment_cid = comment_save($new_comment);
+
+    if (arg(1) == 'groups') {
+
+        $isGroups = true;
+    } else {
+        $isGroups = false;
+    }
+
+    if ($comments_attachements != null) {
+        foreach ($comments_attachements as $l) {
+            list($type, $id, $url) = $l;
+
+            if ($type == 'F') {
+
+                $comment_files_array = load_comment_associated_files($new_comment_cid);
+
+                if (!empty($comment_files_array)) {
+                    foreach ($comment_files_array as $node_file) {
+
+                        if (!isset($comment_files_array[abs($id)])) {
+
+                            save_comment_attached_file($new_comment_cid, abs($id), $url);
+                        }
+                    }
+                } else {
+                    save_comment_attached_file($new_comment_cid, abs($id), $url);
+                }
+            } else if ($type == 'X') {
+                db_query('DELETE FROM {ntlp_comment_attachment} WHERE fid = %d AND cid = %d', abs($id), $new_comment_cid);
+            }
+        }
+    }
+
+    drupal_goto('ntlp/' . ($isGroups ? 'groups' : 'courses') . '/forum/view/' . $course_nid . '/' . $topic_nid);
+}
+
+function _ntlp_forum_new_comment_form_validate($form, $form_state) {
+
+    $fs = $form_state['clicked_button']['#post']['topic'];
+    $comment_subject = $fs['info']['subject'];
+
+    if (!(ntlp_validate_text_field_tags($comment_subject)))
+        form_set_error('', t('The subject fields contains malicious script.'));
+}
+
+function theme__ntlp_forum_new_comment_form($form) {
+
+    watchdog('theme__comment_form', print_r($form, true));
+    $form['#fileupload_embed'] = true;
+    $form['#fileupload_auto_upload'] = true;
+    $form_element_id = 'edit-topic-info-upload-control';
+
+    if (isset($form['topic']['topic_status']['#post']['topic']['info']['body']))
+        $form['topic']['info']['body']['#value'] = $form['topic']['topic_status']['#post']['topic']['info']['body'];
+
+    if (isset($form['topic']['topic_status']['#post']['topic']['info']['subject']))
+        $form['topic']['info']['subject']['#value'] = $form['topic']['topic_status']['#post']['topic']['info']['subject'];
+
+    if (isset($form['topic']['info']['sticky']['#post']['[#default_value'])) {
+        $form['topic']['info']['sticky']['default_value'] = $form['topic']['info']['sticky']['#post']['[#default_value'];
+    }
+    auto_upload_align_attach_control($form_element_id, true);
+
+    drupal_add_js(drupal_get_path('module', 'ntlp_forum') . '/ntlp_forum.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/fileupload_ahah_helper.js');
+    $output = drupal_render($form);
+    return $output;
+}
+
+
+function _ntlp_forum_comment_reply($isGroups, $course_nid, $topic_nid, $comment_cid) {
+    return drupal_get_form('_ntlp_comment_reply_form', $isGroups, $course_nid, $topic_nid, $comment_cid);
+}
+
+function _ntlp_comment_reply_form($form_state, $isGroups = false, $course_nid, $topic_nid, $comment_cid) {
+    global $user;
+    include "forum_topics_comments_template.inc";
+    drupal_add_js(drupal_get_path('module', 'ntlp_forum') . '/ntlp_forum.js');
+    $topic_status = 'Reply to a Comment';
+
+    $form['topic'] = array(
+        '#type' => 'fieldset',
+        '#title' => '',
+        '#tree' => TRUE, // Don't forget to set #tree!
+        '#prefix' => '',
+        '#suffix' => '',
+    );
+
+    $sr_comment_obj = _comment_load($comment_cid);
+
+
+    $form['topic']['topic_status'] = array(
+        '#type' => 'item',
+        '#title' => '',
+        '#prefix' => '<div style="float:left;width:200px; margin-bottom: 20px;margin-top:10px" align="left"><font style="color:#3570AA;font-size: 18px;" >' . $topic_status,
+        '#suffix' => '</font></div>',
+    );
+
+    if (!isset($form_state['values'])) {
+        set_item_url_handler('Comment Manage');
+    }
+
+
+    $attachment_files = load_comment_associated_files($sr_comment_obj->cid);
+
+    foreach ($attachment_files as $file) {
+
+
+        $file_path = '';
+        if ($file_obj = _get_dpl_files_obj($file->fid)) {
+            $file_path = $file_obj->filepath;
+        }
+
+        $attached_files_data .= '<div id="F_' . $file->fid . '"> <a href="' . $base_path . $file_path . '" target="_blank"><font style="color:#558EE3; font-weight:normal;  text-decoration: underline;">' . $file->description . '</font></a></div>';
+    }
+
+
+    $comment_by_userObj = get_user_record($sr_comment_obj->uid);
+    $commented_user = l($comment_by_userObj->first_name . ' ' . $comment_by_userObj->last_name, 'ntlp/user/profile/' . $sr_comment_obj->uid, array('attributes' => array('style' => 'color: #00b050;')));
+    $image = "<img src='" . is_user_image_exist($comment_by_userObj->picture) . "' width='32px'  height='32px'/>";
+    $topic_title = '<h2 style="margin:0px; color:#55a3eb;">' . $sr_comment_obj->subject . '</h2>
+        Posted by ' . $commented_user . ' on ' . get_tz_course($course_nid, DATE_FORMAT_LAST_SAVED, $sr_comment_obj->timestamp);
+
+
+    $form['topic']['src_comment_title'] = array(
+        '#type' => 'item',
+        '#value' => $topic_title,
+        '#prefix' => '<br><div  align="left" ><table cellpadding="8" cellspacing="0" border="0" class="table" width="100%" style="float:left;" ><tr  style="width: 35px; border-top:1px solid #CFE6F4;" ><td >' . $image . '</td><td  style="float:left;width:100%; padding:0px;"><div style="width: 700px;word-wrap: break-word;">',
+        '#suffix' => '</div></td></tr>',
+    );
+
+    $form['topic']['src_user_comment'] = array(
+        '#type' => 'item',
+        '#value' => $sr_comment_obj->comment,
+        '#prefix' => '<tr style="width: 35px; border-bottom:1px solid #CFE6F4;"><td colspan="2"><div style="width: 800px;word-wrap: break-word;">',
+        '#suffix' => '</div></td></tr>',
+    );
+
+    if (isset($attached_files_data)) {
+        $form['topic']['src_user_comment_attachment'] = array(
+            '#type' => 'item',
+            '#value' => $attached_files_data,
+            '#prefix' => '<tr style="width: 35px;"><td colspan="2"><div class="discuss_attachment_content attach_link_forum" ><font style="color: #00B050; font-size: 14px;">Attachments:</font>',
+            '#suffix' => '</div></td></tr>',
+        );
+    }
+
+    $current_userObj = get_user_record($user->uid);
+    $current_user = '<div style="padding: 20px  0 15px 0;">' . l($current_userObj->first_name . ' ' . $current_userObj->last_name, 'ntlp/user/profile/' . $current_userObj->uid, array('attributes' => array('style' => 'color: #00b050; font-size:15px;')));
+
+    $form['topic']['src_comment'] = array(
+        '#type' => 'item',
+        '#value' => $current_user . '<span style="font-size:15px;"> replies with…</span></div>',
+        '#prefix' => '<tr><td colspan="2"><table width="100%" border="0" style="table-layout:fixed;"><tr><td>',
+        '#suffix' => '</td>',
+    );
+
+    //here are the buttons now
+    $form['topic']['cancel'] = array(
+        '#type' => 'button',
+        '#value' => 'Cancel',
+        '#attributes' => array('class' => 'CancelBtn', 'onclick' => "window.location = '?q=ntlp/goback';return false;"),
+        '#prefix' => '<td  style="vertical-align: middle; padding-top: 10px;"><div style="position:relative; float:right; height: 30px; width:130px;"><span  style="float:right; clear:left;" >',
+        '#suffix' => '</span>',
+    );
+
+    $form['topic']['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Save',
+        '#attributes' => array('class' => 'SaveBtn'),
+        '#prefix' => '<span style="float:left; clear:left;" >',
+        '#suffix' => '</span></div></td></td></table></tr></table></div>',
+    );
+
+
+    $form['topic']['info'] = array(
+        '#type' => 'markup',
+        '#title' => '',
+        '#tree' => TRUE, // Don't forget to set #tree!
+        '#prefix' => $HTMLform_groupbox_hdr, // This is our wrapper div.
+        '#suffix' => $HTMLform_groupbox_ftr,
+    );
+
+    if (isset($sr_comment_obj->subject)) {
+
+        $pos = strpos($sr_comment_obj->subject, "Re:");
+
+// Note our use of ===.  Simply == would not work as expected
+// because the position of 'Re :' was the 0th (first) character.
+
+        if ($pos === false) {
+
+            $subject = 'Re: ' . $sr_comment_obj->subject;
+        } else {
+            $subject = $sr_comment_obj->subject;
+        }
+    } else {
+        $subject = '';
+    }
+
+    $form['topic']['info'] ['subject'] = array(
+        '#type' => 'textfield',
+        '#prefix' => '<div><table cellpadding="8" cellspacing="0" border="0" class="new_table" width="840px" style="float:left" ><tr><th style="width:139px; vertical-align:middle; padding-right: 10px;" >' . t('Subject') . '</th><td style="background-color:#cfe5f3;"><span style="float:right; margin-top: 6px;">Max characters = 100</span>',
+        '#suffix' => '</td></tr></table>',
+        '#value' => $subject,
+        '#size' => 80,
+        '#maxlength' => 100,
+        '#required' => TRUE,
+    );
+
+    $form['topic']['info']['body'] = array(
+        '#type' => 'textarea',
+        '#prefix' => '<table cellpadding="8" cellspacing="0" border="0" class="new_table" width="840px" style="float:left" ><tr><th style="width:139px; vertical-align:top; padding-top:10px; padding-right: 10px;" >' . t('Comment') . '</th><td  colspan="3" style="float:left; width:666px; background-color:#cfe5f3;">',
+        '#suffix' => '</td></tr></table></div>',
+        '#rows' => 2,
+        '#wysiwyg' => True,
+    );
+
+
+    $form['#fileupload_embed'] = true;
+    $form['#fileupload_auto_upload'] = true;
+
+    $attach_fileupload_link = '<div id="upload_control_div" style="width: 120px;" ><a style="float:left;text-decoration:none;color: #3399CC;" id="attach_link"><span style="color:#000">+</span>Attach file</a></div>';
+
+    $form['topic']['info']['upload_control'] = array(
+        '#prefix' => '<table cellpadding="8" cellspacing="0" border="0" class="new_table" width="840px" style="float:left" >
+            <tr>
+            <th style="width:139px;padding: 10px 10px 0 0; vertical-align: top;" >' . t('Attachments') . '</th>
+                <td   style="background-color:#cfe5f3;" onmouseover="place_fileupload_control(\'edit-topic-info-upload-control\', this);" onmouseout="place_fileupload_control_mouseout(this);" >' . $attach_fileupload_link,
+        '#suffix' => '<div id="attach_links" style="float:left;width:auto; clear: both;" class="attach_link_forum" >' . $attached_data . '</div></td></tr></table></div>',
+    );
+
+    fileupload_get_control($form, $form_state, array('topic', 'info', 'upload_control'), '', true);
+
+
+    $form['topic']['info']['attached_files_hidden'] = array(
+        '#type' => 'hidden',
+        '#value' => $hiddendata,
+        '#id' => 'attachted_files_hidden',
+    );
+
+    $form['topic']['info']['course_nid'] = array(
+        '#type' => 'hidden',
+        '#value' => $course_nid,
+    );
+
+    $form['topic']['info']['topic_nid'] = array(
+        '#type' => 'hidden',
+        '#value' => $topic_nid,
+    );
+
+    $form['topic']['info']['comment_cid'] = array(
+        '#type' => 'hidden',
+        '#value' => $comment_cid,
+    );
+
+
+    return $form;
+}
+
+function _ntlp_comment_reply_form_validate($form, $form_state) {
+
+    $subject = $form_state['clicked_button']['#post']['topic']['info']['subject'];
+
+    if (!ntlp_validate_text_field_tags($subject))
+        form_set_error('', t('The subject fields contains malicious script.'));
+}
+
+function theme__ntlp_comment_reply_form($form) {
+
+    watchdog('theme__reply_form', print_r($form, true));
+    $form['#fileupload_embed'] = true;
+    $form['#fileupload_auto_upload'] = true;
+    $form_element_id = 'edit-topic-info-upload-control';
+
+    if (isset($form['topic']['topic_status']['#post']['topic']['info']['body']))
+        $form['topic']['info']['body']['#value'] = $form['topic']['topic_status']['#post']['topic']['info']['body'];
+
+    if (isset($form['topic']['topic_status']['#post']['topic']['info']['subject']))
+        $form['topic']['info']['subject']['#value'] = $form['topic']['topic_status']['#post']['topic']['info']['subject'];
+
+    auto_upload_align_attach_control($form_element_id, true);
+
+    drupal_add_js(drupal_get_path('module', 'ntlp_forum') . '/ntlp_forum.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/fileupload_ahah_helper.js');
+    $output = drupal_render($form);
+    return $output;
+}
+
+function _ntlp_comment_reply_form_submit($form, $form_state) {
+
+
+    global $user;
+    $subject = $form_state['clicked_button']['#post']['topic']['info']['subject'];
+    $course_nid = $form_state['clicked_button']['#post']['topic']['info']['course_nid'];
+    $comment_cid = $form_state['clicked_button']['#post']['topic']['info']['comment_cid'];
+    $body = $form_state['clicked_button']['#post']['topic']['info']['body'];
+    $topic_nid = (int) $form_state['clicked_button']['#post']['topic']['info']['topic_nid'];
+
+    $attached_data = $form_state['clicked_button']['#post']['topic']['info']['attached_files_hidden'];
+
+
+    /* generate a array of attached files */
+    $comments_attachements = get_links($attached_data);
+
+    $reply_comments = array(
+        'subject' => $subject,
+        'comment' => $body,
+        'uid' => $user->uid,
+        'nid' => $topic_nid,
+        'pid' => $comment_cid,
+        'status' => COMMENT_PUBLISHED,
+        'timestamp' => time(),
+        'format' => FILTER_FORMAT_DEFAULT,
+        'node-context' => 'node_uid'
+    );
+
+    $new_comment_cid = comment_save($reply_comments);
+
+
+    if ($comments_attachements != null) {
+
+        foreach ($comments_attachements as $l) {
+            list($type, $id, $url) = $l;
+
+            if ($type == 'F') {
+
+                $comment_files_array = load_comment_associated_files($new_comment_cid);
+
+                if (!empty($comment_files_array)) {
+                    foreach ($comment_files_array as $node_file) {
+
+                        if (!isset($comment_files_array[abs($id)])) {
+
+                            save_comment_attached_file($new_comment_cid, abs($id), $url);
+                        }
+                    }
+                } else {
+                    save_comment_attached_file($new_comment_cid, abs($id), $url);
+                }
+            } else if ($type == 'X') {
+                db_query('DELETE FROM {ntlp_comment_attachment} WHERE fid = %d AND cid = %d', abs($id), $new_comment_cid);
+            }
+        }
+    }
+
+    if (arg(1) == 'groups') {
+
+        $isGroups = true;
+    } else {
+        $isGroups = false;
+    }
+
+    drupal_goto('ntlp/' . ($isGroups ? 'groups' : 'courses') . '/forum/view/' . $course_nid . '/' . $topic_nid);
+}
+
+function ntlp_course_forum_topic_manage($course_nid, $topic_nid) {
+    return drupal_get_form('ntlp_forum_topic_form', $course_nid, $topic_nid);
+}
+
+function ntlp_forum_topic_form($form_state, $course_nid, $topic_nid = 0) {
+    global $user;
+
+    include "forum_topics_comments_template.inc";
+    drupal_add_js(drupal_get_path('module', 'ntlp_forum') . '/ntlp_forum.js');
+
+
+    if (arg(1) == 'groups') {
+
+        $isGroups = true;
+    } else {
+        $isGroups = false;
+    }
+
+    if(isset($form_state['values'])){
+        $isgroup_hidden = $form_state['values']['topic']['info']['isgroup'];
+        $isGroups = ($isgroup_hidden == 'groups') ? true : false;
+    }
+    
+    if ($topic_nid != 0) {
+        $edit_status = true;
+        $topic_status = 'Edit Discussion Topic';
+        $topic_obj = get_topic_records($topic_nid);
+
+        /* check url hacking.. */
+        if ($isGroups) {
+
+            if (!is_user_group_admin($course_nid, $user) && !is_node_owner($topic_nid, $user)) {
+                drupal_goto('ntlp/goback');
+            }
+        } else {
+            if (!is_user_moderator_in_course($course_nid, $user->uid) && !is_node_owner($topic_nid, $user)) {
+                drupal_goto('ntlp/goback');
+            }
+        }
+
+        /* show last saved status */
+        $status_html = '<span style="margin-top:0px;float: left; padding: 5px; margin-left: 260px; margin-top:8px; font-size: 12px; background-color: #EFEFDE;">';
+        $status_html .=' Last saved ' . get_tz_course($course_nid, DATE_FORMAT_LAST_SAVED, $topic_obj->changed);
+        $status_html .= '</span>';
+    } else {
+        $status_html = '';
+        $edit_status = false;
+        $topic_status = 'Create New Discussion Topic';
+    }
+
+
+    if (!$form_state['values']) {
+        set_item_url_handler('Topic Manage');
+    }
+
+    $form['#action'] = url('ntlp/' . ($isGroups ? 'groups' : 'courses') . '/forum/topic/' . $course_nid . '/' . $topic_nid);
+    $container_tid = _get_node_forum_container_tid($course_nid);
+    drupal_set_title($topic_status);
+
+    $form['topic'] = array(
+        '#type' => 'fieldset',
+        '#title' => '',
+        '#tree' => TRUE, // Don't forget to set #tree!
+        '#prefix' => '',
+        '#suffix' => '',
+    );
+
+    $form['topic']['topic_status'] = array(
+        '#type' => 'item',
+        '#title' => '',
+        '#prefix' => '<div style="float:left;width:246px;  margin-bottom: 15px;margin-top: 10px" aling="left"><font style="color:#3570AA;font-size: 17px;" >' . $topic_status,
+        '#suffix' => '</font></div>',
+    );
+
+    $form['topic']['cancel'] = array(
+        '#type' => 'button',
+        '#value' => 'Cancel',
+        '#attributes' => array('class' => 'CancelBtn', 'onclick' => "window.location = '?q=ntlp/goback';return false;"),
+        '#prefix' => $status_html . '<div style="float:right; height: 30px; width:130px;margin-top:8px;"><span  style="float:right; clear:left;" >',
+        '#suffix' => '</span>',
+    );
+
+    $form['topic']['submit'] = array(
+        '#type' => 'submit',
+        '#value' => ' Save ',
+        '#attributes' => array('class' => 'SaveBtn'),
+        '#prefix' => '<span style="float:left; clear:left;" >',
+        '#suffix' => '</span></div>',
+    );
+
+
+    $form['topic']['info'] = array(
+        '#type' => 'markup',
+        '#title' => '',
+        '#tree' => TRUE, // Don't forget to set #tree!
+        '#prefix' => $HTMLform_groupbox_hdr, // This is our wrapper div.
+        '#suffix' => $HTMLform_groupbox_ftr,
+    );
+
+    $form['topic']['info'] ['subject'] = array(
+        '#type' => 'textfield',
+        '#prefix' => '<table cellpadding="8" cellspacing="0" border="0" class="new_table" width="840px" style="float:left" ><tr><th style="width:139px;padding-right: 10px; vertical-align: middle;" >' . t('Subject') . '</th><td style="background-color:#cfe5f3;"><span style="float:right; margin-top: 6px;">Max characters = 100</span>',
+        '#suffix' => '</td></tr></table>',
+        '#size' => 80,
+        '#maxlength' => 100,
+        '#value' => ($edit_status) ? $topic_obj->title : '',
+    );
+
+    if ($isGroups) {
+
+        if (is_user_group_admin($course_nid, $user)) {
+            $form['topic']['info']['sticky'] = array(
+                '#type' => 'checkbox',
+                '#title' => 'Sticky',
+                '#prefix' => '<table cellpadding="8" cellspacing="0" border="0" class="new_table" width="840px" style="float:left" ><tr><th style="width:139px;padding-right: 10px; vertical-align: middle;" >' . t('Sticky Topic') . '</th><td  style="background-color:#cfe5f3;"> <span style="float:right; border:1px solid gray; background-color:#ffffd9; padding:5px;">Sticky topics always stay at the top of the discussion forum.</span>',
+                '#default_value' => ($edit_status) ? (($topic_obj->sticky == 1) ? 1 : 0 ) : 0,
+                '#suffix' => '</td></tr></table>',
+            );
+        }
+    } else {
+
+        if (!isset($user->roles[NTLP_ROLEID_STUDENT]) && !isset($user->roles[NTLP_ROLEID_PARENT])
+                && !isset($user->roles[NTLP_ROLEID_SITEGUEST]) && is_user_moderator_in_course($course_nid, $user->uid)) {
+
+            $form['topic']['info']['sticky'] = array(
+                '#type' => 'checkbox',
+                '#title' => 'Sticky',
+                '#prefix' => '<table cellpadding="8" cellspacing="0" border="0" class="new_table" width="840px" style="float:left" ><tr><th style="width:139px;padding-right: 10px; vertical-align: middle;" >' . t('Sticky Topic') . '</th><td  style="background-color:#cfe5f3;"> <span style="float:right; border:1px solid gray; background-color:#ffffd9; padding:5px;">Sticky topics always stay at the top of the discussion forum.</span>',
+                '#default_value' => ($edit_status) ? (($topic_obj->sticky == 1) ? 1 : 0 ) : 0,
+                '#suffix' => '</td></tr></table>',
+            );
+        }
+    }
+
+
+    $form['topic']['info']['body'] = array(
+        '#type' => 'textarea',
+        '#prefix' => '<table cellpadding="8" cellspacing="0" border="0" class="new_table" width="840px" style="float:left" ><tr><th style="width:139px;padding-right: 10px; vertical-align: top; padding-top: 15px;" >' . t('Topic Content') . '</th><td  style="float:left; width:664px; background-color:#cfe5f3;">',
+        '#suffix' => '</td></tr> </table>',
+        '#value' => ($edit_status) ? $topic_obj->body : '',
+        '#rows' => 2,
+        '#wysiwyg' => True,
+    );
+
+    if ($edit_status) {
+        $attachment_files = load_node_associated_files($topic_obj->nid);
+
+        foreach ($attachment_files as $file) {
+
+            $hiddendata .= 'F,' . $file->fid . ',' . $file->description . ';';
+            $file_path = '';
+            if ($file_obj = _get_dpl_files_obj($file->fid)) {
+                $file_path = $file_obj->filepath;
+            }
+
+            $attached_files_data .= '<div id="F_' . $file->fid . '"> <a onclick="detele_attach(\'F_' . $file->fid . '\');" ><img src="' . $base_path . 'themes/Boldr/Images/DeleteBtn.png" border="0" /></a>&nbsp;&nbsp;<a href="' . $base_path . $file_path . '" target="_blank">' . $file->description . '</a></div>';
+        }
+    }
+    $form['#fileupload_embed'] = true;
+    $form['#fileupload_auto_upload'] = true;
+
+    $attach_fileupload_link = '<div id="upload_control_div" style="width: 80px;  cursor: pointer !important;" ><a style="float:left;text-decoration:none;color: #3399CC;" id="attach_link"><span style="color:#000">+</span>Attach file</a></div>';
+
+    $form['topic']['info']['upload_control'] = array(
+        '#prefix' => '<table cellpadding="8" cellspacing="0" border="0" class="new_table" width="840px" style="float:left" >
+            <tr>
+            <th style="width:139px;padding:10px 10px 0 0;  vertical-align: top;" >' . t('Attachments') . '</th>
+                <td   style="background-color:#cfe5f3; " onmouseover="place_fileupload_control(\'edit-topic-info-upload-control\', this);" onmouseout="place_fileupload_control_mouseout(this);" >' . $attach_fileupload_link,
+        '#suffix' => '<br><div id="attach_links" style="float:left;width:auto;" class="attach_link_forum" >' . $attached_files_data . '</div></td></tr></table></div>',
+    );
+
+    fileupload_get_control($form, $form_state, array('topic', 'info', 'upload_control'), '', true);
+
+
+    $form['topic']['info']['attached_files_hidden'] = array(
+        '#type' => 'hidden',
+        '#value' => $hiddendata,
+        '#id' => 'attachted_files_hidden',
+    );
+
+    $form['topic']['info']['isgroup'] = array(
+        '#type' => 'hidden',
+        '#value' => ($isGroups) ? 'groups': 'courses',
+    );
+
+    $form['topic']['info']['container_tid'] = array(
+        '#type' => 'hidden',
+        '#value' => $container_tid,
+    );
+
+    $form['topic']['info']['topic_nid'] = array(
+        '#type' => 'hidden',
+        '#value' => $topic_nid,
+    );
+
+    $form['topic']['info']['course_nid'] = array(
+        '#type' => 'hidden',
+        '#value' => $course_nid,
+    );
+
+    $form['topic']['info']['js_id'] = array(
+        '#type' => 'hidden',
+        '#value' => 'ntlp_forum_topic',
+        '#id' => 'show_lightbox'
+    );
+
+    return $form;
+}
+
+function ntlp_forum_topic_form_validate($form, $form_state) {
+
+    $subject = $form_state['clicked_button']['#post']['topic']['info'] ['subject'];
+    if ($subject == '') {
+        form_set_error('', t('You must enter a subject before saving your new topic.'));
+    }
+    else if (!ntlp_validate_text_field_tags($subject))
+        form_set_error('', t('The subject fields contains malicious script.'));
+}
+
+function ntlp_forum_topic_form_submit($form, $form_state) {
+
+
+    global $user;
+    $subject = $form_state['clicked_button']['#post']['topic']['info']['subject'];
+    $sticky = $form_state['clicked_button']['#post']['topic']['info']['sticky'];
+    $body = $form_state['clicked_button']['#post']['topic']['info']['body'];
+    $container_tid = (int) $form_state['clicked_button']['#post']['topic']['info']['container_tid'];
+    $topic_nid = (int) $form_state['clicked_button']['#post']['topic']['info']['topic_nid'];
+    $course_nid = (int) $form_state['clicked_button']['#post']['topic']['info']['course_nid'];
+    $is_group = $form_state['clicked_button']['#post']['topic']['info']['isgroup'];
+
+
+    $attached_data = $form_state['clicked_button']['#post']['topic']['info']['attached_files_hidden'];
+
+    /* generate a array of attached files */
+    $topic_attachements = get_links($attached_data);
+
+    if (!isset($sticky)) {
+        $sticky = 0;
+    }
+    if ($topic_nid != 0) {
+
+        $topic_node = node_load($topic_nid);
+
+        watchdog('sticky ', 'node  ' . $sticky . ' topic_node ' . print_r($topic_node, true));
+        $topic_node->title = $subject;
+        $topic_node->sticky = $sticky;
+        $topic_node->body = $body;
+        $topic_node->uid = $user->uid;
+        $topic_node->changed = time();
+    } else {
+        $topic_node = new stdClass();
+        $topic_node->type = 'echo_forum';
+        $topic_node->title = $subject;
+        $topic_node->sticky = $sticky;
+        $topic_node->body = $body;
+        $topic_node->uid = $user->uid;
+        $topic_node->status = 1;
+        $topic_node->comment = 2;
+        $topic_node->created = time();
+        $topic_node->changed = time();
+    }
+
+    node_save($topic_node);
+
+    watchdog('sticky_node', 'node ' . print_r($topic_node, true));
+
+    if ($topic_nid == 0) {
+        if ($topic_node->nid) {
+
+            $term_obj = taxonomy_get_term($container_tid);
+            $term_array[] = $term_obj;
+            taxonomy_node_save($topic_node, $term_array);
+        }
+    }
+
+
+    if ($topic_attachements != null) {
+        foreach ($topic_attachements as $l) {
+            list($type, $id, $url) = $l;
+
+            if ($type == 'F') {
+
+                $node_files_array = load_node_associated_files($topic_node->nid);
+
+                if (!empty($node_files_array)) {
+                    foreach ($node_files_array as $node_file) {
+
+                        if (!isset($node_files_array[abs($id)])) {
+
+                            save_node_attached_file($topic_node, abs($id), $url);
+                        }
+                    }
+                } else {
+                    save_node_attached_file($topic_node, abs($id), $url);
+                }
+            } else if ($type == 'X') {
+                db_query('DELETE FROM {upload} WHERE fid = %d AND nid = %d', abs($id), $topic_node->nid);
+            }
+        }
+    }
+
+    drupal_goto('ntlp/'.$is_group.'/forum/'.$course_nid);
+
+
+}
+
+
+function save_comment_attached_file($cid, $file_id, $url) {
+
+    if (!is_attachment_exist_for_comment($cid, $file_id)) {
+        $file_object = get_file_detail($file_id);
+
+        // Create a new revision, or associate a new file needed.
+        db_query("INSERT INTO {ntlp_comment_attachment} (cid, fid, description)
+                        VALUES (%d, %d, '%s')", $cid, $file_id, $url);
+        file_set_status($file_object, FILE_STATUS_PERMANENT);
+    }
+}
+
+function is_attachment_exist_for_comment($cid, $file_id) {
+    $flag = false;
+    $result = db_query("SELECT * FROM {ntlp_comment_attachment} WHERE cid = %d AND fid = %d", $cid, $file_id);
+
+    if ($result->num_rows > 0) {
+        $flag = true;
+    }
+
+    return $flag;
+}
+
+function is_attachment_exist_for_topic($nid, $file_id) {
+    $flag = false;
+    $result = db_query("SELECT * FROM {upload} WHERE nid = %d AND fid = %d", $nid, $file_id);
+
+    if ($result->num_rows > 0) {
+        $flag = true;
+    }
+
+    return $flag;
+}
+
+function save_node_attached_file($node, $file_id, $url) {
+
+    if (!is_attachment_exist_for_topic($node->nid, $file_id)) {
+
+        $file_object = get_file_detail($file_id);
+
+        // Create a new revision, or associate a new file needed.
+        db_query("INSERT INTO {upload} (fid, nid, vid, list, description, weight)
+                        VALUES (%d, %d, %d, %d, '%s', %d)", $file_id, $node->nid,
+                $node->vid, 1, $url, 0);
+        file_set_status($file_object, FILE_STATUS_PERMANENT);
+    }
+}
+
+function get_topic_records($topic_nid) {
+    $flag = false;
+    $result = db_query("SELECT n.*, nr.body FROM dpl_node n
+        INNER JOIN dpl_node_revisions nr ON nr.nid = n.nid
+        WHERE n.nid = %d AND n.type = 'echo_forum'", $topic_nid);
+
+    if ($result->num_rows > 0) {
+        $flag = db_fetch_object($result);
+    } else {
+        $flag = false;
+    }
+
+    return $flag;
+}
+
+/* This method is used to return course/group forum
+ * mapping tid ** if not exist then create and return
+ */
+
+function _get_node_forum_container_tid($node_nid) {
+
+    $result = db_query("SELECT tn.tid FROM dpl_term_node tn
+        INNER JOIN dpl_term_data td ON td.tid = tn.tid
+        WHERE tn.nid = %d AND td.vid = 1 ORDER BY tn.tid DESC LIMIT 0, 1", $node_nid);
+
+    if ($result->num_rows > 0) {
+
+        $data = db_fetch_object($result);
+        return $data->tid;
+    } else {
+
+        $new_unit = array('vid' => 1,
+            'name' => $node_nid . ' Forum Maping tid',
+            'description' => $node_nid . '  Forum Maping tid',
+        );
+
+        taxonomy_save_term($new_unit);
+
+        db_query('INSERT INTO {term_node} (nid, vid, tid) VALUES (%d, %d, %d)', $node_nid, $node_nid, $new_unit['tid']);
+
+        return $new_unit['tid'];
+    }
+}
+
+function ntlp_delete_forum_topic($topic_nid) {
+
+    /* delete topic node */
+
+    db_query('DELETE FROM {node} WHERE nid = %d', $topic_nid);
+    db_query('DELETE FROM {node_revisions} WHERE nid = %d', $topic_nid);
+    /* deleting all topic related comments */
+    db_query("DELETE FROM dpl_comments WHERE nid = %d", $topic_nid);
+}
+
+function ntlp_delete_forum_comment($comment_cid) {
+
+    watchdog('com_delete', $comment_cid);
+    $comment = db_fetch_object(db_query('SELECT c.*, u.name AS registered_name, u.uid FROM {comments} c INNER JOIN {users} u ON u.uid = c.uid WHERE c.cid = %d', $comment_cid));
+
+    if (is_object($comment) && is_numeric($comment->cid)) {
+
+// Delete comment and its replies.
+        db_query('DELETE FROM {comments} WHERE cid = %d', $comment->cid);
+        db_query('DELETE FROM {comments} WHERE pid = %d', $comment->cid);
+        db_query('DELETE FROM {ntlp_comment_attachment} WHERE cid = %d', $comment->cid);
+        _comment_update_node_statistics($comment->nid);
+    }
+}
+
+function ntlp_comment_render($course_group_nid, $commentObj, $node_nid, $isGroups) {
+    global $user;
+    $delete_link = '';
+    $edit_link = '';
+    $manage_link = '';
+
+    $comments .= '<div class="forum_comment" id="comment-' . $commentObj->cid . '" style="width:100%;  position:relative;">';
+
+    if ($isGroups == 'groups') {
+
+        if (is_user_group_admin($course_group_nid, $user) || is_comment_owner($commentObj->cid, $user)) {
+            $delete_link = "<a  style='color:#00b050;font-weight:normal;font-size: 13px;' id='comment_delete_$commentObj->cid' onclick='delete_forum_comment($commentObj->cid)'>delete </a>";
+            $edit_link = "<a style='color:#00b050;font-weight:normal;font-size: 13px;' href='" . url('ntlp/' . $isGroups . '/forum/comment/' . arg(4) . '/' . arg(5) . '/' . $commentObj->cid) . "'> edit </a>";
+            $manage_link = $edit_link . ' | ' . $delete_link;
+        }
+    } else {
+
+        if (is_user_moderator_in_course($course_group_nid, $user->uid) || is_comment_owner($commentObj->cid, $user)) {
+            $delete_link = "<a  style='color:#00b050;font-weight:normal;font-size: 13px;' id='comment_delete_$commentObj->cid' onclick='delete_forum_comment($commentObj->cid)'>delete </a>";
+            $edit_link = "<a style='color:#00b050;font-weight:normal;font-size: 13px;' href='" . url('ntlp/' . $isGroups . '/forum/comment/' . arg(4) . '/' . arg(5) . '/' . $commentObj->cid) . "'> edit </a>";
+            $manage_link = $edit_link . ' | ' . $delete_link;
+        }
+    }
+
+
+    if (strlen($commentObj->subject) > 74) {
+        $comment_subject = substr($commentObj->subject, 0, 74) . "...";
+    } else {
+        $comment_subject = $commentObj->subject;
+    }
+    $comments .= '<div style="width:auto;">';
+    $comments .= '<div>
+                    <div style="float:right;">' . $manage_link . ' </div>
+                    <div class="discuss_image"><img src="' . is_user_image_exist($commentObj->picture) . '" height="32" width="32" /></div>
+                    <div><font style="color: #558EE3; margin: 0px; padding: 0px; font-size: 16px;">' . $comment_subject . '</font></div>
+                    <div>Posted by ' . l($commentObj->first_name . ' ' . $commentObj->last_name, 'ntlp/user/profile/' . $commentObj->uid, array('attributes' => array('style' => 'color: #00b050;'))) . ' on ' . get_tz_course(arg(4), DATE_FORMAT_LAST_SAVED, $commentObj->timestamp) . '</div>
+                  </div>';
+
+    $commment_attachments = load_comment_associated_files($commentObj->cid);
+    if (isset($commment_attachments) && $commment_attachments != null) {
+        foreach ($commment_attachments as $attachments) {
+            if ($file_obj = _get_dpl_files_obj($attachments->fid)) {
+                $file_path = $file_obj->filepath;
+                $attached_files_data .= '<div id="F_' . $attachments->fid . '"><a href="' . $base_path . $file_path . '" target="_blank"><font style="color:#558EE3; font-weight:normal;  text-decoration: underline;">' . $attachments->description . '</font></a></div>';
+            }
+        }
+    }
+
+
+    $comments .='<div style="word-wrap:break-word;">' . $commentObj->comment . '</div>';
+
+    if (isset($attached_files_data)) {
+        $comments .='<div class="discuss_attachment_content attach_link_forum ">
+                    <font style="color: #00B050; font-size: 12px;">Attachments:</font>
+                ' . $attached_files_data . '
+            </div>';
+    }
+
+    $comments.='<br /><a style="color:#00b050" title="Reply" id="comment-reply-submit" href="' . url('ntlp/' . $isGroups . '/forum/reply/' . arg(4) . '/' . $commentObj->nid . '/' . $commentObj->cid) . '"> <span style="color:#558EF0">+</span> reply </a>';
+
+    $comments .= '</div></div>';
+
+    return $comments;
+}
+
+function get_node_body($nid) {
+
+    $result = db_query("SELECT body FROM {node_revisions} WHERE nid = %d", $nid);
+
+    if ($result->num_rows > 0) {
+        $data = db_fetch_object($result);
+        return $data->body;
+    } else {
+        return '';
+    }
+}
+
+function load_comment_associated_files($cid) {
+    $files = array();
+
+    $result = db_query('SELECT * FROM {files} f INNER JOIN {ntlp_comment_attachment} ca ON f.fid = ca.fid
+        WHERE ca.cid = %d ORDER BY f.fid', $cid);
+    while ($file = db_fetch_object($result)) {
+        $files[$file->fid] = $file;
+    }
+    return $files;
+}
+
+function load_node_associated_files($node_nid) {
+    $files = array();
+
+    $result = db_query('SELECT * FROM {files} f INNER JOIN {upload} r ON f.fid = r.fid
+        WHERE r.nid = %d ORDER BY f.fid', $node_nid);
+    while ($file = db_fetch_object($result)) {
+        $files[$file->fid] = $file;
+    }
+    return $files;
+}
+
+function ntlp_forum_theme() {
+
+
+    return array(
+        // The form ID.
+        'ntlp_forum_topic_form' => array(
+            // Forms always take the form argument.
+            'arguments' => array('form' => NULL),
+        ),
+        '_ntlp_forum_new_comment_form' => array(
+            'arguments' => array('form' => NULL),
+        ),
+        '_ntlp_comment_reply_form' => array(
+            'arguments' => array('form' => NULL),
+        ),
+    );
+}
+
+function theme_ntlp_forum_topic_form($form) {
+
+    //watchdog('theme_ntlp_forum', print_r($form, true));
+    $form['#fileupload_embed'] = true;
+    $form['#fileupload_auto_upload'] = true;
+    $form_element_id = 'edit-topic-info-upload-control';
+
+    //watchdog('topic_body',  $form['topic']['info']['subject']['#post']['topic']['info']['body']);
+    if (isset($form['topic']['info']['subject']['#post']['topic']['info']['body']))
+        $form['topic']['info']['body']['#value'] = $form['topic']['info']['subject']['#post']['topic']['info']['body'];
+
+    if (isset($form['topic']['info']['sticky']['#post']['[#default_value'])) {
+        $form['topic']['info']['sticky']['default_value'] = $form['topic']['info']['sticky']['#post']['[#default_value'];
+    }
+    auto_upload_align_attach_control($form_element_id, true);
+
+    drupal_add_js(drupal_get_path('module', 'ntlp_forum') . '/ntlp_forum.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/fileupload_ahah_helper.js');
+    $output = drupal_render($form);
+    return $output;
+}
+
+function forum_topic_container($forum_id) {
+    $sql = "SELECT n.type, n.nid, tn.tid, tn1.nid AS course_nid, n2.type
+            FROM dpl_node n
+            INNER JOIN {term_node} tn ON tn.nid = n.nid
+            INNER JOIN {term_node} tn1 ON tn1.tid = tn.tid
+            INNER JOIN {node} n2 ON n2.nid = tn1.nid
+            WHERE n.type='echo_forum' AND n2.type IN ('ntlp_course', 'ntlp_group')
+            AND n.nid={$forum_id};";
+
+    return db_query($sql);
+}
+
+
+?>

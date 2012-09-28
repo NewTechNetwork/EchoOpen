@@ -1,0 +1,1215 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+module_load_include('inc', 'ntlp_school', 'data_access');
+module_load_include('inc', 'ntlp_grade', 'data_access');
+module_load_include('inc', 'ntlp_school', 'constants');
+
+require_once "data_access.inc";
+require_once "form_def.inc";
+//require_once "courses_term_page.inc";
+require_once "courses_copy_mgmt.inc";
+require_once "courses_delete_mgmt.inc";
+require_once "admincourse_header.contents.inc";
+
+/**
+ * @file This is an example multi-step form designed for Drupal 6. This code is provided for illustration purposes only. Caveat emptor. Use at your own risk. All code is licensed under GPL 2+. See http://pingv.com/node/4252.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function ntlp_admincourse_menu() {
+    $items[] = array();
+
+    $items['ntlp/admincourse/show_enrolled/%'] = array(
+        'title' => t('Shows Enrolled users'),
+        'page callback' => 'show_enrolled_users',
+        'page arguments' => array(3), //Course id
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admincourse/show_dropped/%'] = array(
+        'title' => t('Shows Dropped users'),
+        'page callback' => 'show_dropped_users',
+        'page arguments' => array(3), //Course id
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admincourse/enroll_teacher/%/%/%'] = array(
+        'title' => t('Primary Course Teacher'),
+        'page callback' => 'enroll_teacher',
+        'page arguments' => array(3, 4, 5), //Course id, Enroll-in-role_id and Comma delimited user ids
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admincourse/enroll/%/%/%/%'] = array(
+        'title' => t('Course Students - Enroll'),
+        'page callback' => 'enroll_users',
+        'page arguments' => array(3, 4, 5, 6), //Course id, Enroll-in-role_id and Comma delimited user ids
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admincourse/drop/%/%/%'] = array(
+        'title' => t('Course Students - Dropout'),
+        'page callback' => 'drop_users',
+        'page arguments' => array(3, 4, 5),
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admincourse/candelete/%/%'] = array(
+        'title' => t('Can remove students from course?'),
+        'page callback' => 'can_remove_course_students',
+        'page arguments' => array(3, 4), //Course nid, Selected-Students
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admincourse/confirmdeletion/%/%'] = array(
+        'title' => t('Confirm Removal of Students from Course'),
+        'page callback' => 'confirm_remove_course_students',
+        'page arguments' => array(3, 4), //Course nid, Selected-Students
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/edit/%'] = array(
+        'title' => 'Course - Edit',
+//            'page arguments' => array(2, 3),        //[new/edit], [course_nid]
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('course_form_controller'), //ntlp_admincourse_form'),
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/admincourse/new'] = array(
+        'title' => 'Course - New',
+//            'page arguments' => array(2, 3),        //[new/edit], [course_nid]
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('course_form_controller'), //ntlp_admincourse_form'),
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+//    $items['ntlp/course/term/change/%/%'] = array(
+//            'title' => t('NTLP Course Term - Change'),
+//            'page callback' => 'ntlp_course_term_change',
+//            'page arguments' => array(4, 5),
+//            'access arguments' => array('create ntlp_course content'),
+//            'type' => MENU_CALLBACK,
+//    );
+//
+    $items['ntlp/course/copy/popup/%'] = array(
+        'title' => t('Copy Course'),
+        'page callback' => 'courses_copy_frm',
+        'page arguments' => array(4),
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/course/delete/popup/%'] = array(
+        'title' => t('Course Delete Popup'),
+        'page callback' => 'courses_delete_frm',
+        'page arguments' => array(4),
+        'access arguments' => array('delete course'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admincourse/copy/%/%/%/%'] = array(
+        'title' => t('Course Copy Data'),
+        'page callback' => 'courses_copy_data',
+        'page arguments' => array(3, 4, 5, 6),
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/course/delete/data/%'] = array(
+        'title' => t('Course Delete Data'),
+        'page callback' => 'courses_delete_data',
+        'page arguments' => array(4),
+        'access arguments' => array('delete course'),
+        'type' => MENU_CALLBACK,
+    );
+
+//    $items['ntlp/courses/page'] = array(
+//            'title' => t('Courses - Page'),
+//            'page callback' => 'courses_term_frm',
+//            'access arguments' => array('create ntlp_course content'),
+//            'type' => MENU_CALLBACK,
+//    );
+
+    $items['ntlp/courses/teaching'] = array(
+        'title' => t('Courses - Teaching'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_courses_teaching'),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/training'] = array(
+        'title' => t('Courses - Traning'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_courses_training'),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/all'] = array(
+        'title' => t('Courses - All'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_courses_all'),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admincourse/checkoutcomes/%/%'] = array(
+        'title' => t('Course Copy Checking'),
+        'page callback' => 'copy_course_validation',
+        'page arguments' => array(3, 4),
+        'access arguments' => array('copy course'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/admincourse/allow_self_enroll/%/%'] = array(
+        'page callback' => 'ntlp_allow_self_enroll',
+        'page arguments' => array(3, 4),
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admincourse/self_enroll/%/%/%'] = array(
+        'title' => t('Course Students - Self Enroll'),
+        'page callback' => 'self_enroll_user_in_course',
+        'page arguments' => array(3, 4, 5), //Course id, Enroll-in-role_id and Comma delimited user ids
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    return $items;
+}
+
+function ntlp_admincourse_perm() {
+    return array("delete course", "create course", "copy course");
+}
+
+function course_form_validate_settings($form, &$form_state) {
+
+
+    $post_array = $form_state['clicked_button']['#post'];
+
+    if (empty($post_array['main']['form']['course_full_title'])) {
+        $message .= '<li> Title is required</li>';
+    }
+    if (empty($post_array['main']['form']['course_short_title'])) {
+        $message .= '<li>Short Title is required</li>';
+    }
+
+    $course_subject1 = $post_array['main']['form']['course_subject1'];
+    if (empty($course_subject1)) {
+        $message .= '<li>At least one Subject is required</li>';
+    }
+
+    $course_nid = $post_array['main']['course_node'];
+    $school_nid = $post_array['main']['school_node'];
+
+    if (empty($school_nid))
+        form_set_error('school_nid', t('School not selected.'));
+
+    if ($course_nid == 0) {
+        $course_school_year = $post_array['main']['form']['course_school_year'];
+    } else {
+        $course_school_year = $post_array['main']['course_school_year'];
+    }
+    if (empty($course_school_year)) {
+        $message .= '<li>School Year is required</li>';
+    }
+//    watchdog('validate', print_r($post_array, true));
+
+//Find which school terms are selected by the user, to save as course terms
+    $rs_st = get_school_terms($school_nid, $course_school_year);
+    $term_selected = false;
+    while ($rec_st = db_fetch_array($rs_st)) {
+        if (isset($post_array['main']['form']['school_term_start']['school_term_w']['school_term_' . $rec_st['tid']])) {
+            if ($post_array['main']['form']['school_term_start']['school_term_w']['school_term_' . $rec_st['tid']]) {
+                $term_selected = true;
+            }
+        }
+        if (!$term_selected) {
+            $term_selected = is_course_term_used($course_nid, $rec_st['tid']);
+        }
+    }
+    if (!$term_selected) {
+        $message .= '<li>At least one Term is required</li>';
+    }
+
+    if (empty($post_array['main']['form']['course_period']) && $post_array['main']['form']['course_period_is_multiple'] == 0) {
+        $message .= '<li>A Period selection is required</li>';
+    }
+    $ids = $post_array['main']['form']['course_primary_instructor_ids'];
+    $count_user_ids = 0;
+    if (isset($ids) && !empty($ids)) {
+        $ids = trim($ids, ",");
+        $count_user_ids = count(explode(",", $ids));         //Explode multiple users using (,) delimiter
+        if ($count_user_ids > 2) {
+            $message .= '<li>Only two Primary Instructors are allowed.</li>';
+        }
+    }
+    if ($count_user_ids == 0) {
+        $message .= '<li>At least one Primary Instructor is required</li>';
+    }
+
+    if (is_string($message)) {
+        $validation_message = "<p>There were some issues with this form:</p><ul>";
+        $validation_message .= $message . '</ul>';
+
+        form_set_error('', $validation_message);
+    }
+
+    drupal_add_js(drupal_get_path('module', 'ntlp_admincourse') . '/ntlp_admincourse.js');
+}
+
+function course_form_submit_settings($form, $form_state) {
+    global $user;
+
+    $post_array = $form_state['clicked_button']['#post'];
+//    watchdog('course_save', 'Submit course:' . print_r($post_array, true));
+
+    $action_btn = $post_array['op'];
+
+    $course_nid = $post_array['main']['course_node'];
+    $school_nid = $post_array['main']['school_node'];
+
+    $course_full_title = $post_array['main']['form']['course_full_title'];
+    $course_short_title = $post_array['main']['form']['course_short_title'];
+    $course_active = $post_array['main']['form']['course_active'];
+    $course_subject1 = $post_array['main']['form']['course_subject1'];
+    $course_subject2 = $post_array['main']['form']['course_subject2'];
+    $course_description = $post_array['main']['form']['course_description'];
+    if ($course_nid == 0) {
+        $course_school_year = $post_array['main']['form']['course_school_year'];
+    } else {
+        $course_school_year = $post_array['main']['course_school_year'];
+    }
+    $course_period = $post_array['main']['form']['course_period'];
+    $course_period_is_multiple = $post_array['main']['form']['course_period_is_multiple'];
+    $is_advisory_course = $post_array['main']['form']['is_advisory_course'];
+    $course_additional_notes = $post_array['main']['form']['course_additional_notes'];
+    $course_primary_instructor_ids = $post_array['main']['form']['course_primary_instructor_ids'];
+    $course_additional_instructor_ids = $post_array['main']['form']['course_additional_instructor_ids'];
+
+    if (isset($course_primary_instructor_ids) && !empty($course_primary_instructor_ids)) {
+        $course_primary_instructor_ids = trim($course_primary_instructor_ids, ",");
+        $user_ids = explode(",", $course_primary_instructor_ids);         //Explode multiple users using (,) delimiter
+        if (count($user_ids) > 0) {
+            $course_primary_instructor_id1 = $user_ids[0];
+        }
+        if (count($user_ids) > 1) {
+            $course_primary_instructor_id2 = $user_ids[1];
+        }
+    }
+
+//Find which school terms are selected by the user, to save as course terms
+    $rs_st = get_school_terms($school_nid, $course_school_year);
+    $course_termopts = array();
+    while ($rec_st = db_fetch_array($rs_st)) {
+        if (isset($post_array['main']['form']['school_term_start']['school_term_w']['school_term_' . $rec_st['tid']])) {
+            if ($post_array['main']['form']['school_term_start']['school_term_w']['school_term_' . $rec_st['tid']]) {
+                $course_termopts[] = $rec_st['tid'];
+            }
+        }
+    }
+//    watchdog('course_save', 'Selected School Terms:'.print_r($course_termopts, true));
+
+    if ($course_period_is_multiple == 1)
+        $course_period = 0;
+
+    $dateformat = "%Y-%m-%d %H:%M:%S";
+    $activitytype = 'ntlp_course';
+    $time = strftime($dateformat, strtotime(date('Y-m-d')));
+
+    if (empty($course_nid)) {
+        $course_node = new stdClass();
+        $course_node->changed = $time;
+        $course_node->status = 1;
+        $course_node->promote = 0;
+        $course_node->sticky = 0;
+        $course_node->format = 1;       // Filtered HTML
+        $course_node->uid = $user->uid; // UID of content owner
+    } else {
+        $course_node = node_load($course_nid);
+    }
+//    firep('Node:'$course_node);
+
+    $course_node->title = $course_full_title;
+    $course_node->type = $activitytype;   // Your specified content type
+    $course_node->created = $time;
+    $course_node->body = $course_description;
+
+    node_save($course_node);
+//    watchdog('course_save', 'Course Node saved: '.print_r($course_node, true));
+
+    $result = TRUE;     //Database query result
+//Save subject taxonomy data with course node
+    $node_terms = array();
+    if (!empty($course_subject1))
+        $node_terms[] = $course_subject1;
+    if (!empty($course_subject2))
+        $node_terms[] = $course_subject2;
+
+//Get forum container tid here too.
+    $node_terms[] = _get_node_forum_container_tid($course_node->nid);
+
+    if (count($node_terms))
+        taxonomy_node_save($course_node, $node_terms);
+
+    if (empty($course_nid)) {
+        $course_nid = $course_node->nid;
+        $result = db_query("INSERT INTO {ntlp_course}(nid, school_nid, is_project, course_nid, teacher1_uid,
+            teacher2_uid, is_weighted_grades, period, course_short_title, availability, additional_notes, school_year, is_advisory_course)
+            VALUES(%d, %d, %d, %d, %d,
+                %d, %d, %d, '%s', '%s', '%s',
+                %d, %d)", $course_nid, intval($school_nid), 0, 0, $course_primary_instructor_id1, $course_primary_instructor_id2, 1, $course_period, $course_short_title, $course_active, $course_additional_notes, $course_school_year, $is_advisory_course);
+
+        if ($result === FALSE) {
+//Show error
+//            watchdog('course_save', 'Error creating ('.$course_nid.'):'.print_r($result, true));
+        } else {
+//            watchdog('course_save', 'Course ('.$course_nid.') created:'.print_r($result, true));
+//Enroll Primary and course creator
+            enroll_teacher($course_nid, NTLP_ROLEID_TEACHER, $course_primary_instructor_ids);
+//Enroll additional teachers
+            enroll_teacher($course_nid, NTLP_ROLEID_TEACHER, $course_additional_instructor_ids);
+        }
+    } else {
+        $course_nid = $course_node->nid;
+        $rec = get_course($course_nid);
+        if ($rec) {
+            $t1 = $rec->teacher1_uid;
+            $t2 = $rec->teacher2_uid;
+            if ($t2 == $t1)
+                $t2 = 0;
+
+            $result = db_query("UPDATE {ntlp_course}
+                    SET teacher1_uid = %d, teacher2_uid = %d, period = %d,
+                    course_short_title = '%s', availability = '%s', additional_notes = '%s',
+                    school_year = %d, is_advisory_course = %d
+                    WHERE nid = %d", $course_primary_instructor_id1, $course_primary_instructor_id2, $course_period, $course_short_title, $course_active, $course_additional_notes, $course_school_year, $is_advisory_course, $course_nid);
+
+            if ($result === FALSE) {
+//Show error
+//                watchdog('course_save', 'Error updating ('.$course_nid.'):'.print_r($result, true));
+            } else {
+                watchdog('course_save1', 'Course (' . $course_nid . ') updated:' . print_r($result, true));
+                watchdog('course_save2', 't1(' . $t1 . ') t2(' . $t2 . ')');
+                watchdog('course_save3', 't1(' . $course_primary_instructor_id1 . ') t2(' . $course_primary_instructor_id2 . ')');
+//Drop old teachers, if they are changed.
+                if (intval($t1) != intval($course_primary_instructor_id1) && intval($t1) != intval($course_primary_instructor_id2)) {
+                    if (intval($t1) > 0) {
+                        watchdog('course_save4', 'Dropping t1(' . $t1 . ') enrolling id1(' . $course_primary_instructor_id1 . ')');
+                        drop_user_from_course($course_nid, $t1);
+                    }
+//Enroll Primary and course creator
+                    enroll_teacher($course_nid, NTLP_ROLEID_TEACHER, $course_primary_instructor_id1);
+                }
+                if (intval($t2) != intval($course_primary_instructor_id1) && intval($t2) != intval($course_primary_instructor_id2)) {
+                    if (intval($t2) > 0) {
+                        watchdog('course_save5', 'Dropping t2(' . $t2 . ') enrolling id2(' . $course_primary_instructor_id2 . ')');
+                        drop_user_from_course($course_nid, $t2);
+                    }
+//Enroll Primary and course creator
+                    enroll_teacher($course_nid, NTLP_ROLEID_TEACHER, $course_primary_instructor_id2);
+                }
+
+//If instructor not in course_user table, for any reason, then add
+                if (!check_user_exist_in_course($course_primary_instructor_id1, $course_nid)) {
+                    enroll_teacher($course_nid, NTLP_ROLEID_TEACHER, $course_primary_instructor_id1);
+                }
+                if (!check_user_exist_in_course($course_primary_instructor_id2, $course_nid)) {
+                    enroll_teacher($course_nid, NTLP_ROLEID_TEACHER, $course_primary_instructor_id2);
+                }
+
+//NEVER DROP COURSE CREATOR/MODIFIER
+//            if ($t2 != $user->uid)
+//                drop_user_from_course($course_nid, $t2);
+//Drop all old additional teachers
+                if ($rec_users = get_course_users($course_nid, NTLP_ROLEID_TEACHER)) {
+                    while ($row = db_fetch_array($rec_users)) {
+//Don't fetch the primary teacher
+                        if ($course_primary_instructor_id1 != $row['uid'] && $course_primary_instructor_id2 != $row['uid']) {
+                            drop_user_from_course($course_nid, $row['uid']);
+                        }
+                    }
+                }
+//Enroll additional teachers
+                enroll_teacher($course_nid, NTLP_ROLEID_TEACHER, $course_additional_instructor_ids);
+
+//Delete all selected Course Terms, newly selected terms will be reinserted below
+                $result = db_query('DELETE FROM {ntlp_course_term} WHERE course_nid = %d
+                    AND school_term_tid NOT IN (SELECT DISTINCT a.school_term_tid
+                        FROM {ntlp_course_activity} a WHERE a.course_nid = %d)'
+                        , $course_nid, $course_nid);
+
+//Change course period of all users if course is not spanned in multiple periods
+                if ($course_period_is_multiple != 1) {
+//                  Changes by Waqas Siddique to update period for course user
+                    db_query("UPDATE {ntlp_course_user} SET period = %d WHERE course_nid = %d", $course_period, $course_nid);
+                }
+//OPTIMIZATION NOTE: We can add a flag as hidden field, which will be set when people finder
+//button is clicked for additional teachers. We will then drop/enroll additional teachers
+//only when the flag is set or in other words, only when the user changes additional teachers
+            }
+        }
+    }
+
+
+    if ($result === FALSE) {
+        drupal_set_message('Fatal error while saving Course information, please contact your system administrator.', 'error');
+//        watchdog('course_save', 'Course ('.$course_nid.') not saved');
+    } else {
+//Insert values in Course terms
+//if the course is being modified, then previous course terms are already deleted earlier
+//
+        //TODO: Replace this routine and this table (NTLP_COURSE_TERM) with taxonomy save which uses (TERM_NODE)
+        foreach ($course_termopts as $ct) {
+            $result = db_query('INSERT INTO {ntlp_course_term} (school_term_tid, course_nid)
+                VALUES (%d, %d)', $ct, $course_nid);
+        }
+//        watchdog('course_save', 'Course ('.$course_nid.') terms saved: '.print_r($course_termopts, true));
+//        drupal_set_message('Course information saved successfully.');
+    }
+
+//Deletes all records of all terms in a course.
+    dw_set_course_grade_todelete($course_nid);
+
+//update block cache block for users
+    ntlp_update_block_cache('ntlp_course', $course_nid);
+
+    if ($action_btn == 'Save & Close') {
+        drupal_goto('ntlp/courses/home/' . $course_nid);
+    } else {
+        drupal_goto('ntlp/courses/edit/' . $course_nid);
+    }
+}
+
+function course_form_validate_grades($form, &$form_state) {
+//    watchdog('course_save', 'Validating grade:' . print_r($form_state['clicked_button']['#post'], true));
+
+    $post_array = $form_state['clicked_button']['#post'];
+
+    $course_nid = $post_array['main']['course_node'];
+    $school_nid = $post_array['main']['school_node'];
+
+    if (empty($course_nid))
+        form_set_error('school_nid', t('Course not found, course setttings must be saved first.'));
+    if (empty($school_nid))
+        form_set_error('school_nid', t('School not selected.'));
+    $course_school_year = $post_array['main']['course_school_year'];
+    if (empty($course_school_year))
+        form_set_error('course_school_year', t('School year not active yet, cannot create course in this school year.'));
+
+    $selected_oc_id = $post_array['main']['form']['add_outcome']['selected_oc_id'];
+    $selected_oc_custom = $post_array['main']['form']['add_outcome']['selected_oc_custom'];
+    $selected_oc_weight = $post_array['main']['form']['add_outcome']['selected_oc_weight'];
+    if (!empty($selected_oc_id) && $selected_oc_id != null) {
+        $selected_outcomes = manage_course_outcomes($selected_oc_id, $selected_oc_custom, $selected_oc_weight, false);
+    }
+    $total_wt = 0;
+    if (isset($selected_outcomes)) {
+        foreach ($selected_outcomes as $key => $value) {
+            $total_wt += floatval($value);
+        }
+    }
+
+    $is_course_grade = $post_array['main']['form']['use_gradebook']['course_grade'];
+
+    if ($is_course_grade == 1) {
+        if ($total_wt != 100)
+            form_set_error('total_value', t('The total weight of outcomes should be equal to 100%'));
+    }
+
+//    watchdog('course_validate', 'Form object:'.print_r($form, true).'<br>'.print_r($form_state, true));
+
+
+    $log = "";
+    $grade_levels = array();
+    for ($i = 0; $i < 15; $i++) {
+//        watchdog('course_gv', "Label ($i):".$post_array['grade_label_'.$i].', Value:'.$post_array['grade_lower_limit_'.$i]);
+        if (intval($post_array['main']['form']['course_grade_scale']['grade_limits']['grade_lower_limit_' . $i]) > 0
+                && !empty($post_array['main']['form']['course_grade_scale']['grade_scale']['grade_label_' . $i])) {
+            $log .= "Label ($i):" . $post_array['main']['form']['course_grade_scale']['grade_scale']['grade_label_' . $i] . ', Value:' . $post_array['main']['form']['course_grade_scale']['grade_limits']['grade_lower_limit_' . $i];
+            $grade_levels[$i] = array('label' => $post_array['main']['form']['course_grade_scale']['grade_scale']['grade_label_' . $i],
+                'limit' => $post_array['main']['form']['course_grade_scale']['grade_limits']['grade_lower_limit_' . $i]);
+        }
+    }
+
+//Now store these variables in an object
+    $variables_to_restore = new stdClass;
+    $variables_to_restore->outcomes = $selected_outcomes;
+    $variables_to_restore->grade_levels = $grade_levels;
+
+//    watchdog('course_validate', 'Grade Levels'.$log);
+//    watchdog('course_validate', 'To restore:'.print_r($variables_to_restore, true));
+//    if (isset($_SESSION['messages']['error'])) {
+//        if (!empty($_SESSION['messages']['error'])) {
+//            variable_set("ADMINCOURSE:" . session_id(), $variables_to_restore);
+//        }
+//    }
+//    $form_state['storage']['submitted']['post']['grade_lower_limit_1'] = 99;
+//    $form_state['storage']['grade_lower_limit_1'] = 99;
+//    $form_state['post']['grade_lower_limit_1'] = 99;
+//    $form_state['rebuild'] = TRUE;
+////    form_set_value($form['course_grade_scale']['grade_limits']['grade_lower_limit_0'], 1, $form_state);
+//    $form['course_grade_scale']['grade_limits']['grade_lower_limit_1'] = 2;
+//    $form['course_grade_scale']['grade_limits']['grade_lower_limit_2'] = 3;
+}
+
+function course_form_submit_members($form, $form_state) {
+//    watchdog('course_save', 'Validating member:' . print_r($form_state['clicked_button']['#post'], true));
+
+    $post_array = $form_state['clicked_button']['#post'];
+    global $user;
+    $course_nid = $post_array['main']['course_node'];
+    $school_nid = $post_array['main']['school_node'];
+    $period = $post_array['main']['form']['endrow']['period'];
+    $action = $post_array['main']['form']['endrow']['change_status'];
+    $users_selected = $post_array['users'];
+    if (is_array($users_selected)) {
+        $user_selected = array_map('intval', $users_selected); // FILTER ARRAY
+    }
+
+    if ($users_selected) {
+        if ($period > -1) {
+            db_query('UPDATE {ntlp_course_user}
+                      SET period = %d, modifiedon_date = NOW()
+                      WHERE user_uid IN (' . implode(',', $users_selected) . ') AND role_id = %d AND course_nid = %d', $period, NTLP_ROLEID_STUDENT, $course_nid);
+//TRIGGER_POINT: UPDATE SELECTED STUDENT RECORDS IN ALL COURSES AND TERMS
+            dw_set_students_all_course_grade_toupdate($users_selected, 1);
+        } else if ($action == 'drop') {
+            drop_users($course_nid, $users_selected, false, false);
+        } else if ($action == 'reenroll') {
+            enroll_users($course_nid, NTLP_ROLEID_STUDENT, implode(',', $users_selected), false, false);
+        }
+    }
+
+//update block cache block for users
+    ntlp_update_block_cache('ntlp_course', $course_nid);
+}
+
+function course_form_submit_grades($form, $form_state) {
+    global $user;
+
+//    watchdog("ADMINCOURSE", print_r($form_state['clicked_button']['#post'], true));
+
+    $post_array = $form_state['clicked_button']['#post'];
+
+    $course_nid = $post_array['main']['course_node'];
+    $school_nid = $post_array['main']['school_node'];
+
+//    watchdog('course_save', 'Saving course Grades:'.$course_nid.' for school:'.$school_nid.'<br>'.
+//            print_r($form_state['clicked_button']['#post'], true));
+//These are hidden variables, which are managed by add/remove/move-up/move-down javascript buttons
+    $selected_oc_id = $post_array['main']['form']['add_outcome']['selected_oc_id'];
+    $selected_oc_custom = $post_array['main']['form']['add_outcome']['selected_oc_custom'];
+    $selected_oc_weight = $post_array['main']['form']['add_outcome']['selected_oc_weight'];
+    $is_course_grade = $post_array['main']['form']['use_gradebook']['course_grade'];
+    $override_grade_level = $post_array['main']['form']['override_grade_level'];
+
+    if (!empty($selected_oc_id) && $selected_oc_id != null) {
+        $selected_outcomes = manage_course_outcomes($selected_oc_id, $selected_oc_custom, $selected_oc_weight);
+//        watchdog('course_oc', 'Dump of selected Learning Outcomes: '.print_r($selected_outcomes, true));
+    }
+
+    db_query("UPDATE {ntlp_course}
+            SET is_weighted_grades = %d
+            WHERE nid = %d", $is_course_grade, $course_nid);
+
+    db_query("DELETE FROM {ntlp_gb_course_outcome} WHERE course_nid = %d", $course_nid);
+    if (isset($selected_outcomes)) {
+        $i = 0;
+        $log = "";
+        foreach ($selected_outcomes as $key => $value) {
+            $log .= "INSERT: (tid, course_nid, weight_percent, sort_order)
+                VALUES ($key, $course_nid, $value, $i)<br>";
+
+            db_query("INSERT INTO {ntlp_gb_course_outcome} (tid, course_nid, weight_percent, sort_order)
+                VALUES (%d, %d, %d, %d)", $key, $course_nid, $value, $i);
+            $i++;
+        }
+        watchdog('course_oc', $log);
+    }
+
+    db_query("DELETE FROM {ntlp_course_grade} WHERE course_nid = %d", $course_nid);
+    if ($override_grade_level == 1) {
+//If grade levels are allowed to override school grade levels, only then save records
+
+        $log = "";
+        for ($i = 0; $i < 15; $i++) {
+//        watchdog('course_gv', "Label ($i):".$post_array['grade_label_'.$i].', Value:'.$post_array['grade_lower_limit_'.$i]);
+            if (intval($post_array['main']['form']['course_grade_scale']['grade_limits']['grade_lower_limit_' . $i]) >= 0
+                    && !empty($post_array['main']['form']['course_grade_scale']['grade_scale']['grade_label_' . $i])) {
+                $log .= "Label ($i):" . $post_array['main']['form']['course_grade_scale']['grade_scale']['grade_label_' . $i] . ', Value:' . $post_array['main']['form']['course_grade_scale']['grade_limits']['grade_lower_limit_' . $i];
+                db_query("INSERT INTO {ntlp_course_grade} (course_nid, label, lower_limit) VALUES (%d, '%s', %d )", $course_nid, $post_array['main']['form']['course_grade_scale']['grade_scale']['grade_label_' . $i], $post_array['main']['form']['course_grade_scale']['grade_limits']['grade_lower_limit_' . $i]);
+            }
+        }
+//        drupal_set_message('Course Grade Levels saved successfully.');
+//        watchdog('course_gs', $log);
+    }
+    drupal_set_message('Course information saved successfully.');
+//    drupal_goto('nav/courses/edit/'.$course_nid.'/grades');
+}
+
+//Enrollment functions
+//Enroll and Drop
+function enroll_teacher($course_nid, $role_id, $ids) {
+    $course_primary_teachername = '';
+    $count = 0;
+//    watchdog('course_enroll', 'Course:' . $course_nid . ' Role(' . $role_id . ') ids(' . $ids . ')');
+    if (isset($course_nid) && !empty($course_nid)) {
+        if (isset($ids) && !empty($ids)) {
+            $user_ids = explode(",", $ids);         //Explode multiple users using (,) delimiter
+            foreach ($user_ids as $uid) {
+                if (!empty($uid)) {
+                    $count++;
+
+                    enroll_user_in_course($course_nid, $uid, $role_id);
+
+                    if ($rs_user = get_user($uid)) {
+                        $course_primary_teachername = $rs_user->first_name . ' ' . $rs_user->last_name;
+                    }
+                }
+            }
+        }
+    }
+}
+
+function enroll_users($course_nid, $role_id, $ids, $show_members = false, $isPrint = true) {
+    global $user;
+
+    if ($ids == "use_post")
+        $ids = $_POST['su_ids'];
+
+//    watchdog('enroll', "Role: $role_id<br>Users:$ids");
+    $course_additional_teachernames = '';
+
+    $count = enroll_multiple_users_in_course($course_nid, $ids, $role_id);
+
+    if ($role_id == NTLP_ROLEID_TEACHER) {
+        if ($isPrint)
+            print $course_additional_teachernames;
+    } else {
+        if ($show_members) {
+            if ($role_id == NTLP_ROLEID_SITEGUEST)
+                $view = show_guest_users($course_nid, false);
+            else
+                $view = show_enrolled_users($course_nid, false);
+            if ($isPrint) {
+                drupal_set_message("$count new user(s) enrolled.");
+            }
+        } else {
+            $view = show_dropped_users($course_nid, false);
+            if ($isPrint) {
+                drupal_set_message("$count new user(s) re-enrolled.");
+            }
+        }
+    }
+}
+
+function drop_users($course_nid, $user_uid, $is_guest = false, $isPrint = true) {
+    global $user;
+    $time = date($dateformat = "Y-m-d H:i:s", time());
+
+//check if user is enrolled in the course; if yes, drop out the user from the course by
+//deleting user form the og_uid table and adding user to the ntlp_course_user table
+    if (is_array($user_uid)) { // direct call from php multiple uids array(1,2,3,4,5)
+        $user_uids = $user_uid;
+    } else { // multiple uids from url 1,2,3,4,5
+        $user_uid = rtrim($user_uid, ',');
+        $user_uids = explode(',', $user_uid); // FROM URL
+    }
+
+    $user_uids = empty($user_uids) && !is_array($user_uids) ? array($user_uid) : $user_uids;
+
+//Delete any remains of these users dropout status
+    $sql = "DELETE FROM {ntlp_course_user} WHERE course_nid = %d AND user_uid IN (%s)";
+    $result = db_query($sql, $course_nid, implode(',', $user_uids));
+
+    if ($is_guest) {
+        if ($isPrint) {
+            print "<div><p>Guest User removed successfully</p><br /></div>";
+
+//            $view = views_get_view('ntlp_og_guests');
+            $view = show_guest_users($course_nid);
+        }
+    } else {
+//The Dropped status of Students should be saved, so that they don't appear in People Finder
+//and also showup in Dropped students list.
+//
+        //NULL role_id will mark that this is a course user who is a Dropout
+
+        foreach ($user_uids as $uid) {
+//TRIGGER_POINT: DROP STUDENT RECORD FROM THIS COURSE
+            dw_set_student_course_grade_todrop($uid, $course_nid);
+
+            $sql = "INSERT INTO {ntlp_course_user} (course_nid, user_uid, modifiedon_date, modifiedby_uid, role_id)
+                    VALUES(%d, %d, '%s', %d, null)";
+            db_query($sql, $course_nid, $uid, $time, $user->uid);
+        }
+
+
+        if ($isPrint) {
+//            drupal_set_message('User dropped successfully.');
+// these were used for ajax not we have refresh logic.
+//                print "<div><p>User dropped successfully</p><br /></div>";
+//              $view = views_get_view('ntlp_og_members');
+            $view = show_enrolled_users($course_nid, false);
+        }
+    }
+//        print $view->preview('default', array($course_nid, $course_nid));
+    if ($isPrint)
+        print $view;
+}
+
+function drop_user_from_course($course_nid, $user_uid) {
+
+//TRIGGER_POINT: DROP STUDENT RECORD FOR ALL COURSE TERMS
+    dw_set_student_course_grade_todrop($user_uid, $course_nid);
+
+//Delete any remains of this user's dropout status
+    $sql = "DELETE FROM {ntlp_course_user} WHERE course_nid=%d AND user_uid = %d";
+//"AND isnull(role_id)";        Cannot have multiple roles, so need to check this
+    $result = db_query($sql, $course_nid, $user_uid);
+    return true;
+}
+
+function self_enroll_user_in_course($course_nid, $user_uid, $role_id) {
+    enroll_user_in_course($course_nid, $user_uid, $role_id);
+
+
+    $message = 'You have successfully signed up for ' . _get_node_title($course_nid) . '. ' . l('Click here', 'ntlp/courses/home/' . $course_nid) . ' to view the course.';
+
+    drupal_json(array('success' => 1,
+        'message' => $message,
+    ));
+}
+
+function enroll_user_in_course($course_nid, $user_uid, $role_id) {
+    global $user;
+    $time = date($dateformat = "Y-m-d H:i:s", time());
+
+//Delete any remains of this user's dropout status
+    $sql = "DELETE FROM {ntlp_course_user} WHERE course_nid=%d AND user_uid = %d";
+//"AND isnull(role_id)";        Cannot have multiple roles, so need to check this
+    $result = db_query($sql, $course_nid, $user_uid);
+
+//Assign a role to this user
+    $sql = "INSERT INTO {ntlp_course_user} (course_nid, user_uid, modifiedon_date, modifiedby_uid, role_id, period)
+            VALUES(%d, %d, '%s', %d, %d, (SELECT period FROM {ntlp_course} WHERE nid = %d))";
+    db_query($sql, $course_nid, $user_uid, $time, $user->uid, $role_id, $course_nid);
+
+    if ($role_id == NTLP_ROLEID_STUDENT) {
+//TRIGGER_POINT: DELETE/INSERT STUDENT RECORD FOR ALL COURSE TERMS
+        dw_set_student_course_grade_toinsert($user_uid, $course_nid);
+    }
+//update block cache block for users
+    ntlp_update_block_cache('ntlp_course', $course_nid);
+}
+
+function enroll_multiple_users_in_course($course_nid, $user_ids, $role_id) {
+    global $user;
+    $time = date($dateformat = "Y-m-d H:i:s", time());
+
+    $sql = "SELECT period FROM {ntlp_course} WHERE nid = $course_nid;";
+    $result = db_query($sql);
+    $period = db_fetch_object($result)->period;
+
+    $users = array_unique(explode(",", $user_ids));
+    $count = 0;
+    foreach ($users as $uid) {
+        if (empty($uid))
+            continue;
+
+        $count++;
+        $values[] = "($course_nid, $uid, '$time', $user->uid, $role_id, $period)";
+    }
+
+
+//Delete any remains of this user's dropout status
+    $sql = "DELETE FROM {ntlp_course_user} WHERE course_nid=%d AND user_uid in (%s)";
+    $result = db_query($sql, $course_nid, $user_ids);
+
+//Assign a role to this user
+    $sql = "INSERT INTO {ntlp_course_user} (course_nid, user_uid, modifiedon_date, modifiedby_uid, role_id, period)
+            VALUES ";
+
+    if ($count > 0) {
+        $sql .= implode(',', $values);
+        db_query($sql);
+    }
+
+
+    foreach ($users as $uid) {
+        if (empty($uid))
+            continue;
+
+        if ($role_id == NTLP_ROLEID_STUDENT) {
+//TRIGGER_POINT: DELETE/INSERT STUDENT RECORD FOR ALL COURSE TERMS
+            dw_set_student_course_grade_toinsert($uid, $course_nid);
+        }
+    }
+
+//update block cache block for users
+    ntlp_update_block_cache('ntlp_course', $course_nid);
+
+    return $count;
+}
+
+function show_enrolled_users($course_nid, $isPrint = true) {
+// this query has been extracted from view ntlp_og_dropouts
+    $limit = 25;
+    $header = array(
+        array('data' => '<input type="checkbox" onclick="selectAllUsersChks()" />', 'style' => 'text-align: left !important; color: #009900 !important; background: #9FCCE9 !important;'),
+        array('data' => 'Name', 'sort' => 'ASC', 'field' => 'full_name', 'style' => 'text-align: left !important; background: #9FCCE9 !important;'),
+        array('data' => 'Status', 'style' => 'text-align: center !important; color: #009900 !important; background: #9FCCE9 !important;'),
+        array('data' => 'Date Enrolled', 'style' => 'text-align: center !important; color: #009900 !important; background: #9FCCE9 !important;'),
+        array('data' => 'Grade', 'style' => 'text-align: center !important; color: #009900 !important; background: #9FCCE9 !important;', 'sort' => 'ASC', 'field' => 'nu.grad_year'),
+        array('data' => 'Period', 'style' => 'text-align: center !important; color: #009900 !important; background: #9FCCE9 !important;', 'field' => 'cu.period', 'sort' => 'ASC'),
+    );
+
+    $order_by = (isset($_GET['order']) || isset($_GET['sort'])) ? tablesort_sql($header) : 'ORDER BY cu.period ASC, full_name ASC';
+
+    $result = pager_query('SELECT
+                          u.uid,
+                          concat(nu.last_name, \', \', nu.first_name) full_name,
+                          nu.grad_year,
+                          cu.modifiedon_date,
+                          cu.course_nid as nid,
+                          cu.period
+                        FROM {users} u
+                          INNER JOIN {ntlp_course_user} cu
+                            ON u.uid = cu.user_uid
+                          LEFT JOIN {ntlp_user} nu
+                            ON u.uid = nu.uid
+                        WHERE (cu.role_id = %d)
+                            AND (cu.course_nid = %d) ' . $order_by, $limit, 0, NULL, NTLP_ROLEID_STUDENT, $course_nid, $course_nid);
+
+    if ($result) {
+        $rows = array();
+        while ($studentObj = db_fetch_object($result)) {
+            $rows[] = array(
+                array('data' => '<input type="checkbox" name="users[]" value="' . $studentObj->uid . '" />'),
+                array('data' => l($studentObj->full_name, "ntlp/user/profile/$studentObj->uid")),
+                array('data' => 'Enrolled', 'align' => 'center'),
+                array('data' => date('m/d/Y', strtotime($studentObj->modifiedon_date)), 'align' => 'center'),
+                array('data' => _get_student_grade_by_grad_year($studentObj->grad_year), 'align' => 'center'),
+                array('data' => $studentObj->period ? $studentObj->period : '*', 'align' => 'center'),
+            );
+        }
+    }
+
+    $attributes = array('class' => 'ntlp_table', 'width' => '100%', 'cellpadding' => '8');
+
+    if ($isPrint)
+        print theme('table', $header, $rows, $attributes) . theme('pager', NULL, $limit, 0);
+    else
+        return theme('table', $header, $rows, $attributes) . theme('pager', NULL, $limit, 0);
+
+//    $view = views_get_view('ntlp_og_members');
+//    print $view->preview('default', array($course_nid, $course_nid));
+}
+
+function show_dropped_users($course_nid, $isPrint = true) {
+// this query has been extracted from view ntlp_og_dropouts
+    $limit = 25;
+    $header = array(
+        array('data' => '<input type="checkbox" onclick="selectAllUsersChks()" />', 'style' => 'text-align: left !important; color: #009900 !important; background: #9FCCE9 !important;'),
+        array('data' => 'Name', 'sort' => 'ASC', 'field' => 'full_name', 'style' => 'text-align: left !important; background: #9FCCE9 !important;'),
+        array('data' => 'Status', 'style' => 'text-align: center !important; color: #009900 !important; background: #9FCCE9 !important;'),
+        array('data' => 'Date Dropped', 'style' => 'text-align: center !important; color: #009900 !important; background: #9FCCE9 !important;'),
+        array('data' => 'Grade', 'style' => 'text-align: center !important; color: #009900 !important; background: #9FCCE9 !important;', 'sort' => 'ASC', 'field' => 'nu.grad_year'),
+        array('data' => 'Period', 'style' => 'text-align: center !important; color: #009900 !important; background: #9FCCE9 !important;', 'sort' => 'ASC', 'field' => 'cu.period'),
+    );
+    $order_by = (isset($_GET['order']) || isset($_GET['sort'])) ? tablesort_sql($header) : 'ORDER BY cu.period ASC, full_name ASC';
+    $result = pager_query('SELECT
+                          u.uid,
+                          concat(nu.last_name, \', \', nu.first_name) full_name,
+                          nu.grad_year,
+                          cu.modifiedon_date,
+                          cu.course_nid,
+                          cu.period
+                        FROM {users} u
+                          LEFT JOIN {ntlp_course_user} cu
+                            ON u.uid = cu.user_uid
+                          INNER JOIN {node} n
+                            ON cu.course_nid = n.nid
+                          LEFT JOIN {ntlp_user} nu
+                            ON u.uid = nu.uid
+                        WHERE (cu.role_id IS NULL)
+                            AND (cu.course_nid = %d) ' . $order_by, $limit, 0, NULL, $course_nid);
+
+
+
+    if ($result) {
+        $rows = array();
+        while ($studentObj = db_fetch_object($result)) {
+            $rows[] = array(
+                array('data' => '<input type="checkbox" name="users[]" value="' . $studentObj->uid . '" />'),
+                array('data' => l($studentObj->full_name, "ntlp/user/profile/$studentObj->uid")),
+                array('data' => 'Dropped', 'align' => 'center'),
+                array('data' => date('m/d/Y', strtotime($studentObj->modifiedon_date)), 'align' => 'center'),
+                array('data' => _get_student_grade_by_grad_year($studentObj->grad_year), 'align' => 'center'),
+                array('data' => $studentObj->period ? $studentObj->period : '*', 'align' => 'center'),
+            );
+        }
+    }
+
+    $attributes = array('class' => 'ntlp_table', 'width' => '100%', 'cellpadding' => '8');
+
+    if ($isPrint)
+        print theme('table', $header, $rows, $attributes) . theme('pager', NULL, $limit, 0);
+    else
+        return theme('table', $header, $rows, $attributes) . theme('pager', NULL, $limit, 0);
+//    $view = views_get_view('ntlp_og_dropouts');
+//    print $view->preview('default', array($course_nid));
+}
+
+function show_guest_users($course_nid, $isPrint = true) {
+// this query has been extracted from view ntlp_og_dropouts
+    $result = pager_query('SELECT u.uid, concat(nu.last_name, \', \', nu.first_name) full_name,
+                          cu.course_nid, n.title AS organization, n.nid AS school_nid
+                        FROM dpl_users u
+                          LEFT JOIN dpl_ntlp_user nu
+                            ON u.uid = nu.uid
+                          LEFT JOIN dpl_node n
+                            ON nu.school_nid = n.nid
+                          INNER JOIN dpl_ntlp_course_user cu
+                            ON u.uid = cu.user_uid
+                        WHERE (cu.role_id = %d) AND (cu.course_nid = %d)', 25, 0, NULL, NTLP_ROLEID_SITEGUEST, $course_nid);
+
+    $header = array(
+        array('data' => ''),
+        array('data' => 'Name', 'sort' => 'ASC', 'field' => 'full_name'),
+        array('data' => 'Status'),
+        array('data' => 'Organization'),
+        array('data' => 'Date Added'),
+    );
+
+    if ($result) {
+        $rows = array();
+        while ($studentObj = db_fetch_object($result)) {
+            $rows[] = array(
+                array('data' => '<input type="checkbox" name="users[]" value="' . $studentObj->uid . '" />'),
+                array('data' => l($studentObj->full_name, "ntlp/user/profile/$studentObj->uid")),
+                array('data' => 'Enrolled', 'align' => 'center'),
+                array('data' => $studentObj->organization),
+                array('data' => date('m/d/Y', strtotime($studentObj->modifiedon_date)), 'align' => 'center'),
+            );
+        }
+    }
+
+    $attributes = array('class' => 'ntlp_table', 'width' => '100%', 'cellpadding' => '8');
+
+    if ($isPrint)
+        print theme('table', $header, $rows, $attributes);
+    else
+        return theme('table', $header, $rows, $attributes);
+//    $view = views_get_view('ntlp_og_dropouts');
+//    print $view->preview('default', array($course_nid));
+}
+
+function ntlp_courses_teaching() {
+
+    $form['teaching'] = array(
+        '#type' => 'fieldset',
+//        '#title' => t('teaching'),
+    );
+
+    $form['teaching']['body'] = array(
+        '#type' => 'item',
+        '#value' => get_teacher_courses_tab_content('teaching'),
+    );
+
+    return $form;
+}
+
+function ntlp_courses_training() {
+
+    $form['training'] = array(
+        '#type' => 'fieldset',
+//        '#title' => t('training'),
+    );
+
+    $form['training']['body'] = array(
+        '#type' => 'item',
+        '#value' => get_teacher_courses_tab_content('training'),
+    );
+
+    return $form;
+}
+
+function ntlp_courses_all() {
+
+    $form['courses'] = array(
+        '#type' => 'fieldset',
+//        '#title' => t(''),
+    );
+
+    $form['courses']['body'] = array(
+        '#type' => 'item',
+        '#value' => get_teacher_courses_tab_content('all'),
+    );
+
+    return $form;
+}
+
+function can_remove_course_students($course_nid, $ids) {
+    $user_ids = rtrim($ids, ',');
+    $message = "Some of the selected users have submitted work for activities or have data in the gradebook. Those accounts cannot be removed.";
+    $can_delete = 0;
+
+    //Check if user has submitted work 
+    //OR 
+    //has been graded in any activity in this course
+    
+    //Check if it is graded
+    $crs = db_query("SELECT g.id FROM {ntlp_course_activity} a
+            INNER JOIN {ntlp_gb_grade} g ON a.nid = g.activity_nid 
+            WHERE a.course_nid = %d AND g.user_uid IN (%s) AND g.date_graded IS NOT NULL", 
+            $course_nid, $user_ids);
+
+    $can_delete += $crs->num_rows;
+    
+    if ($can_delete == 0) {
+        //Look for submissions
+        $crs = db_query("SELECT s.nid FROM {ntlp_course_activity} a
+                INNER JOIN {ntlp_activity_submission} s ON a.nid = s.activity_nid
+                WHERE a.course_nid = %d AND s.user_uid IN (%s)", 
+                $course_nid, $user_ids);
+        
+        $can_delete += $crs->num_rows;
+    }
+    if ($can_delete == 0) {
+        $message = "Are you sure you want to proceed?";
+        $can_delete = 1;            //YES WE CAN DELETE
+    } else {
+        $can_delete = 0;
+    }
+
+    drupal_json(array('canDelete' => $can_delete,
+        'message' => $message,
+    ));
+}
+
+function confirm_remove_course_students($course_nid, $ids) {
+    $user_ids = rtrim($ids, ',');
+    $message = "An error occurred while removing these users, please try again!";
+    $success = 0;
+
+//Confirm that these users are enrolled in this course
+    $crs = db_query("SELECT cu.course_nid
+        FROM {ntlp_course_user} cu
+        WHERE cu.course_nid = %d AND cu.user_uid IN (%s)", $course_nid, $user_ids);
+
+    if ($crs->num_rows > 0) {
+        $rs = db_query("DELETE FROM {ntlp_course_user}
+            WHERE course_nid = %d AND user_uid IN (%s)", $course_nid, $user_ids);
+
+        $rs = db_query("DELETE FROM {ntlp_activity_user}
+            WHERE user_uid IN (%s) AND activity_nid IN (SELECT nid FROM {ntlp_course_activity} WHERE course_nid = %d)", $user_ids, $course_nid);
+
+//TRIGGER_POINT: DELETE STUDENT RECORD FROM THIS COURSE
+        dw_set_students_course_grade_todelete($user_ids, $course_nid);
+
+        $message = "Students successfully removed from this course.";
+        $success = 1;
+        drupal_set_message($message);
+    }
+
+    drupal_json(array('success' => $success,
+        'message' => $message,
+    ));
+}
+
+function ntlp_allow_self_enroll($course_id, $state) {
+//    alter table `echo`.`dpl_ntlp_course`
+//   add column `allow_self_enroll` tinyint(1) NULL after `topic_unit_tid`
+    db_query("update  {ntlp_course} set allow_self_enroll = $state
+            WHERE nid = $course_id");
+
+    return true;
+}
+
+function ntlp_admincourse_theme() {
+    return array(
+// The form ID.
+        'course_form_controller' => array(
+// Forms always take the form argument.
+            'arguments' => array('form' => NULL),
+        ),
+    );
+}
+
+function theme_course_form_controller($form) {
+
+//    watchdog("main[form", print_r($form['main']['form'], true));
+//    watchdog("main[form]grade1", print_r($form['main']['form']['add_outcome'], true));
+//    watchdog("main[form]grade", print_r($form['main']['form']['use_gradebook']['course_grade']['#post']['main']['form']['add_outcome'], true));
+
+    if (isset($form['main']['form']['course_owner_id']['#post']['main']['form']['course_owner_id'])) {
+
+        $course_owner_id = $form['main']['form']['course_owner_id']['#post']['main']['form']['course_owner_id'];
+        $form['main']['form']['course_owner_id']['#value'] = $course_owner_id;
+    }
+
+    if (isset($form['main']['form']['course_primary_instructor_ids']['#post']['main']['form']['course_primary_instructor_ids'])) {
+        $course_primary_instructor_ids = $form['main']['form']['course_primary_instructor_ids']['#post']['main']['form']['course_primary_instructor_ids'];
+        $form['main']['form']['course_primary_instructor_ids']['#value'] = $course_primary_instructor_ids;
+
+        $primary_ins_ids = explode(",", $course_primary_instructor_ids);
+        if (sizeof($primary_ins_ids) > 0) {
+            foreach ($primary_ins_ids as $uid) {
+                if (!empty($uid)) {
+                    $rs_user = get_user($uid);
+
+                    $course_primary_teachernames .= get_instructor_namelink($uid, $rs_user->first_name,  $rs_user->last_name);
+                }
+            }
+        }
+        $form['main']['form']['course_primary_instructor_value']['#value'] = $course_primary_teachernames;
+        cache_set("pplfndPrimaryInstructor_" . session_id(), $course_primary_instructor_ids, 'ntlp_cache', CACHE_TEMPORARY);
+    }
+
+    if (isset($form['main']['form']['course_additional_instructor_ids']['#post']['main']['form']['course_additional_instructor_ids'])) {
+        $course_additional_instructor_ids = $form['main']['form']['course_additional_instructor_ids']['#post']['main']['form']['course_additional_instructor_ids'];
+        $form['main']['form']['course_additional_instructor_ids']['#value'] = $course_additional_instructor_ids;
+
+        $instructor_ids = explode(",", $course_additional_instructor_ids);
+        if (sizeof($instructor_ids) > 0) {
+            foreach ($instructor_ids as $uid) {
+                if (!empty($uid)) {
+                    $rs_user = get_user($uid);
+                    $course_additional_teachernames .= 
+                                '<div id="' . $uid . '">
+                                    <a onclick=remove_secondary_user($(this),' . $uid . ',"' . "pplfndInstructor_" . session_id() . '");>
+                                        <img height="14" width="14" class="down" src="themes/Boldr/Images/DeleteBtn.png"/>
+                                    </a> &nbsp; ' .$rs_user->first_name . ' ' . $rs_user->last_name  . '<br/>
+                                </div>';
+                }
+            }
+        }else{
+            $course_additional_teachernames = '<span style="color:gray; font-style:italic;">None selected as yet</span>';
+        }
+        $form['main']['form']['course_additional_instructor_value']['#value'] = $course_additional_teachernames;
+
+        cache_set("pplfndInstructor_" . session_id(), $course_additional_instructor_ids, 'ntlp_cache', CACHE_TEMPORARY);
+    }
+
+    $output = drupal_render($form);
+    return $output;
+}

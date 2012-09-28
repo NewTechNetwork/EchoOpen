@@ -1,0 +1,1256 @@
+<?php
+
+// $Id: ntlp_school.module,v 0.02 $
+
+/**
+ * @file
+ * Allows maintenance of NTLP School.
+ */
+require_once "data_access.inc";
+require_once "ntlp_admin.inc";
+include "school_header.contents.inc";
+include "ntlp_home_page.inc";
+include "ntlp_school_management.content.inc";
+include "user_form_def.inc";
+include "school_form_def.inc";
+include "constants.inc";
+include "logfile.php";
+include "repair_tools.inc";
+include "repair_data.inc";
+include "repair_migration.inc";
+include "gp_migration.inc";
+module_load_include('inc', 'ntlp_blocks', 'block_cache_tool');
+
+/**
+ * Implementation of hook_help().
+ */
+function ntlp_school_help($path, $arg) {
+    switch ($path) {
+        case 'admin/help#ntlp_school':
+            $output = '<p>' . t('The ntlp_school module can be used to create, modify and delete Schools') . '</p>';
+            return $output;
+    }
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function ntlp_school_perm() {
+    return get_permission_load();
+//    return array('administer my school',
+//            'administer all schools',
+//            'administer ntn',
+//            'allow access to contents of all schools',
+//            'create school user',
+//            'access school year selector');
+}
+
+function get_permission_load() {
+    $result = db_query("SELECT * FROM {node} WHERE type ='ntlp_school'");
+
+    $permission_array = array('administer my school',
+        'administer all schools',
+        'administer ntn',
+        'allow access to contents of all schools',
+        'create school user',
+        'access school year selector',
+        'access student selector'
+    );
+
+    if ($result->num_rows > 0) {
+        while ($record = db_fetch_object($result)) {
+            $permission_array[] = $record->nid . ' Change Password';
+            $permission_array[] = $record->nid . ' Join Groups at my school';
+            $permission_array[] = $record->nid . ' Display Instant Messaging ID field';
+            $permission_array[] = $record->nid . ' Display phone number field';
+            $permission_array[] = $record->nid . ' Display private website field';
+            $permission_array[] = $record->nid . ' Create network-wide groups';
+            $permission_array[] = $record->nid . ' Create school wide events';
+            $permission_array[] = $record->nid . ' Create Network Events';
+            $permission_array[] = $record->nid . ' Create groups at my school';
+            $permission_array[] = $record->nid . ' Join network-wide groups';
+            $permission_array[] = $record->nid . ' Share/View profiles across the network';
+            $permission_array[] = $record->nid . ' View Network Events';
+            $permission_array[] = $record->nid . ' Display phone number field';
+        }
+    }
+
+//    print_r($permission_array);
+    return array_map('strtolower', $permission_array);
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function ntlp_school_menu() {
+// Admin Settings.
+//    $items['admin/settings/ntlp_school'] = array(
+    $items['ntlp/admin/settings/school'] = array(
+        'title' => 'Administration',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_admin_settings'),
+        'access callback' => 'user_access',
+        'access arguments' => array('administer all schools'),
+        'description' => 'Administration page.',
+        'type' => MENU_CALLBACK, //MENU_NORMAL_ITEM,
+        'file' => 'ntlp_admin.inc',
+    );
+    $items['ntlp/admin/ntlp_school'] = array(
+        'title' => 'School maintenance',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_school_admin_settings'),
+        'access callback' => 'user_access',
+        'access arguments' => array('administer all schools'),
+        'description' => 'School maintenance.',
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/admin/ntlp_school/create'] = array(
+        'title' => 'Create a new school',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_school_create_confirm'),
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/school/manage/create/user/%'] = array(
+        'title' => 'Create New User For School',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('school_user_registration_form', 5),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/school/management/terms/%/%'] = array(
+        'title' => 'get courses terms',
+        'page callback' => 'get_courses_for_school',
+        'page arguments' => array(4, 5),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/school/management/export/%/%/%'] = array(
+        'title' => 'Export Course Grades',
+        'page callback' => 'courses_data_export',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/school/management/export_stgrade/%/%'] = array(
+        'title' => 'Export Student Term Grades',
+        'page callback' => 'term_wise_export_in_PDF',
+        'page arguments' => array(4, 5),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/report/course_progress/%/%/%/%'] = array(
+        'title' => 'Export Course Term Grades',
+        'page callback' => 'course_wise_export_in_PDF',
+        'page arguments' => array(3, 4, 5, 6),
+        'access arguments' => array('grade submission'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/report/student_progress/%/%/%/%'] = array(
+        'title' => 'Export Student Term Grades',
+        'page callback' => 'student_wise_export_in_PDF',
+        'page arguments' => array(3, 4, 5, 6),
+        'access arguments' => array('grade submission'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/report/student_detailed_progress/%/%/%/%'] = array(
+        'title' => 'Export Student Course Detailed Progress',
+        'page callback' => 'student_course_detail_export_in_PDF',
+        'page arguments' => array(3, 4, 5, 6),
+        'access arguments' => array('grade submission'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/school/manage/bulk/user/%'] = array(
+        'title' => 'Create Bulk User For School',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('bulk_user_form', 5),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/school/management/csv/%/%/%'] = array(
+        'title' => 'Read CSV File For Bulk User',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('read_cvs_file', 4, 5, 6),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/school/management/user/list/%'] = array(
+        'title' => 'Download User List in CSV format',
+        'page callback' => 'download_user_list',
+        'page arguments' => array(5),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/user/status/%/%/%'] = array(
+        'title' => 'Change User Status',
+        'page callback' => 'change_user_status',
+        'page arguments' => array(3, 4, 5),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/user/confirmstatuschange/%/%/%'] = array(
+        'title' => 'Confirm User Status Change',
+        'page callback' => 'can_change_userstatus',
+        'page arguments' => array(3, 4, 5),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/user/candelete/%/%'] = array(
+        'title' => 'Can delete selected users?',
+        'page callback' => 'can_delete_users',
+        'page arguments' => array(3, 4),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/user/confirmdeletion/%/%'] = array(
+        'title' => 'Confirm User Deletion',
+        'page callback' => 'confirm_delete_users',
+        'page arguments' => array(3, 4),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/user/role/%/%/%'] = array(
+        'title' => 'Change User Status',
+        'page callback' => 'change_user_role',
+        'page arguments' => array(3, 4, 5),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/save/school/image/%/%'] = array(
+        'title' => 'Change School Icon',
+        'page callback' => 'save_school_picture',
+        'page arguments' => array(4, 5),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/change/school/year/%'] = array(
+        'title' => 'Change School Year',
+        'page callback' => 'ntlp_change_school_year',
+        'page arguments' => array(4),
+        'access arguments' => array('access school year selector'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/school/manage/user/edit/%'] = array(
+        'title' => 'Manage School Users',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('school_user_registration_form', 4, 5),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/render/error/page/%'] = array(
+        'title' => 'Error Page ',
+        'page callback' => 'render_this_error_page',
+        'page arguments' => array(4),
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/school/management/users/filter'] = array(
+        'title' => 'School Management Users Filter Callback',
+        'page callback' => 'ntlp_school_management_users_filter',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/new/user/password/change'] = array(
+        'title' => 'New User Password Change',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('change_login_password'),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/goback'] = array(
+        'page callback' => 'goto_back_page',
+//            'page arguments' => array(4),
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admin/upgrade'] = array(
+        'title' => 'Upgrade NTLP',
+        'page callback' => 'ntlp_upgrade_scripts',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admin/repairperm'] = array(
+        'page callback' => 'add_default_permissions',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admin/repairrubricsubmissions'] = array(
+        'page callback' => 'fix_multiple_rubric_submissions',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/admin/repairmultiplegrades/%/%'] = array(
+        'page callback' => 'fix_multiple_gb_grades',
+        'page arguments' => array(3, 4),       //School_nid, Debug?
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/admin/merge_subjects'] = array(
+        'page callback' => 'merge_subjects',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/print/login/info/%/%'] = array(
+        'page callback' => 'ntlp_print_user_login_info',
+        'page arguments' => array(4, 5), // user_id, password
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/change/parent/user/%'] = array(
+        'title' => 'Change School Year',
+        'page callback' => 'ntlp_change_student',
+        'page arguments' => array(4),
+        'access arguments' => array('access student selector'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admin/fixuser'] = array(
+        'title' => 'Fix Users',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('add_user_info_form'),
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admin/recover/course'] = array(
+        'title' => 'UnDelete Course',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_recover_course_form'),
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/admin/change_activityterm'] = array(
+        'title' => 'Change Activity Term for a Course',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_change_activity_terms'),
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/repair/tvhsusers'] = array(
+        'title' => 'Repair TVHS Users',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('repair_tvhs_user_form'),
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+    //JR
+
+    $items['ntlp/school/change/daylight/%'] = array(
+        'title' => 'Change daylight',
+        'page callback' => 'change_daylight',
+        'page arguments' => array(4),
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+
+
+    $items['ntlp/school/change/timezone'] = array(
+        'title' => 'Change School Time Zone',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('change_school_timezone_form'),
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/repair/project/section/resources/order'] = array(
+        'page callback' => 'repair_project_section_resources_order',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+
+    $items['ntlp/home'] = array(
+        'title' => 'Home',
+        'page callback' => 'ntlp_home_page',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/gapps/gmail/block'] = array(
+        'page callback' => 'render_gmail_block_content',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/gapps/gdocs/block'] = array(
+        'page callback' => 'render_gdocs_block_content',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/gapps/gsites/block'] = array(
+        'page callback' => 'render_gsites_block_content',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/render/update/block/%'] = array(
+        'page callback' => 'ntlp_ajax_block_render_func',
+        'page arguments' => array(4),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/get/uploaded/file/detail/%'] = array(
+        'page callback' => 'ntlp_get_upload_file_detail',
+        'page arguments' => array(5),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/admin/repairgpcourse'] = array(
+        'page callback' => 'repair_gradeportal_courses',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/admin/auto_grading_cron'] = array(
+        'page callback' => 'fix_auto_graded_activity_submission',
+        'access arguments' => array('access content'),
+//        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/admin/repairgpoutcome'] = array(
+        'page callback' => 'repair_gradeportal_sw_outcomes',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/admin/gpmigration/%'] = array(
+        'page callback' => 'gp_migration_start',
+        'page arguments' => array(3),
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/repair/course/instructors'] = array(
+        'page callback' => 'fix_course_creator_enrollment',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/repair/activities/unmappedsections'] = array(
+        'page callback' => 'assign_unmapped_project_activities',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/repair/resources/multipleprojects'] = array(
+        'page callback' => 'repair_resources_for_march2011',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/repair/dw_course_grades/%/%'] = array(
+        'page callback' => 'ntlp_school_cron',
+        'page arguments' => array(3, 4),
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+    
+//    $items['ntlp/school/management/course/%'] = array(
+//        'title' => 'Create New User For School',
+//        'page callback' => 'drupal_get_form',
+//        'page arguments' => array('school_course_settings_form',4),
+//         'access arguments' => array('Manage School Course Settings'),
+//        'type' => MENU_CALLBACK,
+//    );
+
+    $items['ntlp/cache/get/%'] = array(
+        'page callback' => 'ntlp_get_cache',
+        'page arguments' => array(3),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/cache/set/%'] = array(
+        'page callback' => 'ntlp_set_cache',
+        'page arguments' => array(3),
+        'access arguments' => array('access content'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/school/create/new/year/%'] = array(
+        'page callback' => 'ntlp_school_create_new_year_frm',
+        'page arguments' => array(5),
+        'access arguments' => array('access content'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/school/createnewyear/data/%/%/%'] = array(
+        'page callback' => 'ntlp_school_create_new_year_data',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('access content'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/school/add/outcome/%/%'] = array(
+        'page callback' => 'ntlp_school_add_outcome_frm',
+        'page arguments' => array(4, 5),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['save_school_outcome/%/%/%/%/%/%'] = array(
+        'page callback' => 'ntlp_school_add_outcome_data',
+        'page arguments' => array(1, 2, 3, 4, 5, 6),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/school/edit/outcome/%/%/%'] = array(
+        'page callback' => 'ntlp_school_edit_outcome_frm',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['edit_school_outcome/%/%/%/%/%/%'] = array(
+        'page callback' => 'ntlp_school_edit_outcome_data',
+        'page arguments' => array(1, 2, 3, 4, 5, 6),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/school/delete/outcome/%/%/%'] = array(
+        'page callback' => 'ntlp_school_outcome_delete',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('access content'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+
+    $items['change_school_outcome/order/%/%/%/%/%'] = array(
+        'page callback' => 'ntlp_school_change_outcome_order',
+        'page arguments' => array(2, 3, 4, 5, 6),
+        'access arguments' => array('access content'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+
+    $items['ntlp/school/delete/term/%/%/%'] = array(
+        'page callback' => 'ntlp_school_term_delete',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('access content'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/school/check/term_changes/%/%/%'] = array(
+        'page callback' => 'ntlp_school_term_changes',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('access content'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    /* checking outcome if the same name exist for outcome.. */
+    $items['ntlp/school/check/outcomename/%/%/%'] = array(
+        'page callback' => 'ntlp_school_check_outcome_exist',
+        'page arguments' => array(4, 5, 6),
+        'access arguments' => array('administer my school'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+    
+    /* repair permission table for roles.. */
+    /*$items['ntlp/system/repair/permission'] = array(
+        'page callback' => 'repair_permission_table_data',
+        'access arguments' => array('administer my school'),
+        'type' => MENU_NORMAL_ITEM,
+    );*/
+
+    $items['ntlp/repair/resourceurl'] = array(
+        'page callback' => 'repair_resource_url',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/repair/oldprojectdates'] = array(
+        'page callback' => 'repair_oldproject_dates',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/repair/oldattachmentnames'] = array(
+        'page callback' => 'repair_old_attached_filenames',
+        'access arguments' => array('administer all schools'),
+        'type' => MENU_CALLBACK,
+    );
+    
+    return $items;
+}
+
+function ntlp_change_school_year($school_year) {
+    $school_year = (int) $school_year;
+    if ($school_year > MIN_SCHOOL_YEAR) {
+        $_SESSION['SCHOOL_YEAR'] = $school_year;
+    }
+}
+
+function ntlp_change_student($student_uid) {
+    $student_uid = (int) $student_uid;
+//    if( $school_year > MIN_SCHOOL_YEAR ) {
+    $_SESSION['PARENT_STUDENT_UID'] = $student_uid;
+//    }
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function ntlp_school_theme() {
+    $theme = array(
+        'ntlp_school_admin_settings' => array(
+            'arguments' => array('form' => NULL),
+            'function' => 'theme_ntlp_school_admin_settings',
+        ),
+        'school_user_registration_form' => array(
+            // Forms always take the form argument.
+            'arguments' => array('form' => NULL),
+        ),
+    );
+    return $theme;
+}
+
+/**
+ * Menu callback for admin/ntlp_school/settings.
+ */
+function ntlp_school_admin_settings() {
+//IMPLEMENT THIS LATER
+//module_load_include('inc', 'ntlp_school', 'ntlp_school_export');
+
+    $form['newschool']['create'] = array(
+        '#type' => 'submit',
+        '#value' => t('Create School'));
+
+    $form['schools'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Schools'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+    );
+
+//    popups_add_popups();
+    // Add all schools records to the form:
+    $ntlp_schools = get_schools();
+    while ($school = db_fetch_object($ntlp_schools)) {
+        /*    $term = taxonomy_get_term($school->location_id);
+          if ($term)
+          $location_name = $term->name;
+          else
+          $location_name = ""; */
+        $form['schools'][$school->nid]['name'] = array('#value' => $school->school_name);
+        $form['schools'][$school->nid]['location'] = array('#value' => $school->location_name);
+        $form['schools'][$school->nid]['address'] = array('#value' => $school->address);
+        $form['schools'][$school->nid]['google'] = array('#value' => l(t('Google SSO'), 'admin/settings/grupal/' . $school->nid, array('attributes' => array('class' => 'popups'))));
+//        $form['schools'][$school->nid]['edit'] = array('#value' => l(t('edit'), 'ntlp/admin/ntlp_school/edit/' . $school->nid));
+//        $form['schools'][$school->nid]['delete'] = array('#value' => l(t('delete'), 'ntlp/admin/ntlp_school/delete/' . $school->nid));
+    }
+    $form['#validate'] = array('ntlp_school_admin_settings_validate');
+
+    return $form;
+}
+
+/**
+ * Validate callback.
+ */
+function ntlp_school_admin_settings_validate($form, &$form_state) {
+    if ($form_state['values']['op'] == t('Create School')) {
+        drupal_goto('ntlp/admin/ntlp_school/create');
+    }
+}
+
+function theme_ntlp_school_admin_settings($form) {
+    $output = 'v 1.0<br>';
+
+    // Format the components into a table.
+    foreach (element_children($form['schools']) as $school) {
+        $row = array();
+        $row[] = array('data' => drupal_render($form['schools'][$school]['name']));
+        $row[] = array('data' => drupal_render($form['schools'][$school]['location']));
+        $row[] = array('data' => drupal_render($form['schools'][$school]['address']));
+        $row[] = array('data' => drupal_render($form['schools'][$school]['google']));
+        $row[] = array('data' => drupal_render($form['schools'][$school]['edit']));
+        $row[] = array('data' => drupal_render($form['schools'][$school]['delete']));
+        $rows[] = $row;
+    }
+    $header = array(
+        t('School Name'),
+        t('Location'),
+        t('Address'),
+        array('data' => t('Operations'), 'colspan' => '3')
+    );
+
+    // Create the table inside the form.
+    $form['schools']['table'] = array(
+        '#value' => theme('table', $header, $rows)
+    );
+
+    $output .= drupal_render($form);
+    return $output;
+}
+
+/**
+ * school maintenance form
+ */
+function ntlp_school_create_confirm() {
+
+    $vid = NTLP_VOCABULARY_REGIONS;       //NTLP Region Vocabulary Id
+    $vocabularytree = taxonomy_get_tree($vid);
+    $options = array();
+    $options[''] = '';
+    if ($vocabularytree) {
+        foreach ($vocabularytree as $term) {
+            $choice = new stdClass();
+            $choice->option = array($term->tid => str_repeat('-', $term->depth) . $term->name);
+            $options[] = $choice;
+        }
+    }
+    $tz_list = array();
+    $tzrs = get_timezones();
+    if ($tzrs) {
+        while ($tzrec = db_fetch_object($tzrs)) {
+            $choice = new stdClass();
+            $choice->option = array($tzrec->timezone => $tzrec->name . ' (' . $tzrec->offset . ')');
+            $tz_list[] = $choice;
+        }
+    }
+    //------------------------------------------------------
+
+    $form['newschool'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Create a new School'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+    );
+
+    $form['newschool']['name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('School Name'),
+    );
+    $form['newschool']['address'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Address'),
+        '#description' => t('The address/postcode of this school.'),
+    );
+    $form['newschool']['location'] = array(
+        '#type' => 'select',
+        '#title' => 'Location',
+        '#options' => $options,
+        '#description' => 'Select region where the school is located.',
+    );
+    $form['newschool']['timezone'] = array(
+        '#type' => 'select',
+        '#title' => 'Time Zone',
+        '#options' => $tz_list,
+        '#default_value' => 487,
+        '#description' => 'Select school timezone.',
+    );
+    $form['newschool']['active'] = array(
+        '#type' => 'checkbox',
+        '#checked_value' => 1,
+        '#default_value' => 1,
+        '#title' => t('Active'),
+        '#suffix' => '<br>',
+    );
+
+    $form['techmanager'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('School Tech Manager'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+    );
+
+    $form['techmanager']['email'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Login'),
+        '#description' => t('Login/Email address of the user. This account should be created already in the school domain in Google Apps.'),
+    );
+    $form['techmanager']['password'] = array(
+        '#type' => 'password_confirm',
+        '#required' => TRUE,
+        '#size' => 25,
+    );
+    $form['techmanager']['first_name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('First Name'),
+    );
+    $form['techmanager']['last_name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Last Name'),
+    );
+
+    return confirm_form($form, t('School'), 'ntlp/admin/ntlp_school', t(''), t('Create School'), t('Cancel'));
+}
+
+/**
+ * Handler for school creation
+ */
+function ntlp_school_create_confirm_submit(&$form, &$form_state) {
+    global $user;
+
+    if ($form['confirm']) {
+        $location_tid = (int) $form_state['values']['location'];
+
+        //Save Node
+        $node = new stdClass();
+        $node->title = $form_state['values']['name'];
+        $node->type = 'ntlp_school';   // Your specified content type
+        $node->created = $time;
+        $node->changed = $time;
+        $node->body = $form_state['values']['address'];
+        $node->status = 1;
+        $node->promote = 0;
+        $node->sticky = 0;
+        $node->format = 1;       // Filtered HTML
+        $node->uid = $user->uid; // UID of content owner
+        node_save($node);
+
+        $nid = $node->nid;
+        add_default_permissions($nid);
+
+        //Save in our table
+        $school_year = date('Y');
+        $school_year = date('m') >= 6 ? $school_year + 1 : $school_year;
+
+        $result = db_query("INSERT INTO {ntlp_school} (nid, address, location_tid, active, is_NETWORK, current_school_year,
+                grade_rounding, grade_scale, gdocs_status, gsite_status, gmail_status, local_timezone)
+                VALUES (%d, '%s', %d, %d, 0, %d,
+                0, 0, 0, 0, 0, %d) ", $nid, $form_state['values']['address'], $location_tid, $form_state['values']['active'], $school_year, $form_state['values']['timezone']);
+
+        //Create user in tech manager role
+        $email = $form_state['values']['email'];
+        $password = $form_state['values']['password'];
+        $first_name = $form_state['values']['first_name'];
+        $last_name = $form_state['values']['last_name'];
+        $user_role = NTLP_ROLEID_SITEADMIN;
+
+        $data = array(
+            'name' => $email,
+            'pass' => $password,
+            'status' => 1,
+            'mail' => $email,
+            'init' => $email,
+            'ntlp_schools' => $nid,
+//Custom fields - used by Grupal
+            'setup_google' => FALSE,
+            'firstname' => $first_name,
+            'lastname' => $last_name,
+            'status_google' => FALSE,
+        );
+
+        $u = user_save(null, $data);
+
+        if ($u && intval($u->uid) > 0) {
+
+            //When a validation error occurs, record is not created in ntlp_user table
+            //We need to create a record, if its not there
+            $rs = db_query("select uid from {ntlp_user} where uid = %d", $u->uid);
+            if ($rs->num_rows > 0) {
+                db_query("UPDATE {ntlp_user} SET first_name = '%s' , middle_name = '' , last_name = '%s' ,
+                        grad_year = 0, job_title = '' , user_code = 0, password_change = 0, is_active = 1
+                        WHERE uid = %d  ", $first_name, $last_name, $u->uid);
+            } else {
+                db_query("INSERT INTO {ntlp_user} (uid, school_nid, first_name, middle_name, last_name, grad_year,
+                        job_title, user_code, password_change, is_active)
+                        VALUES (%d, %d, '%s', '', '%s', 0,
+                        '', 0, 0, 1) ", $u->uid, $nid, $first_name, $last_name);
+
+                if ($user_role != NTLP_ROLEID_STUDENT && $user_role != NTLP_ROLEID_PARENT) {
+
+                    db_query("insert into {og_uid} values (1322057, 0,'1', '0', {$u->uid},'" . time() . "','" . time() . "')");
+                }
+            }
+            //TODO: "roles" array can be used instead of doing this
+            db_query("INSERT INTO {users_roles} (uid,rid) VALUES (%d, %d)", $u->uid, $user_role);
+
+            modalframe_parent_js();
+            drupal_set_message('<div>Congratulations!<div>
+                <div>School [' . $form_state['values']['name'] . '] created successfully with following Tech Manager account:<div><br>
+                    <div>User:<strong>' . $first_name . ' ' . $last_name . '</strong>
+                    &nbsp;Email:<strong>' . $email . '</strong><div><br />
+                    <div>Created Successfully<div>' .
+                    '<table cellspacing="8" cellpading="8" width="550">
+                    <tr>
+                    <td width = "180"><div>' .
+                    dlg('Print Login Information', "ntlp/print/login/info/$u->uid/$password", 300, 400, 'SubmitAssignmentBtn showPrintUser') .
+                    '</div></td><td>&nbsp;</td>
+                    <td width = "180">' .
+                    l('Google Apps Settings', 'admin/settings/grupal/' . $nid, array('attributes' => array('class' => 'SubmitAssignmentBtn', 'onclick' => 'Drupal.modalFrame.close()'))) .
+                    '</td><td>&nbsp;</td>
+                  </tr>
+                  </table>'
+            );
+
+            $form_state['redirect'] = 'ntlp/admin/ntlp_school';
+        } else {
+            drupal_set_message("ERROR: Unable to create user in Tech Manager role for this schoool.");
+        }
+        return;
+    }
+}
+
+/**
+ * Handle Drupal 'user' hook events
+ * http://api.drupal.org/api/function/hook_user
+ * @param op What kind of action is being performed.
+ * @param edit The array of form values submitted by the user.
+ * @param account The user object on which the operation is being performed.
+ * @param category The active category of user information being edited.
+ * @return depends on operation, usually none.
+ */
+function ntlp_school_user($op, &$edit, &$account, $category = NULL) {
+    switch ($op) {
+        case 'logout':
+            $domainName = $_GET["dn"];
+            if (!empty($domainName)) {
+                setcookie("GRUPALDSO", $domainName, time() + (30));
+                drupal_goto('grupal/dsignout');
+            } else {
+                global $user, $base_url;
+
+                try {
+                    $user_id = $user->uid;
+                    $sid = get_user_school($user_id);
+                    if (!$sid) {
+                        drupal_set_message("User is not a member of any school.");
+                        return '';
+                    }
+                    $sid .= '_';
+                    $domainName = variable_get('grupal_domain' . $sid, '');
+                } catch (Exception $e) {
+                    drupal_set_message("Unexpected error: User is not a member of any school.");
+                    return '';
+                }
+            }
+            break;
+        case 'register':
+        case 'form':
+            // Add all schools records to the form:
+            $ntlp_schools = get_schools();
+            $aschools = array();
+            while ($school = db_fetch_object($ntlp_schools)) {
+                $aschools[$school->nid] = $school->school_name;
+            }
+
+            $fields['ntlp_school'] = array(
+                '#type' => 'fieldset',
+                '#title' => t('School')
+            );
+            $fields['ntlp_school']['ntlp_schools'] = array(
+                '#type' => 'select',
+                '#default_value' => $edit['ntlp_schools'],
+                '#description' => t('Select School for the user'),
+                '#options' => $aschools,
+            );
+
+            $fields['personalinfo'] = array(
+                '#type' => 'fieldset',
+                '#title' => t('Personal information')
+            );
+            $fields['personalinfo']['firstname'] = array(
+                '#type' => 'textfield',
+                '#title' => t('First name'),
+                '#size' => 40,
+                '#maxlength' => USERNAME_MAX_LENGTH,
+                '#required' => TRUE,
+                '#default_value' => $edit['firstname'],
+            );
+            $fields['personalinfo']['lastname'] = array(
+                '#type' => 'textfield',
+                '#title' => t('Last name'),
+                '#size' => 40,
+                '#maxlength' => USERNAME_MAX_LENGTH,
+                '#required' => TRUE,
+                '#default_value' => $edit['lastname'],
+            );
+            return $fields;
+        case 'insert':
+        case 'update':
+            watchdog('ntlp_school', 'save using data' . print_r($edit, true));
+            try {
+                //When a user signs up from ldap, ldap changes its serializes its values and updates the user
+                if (!isset($edit['ntlp_schools']) && $op == 'update')
+                    break;
+
+                //We cannot allow inserting a new user without our custom parameters
+                if (!isset($edit['ntlp_schools']))
+                    throw new Exception('Cannot proceed, you are not associated with an active School!');
+
+                //Save in our table
+                $data = array(
+                    'uid' => $edit['uid'],
+                    'school_nid' => $edit['ntlp_schools'],
+                    'first_name' => $edit['firstname'],
+                    'middle_name' => '',
+                    'last_name' => $edit['lastname'],
+                    'phone_number' => '',
+                    'websites' => '',
+                    'fav_quote' => '',
+                    'about_me_statement' => '',
+                    'college' => '',
+                    'movies' => '',
+                    'tv' => '',
+                    'music' => '',
+                    'books' => '',
+                    'hobbies' => '',
+                    'fun_fact' => '',
+                    'im_id' => '',
+                    'instructor_uid' => '',
+                    'grad_year' => '',
+                    'UNIQUEID' => '',
+                    'im_name' => '',
+                    'about_me' => '',
+                    'user_code' => '',
+                    'password_change' => ''
+                );
+
+                if ($op == 'insert') {
+//                    watchdog('ntlp_school 1', 'save using data' . print_r($data, true));
+
+                    $result = db_query("INSERT INTO {ntlp_user} (uid, school_nid, first_name,middle_name, last_name,
+                    phone_number, websites, fav_quote, about_me_statement, college, movies,
+                    tv, music, books, hobbies,	fun_fact, im_id, goals, instructor_uid,	grad_year,
+                    UNIQUEID, im_name, about_me, job_title,user_code, password_change) VALUES (%d, %d, '%s' ,'%s' ,'%s',
+                    %d , '%s' , '%s', '%s', '%s' , '%s' , '%s', '%s', '%s', '%s', '%s', '%s' , '%s' , %d , %d , '%s' ,
+                    '%s' , '%s' , '%s' , %d, %d) ", $edit['uid'], $edit['ntlp_schools'], $edit['firstname'], '', $edit['lastname'], 0, '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, '', '', '', '', 0, 0);
+//                    $result = drupal_write_record('ntlp_user', $data);
+
+                    if ($edit['role'] != NTLP_ROLEID_STUDENT && $edit['role'] != NTLP_ROLEID_PARENT) 
+                    {
+//                        watchdog('ntlp_school 3', 'User enrolled in All Staff group');
+                        db_query("insert into {og_uid} values (1322057, 0,'1', '0', {$edit['uid']},'".time()."','".time()."')");
+                    }
+
+                } else {
+//                    watchdog('ntlp_school 2','save using data'.print_r($data,true));
+                    $result = drupal_write_record('ntlp_user', $data, 'uid');
+                }
+                if ($result) {
+//                    drupal_set_message('User '.t($edit['name'].' successfully saved!'));
+                } else {
+                    throw new Exception('Unhandled error: Unable to save user information! Please check all values and try again.');
+                }
+            } catch (Exception $e) {
+
+                drupal_set_message(
+                        "Unhandled exception while saving user information: " .
+                        $e->getMessage());
+            }
+            break;
+
+        case 'delete':
+            try {
+                
+            } catch (Exception $e) {
+                drupal_set_message("Unhandled error: Unable to deleting/suspending user!"
+                        . $e->getMessage());
+            }
+            break;
+    }
+}
+
+// function hook_user
+
+/* NTLP School Blocks ( School Management ) */
+
+function ntlp_school_block($op = 'list', $delta = 0, $edit = array()) {
+    // The $op parameter determines what piece of information is being requested.
+    switch ($op) {
+        case 'list':
+            // If $op is "list", we just need to return a list of block descriptions.
+            // This is used to provide a list of possible blocks to the administrator,
+            // end users will not see these descriptions.
+            $blocks[0] = array(
+                'info' => t('NTLP: School Management Users'),
+            );
+            $blocks[1] = array(
+                'info' => t('NTLP: School Management General Settings'),
+            );
+            $blocks[2] = array(
+                'info' => t('NTLP: School Management Course Settings'),
+            );
+            $blocks[3] = array(
+                'info' => t('NTLP: Data Export'),
+            );
+            return $blocks;
+        case 'configure':
+            // If $op is "configure", we need to provide the administrator with a
+            // configuration form. The $delta parameter tells us which block is being
+            // configured. In this example, we'll allow the administrator to customize
+            // the text of the first block.
+            $form = array();
+            /*      if ($delta == 0) {
+              // All we need to provide is a text field, Drupal will take care of
+              // the other block configuration options and the save button.
+              $form['ntlp_blocks_string'] = array(
+              '#type' => 'textfield',
+              '#title' => t('Block contents'),
+              '#size' => 60,
+              '#description' => t('This string will appear in the example block.'),
+              '#default_value' => variable_get('block_example_string',  t('Some example content.')),
+              );
+              } */
+            return $form;
+        case 'save':
+        /*      // If $op is "save", we need to save settings from the configuration form.
+          // Since the first block is the only one that allows configuration, we
+          // need to check $delta to make sure we only save it.
+          if ($delta == 0) {
+          // Have Drupal save the string to the database.
+          variable_set('block_example_string', $edit['block_example_string']);
+          }
+          return; */
+        case 'view': default:
+            // If $op is "view", then we need to generate the block for display
+            // purposes. The $delta parameter tells us which block is being requested.
+
+            switch ($delta) {
+                case 0:
+                    // The subject is displayed at the top of the block. Note that it
+                    // should be passed through t() for translation.
+                    $block['subject'] = t('NTLP: School Management Manage Users');
+                    $block['content'] = manager_users_content();
+                    break;
+                case 1:
+                    $block['subject'] = t('NTLP: School Management General Settings');
+                    $block['content'] = school_general_settings();
+                    break;
+                case 2:
+                    $block['subject'] = t('NTLP: School Management Course Settings');
+                    $block['content'] = school_course_settings();
+                    break;
+                case 3:
+                    $block['subject'] = t('NTLP: Data Export');
+                    $block['content'] = data_export_form();
+                    break;
+            }
+    }
+    return $block;
+}
+
+function theme_school_user_registration_form($form) {
+    $variables_to_restore = cache_get("ntlp_user_register:" . session_id());
+    $variables_to_restore = $variables_to_restore->data;
+//    watchdog("theme", 'Variables:'. is_object($variables_to_restore) . '<br>'. print_r($variables_to_restore, true));
+    if (!empty($variables_to_restore) && is_object($variables_to_restore)) {
+
+        $form['main']['first_name']['#value'] = $variables_to_restore->first_name;
+        $form['main']['last_name']['#value'] = $variables_to_restore->last_name;
+//        $form['main']['user_name']['#value'] = $variables_to_restore->user_name;
+        $form['main']['mi']['#value'] = $variables_to_restore->mi;
+        $form['main']['password']['pass1']['#value'] = $variables_to_restore->password1;
+        $form['main']['password']['pass1']['#value'] = $variables_to_restore->password2;
+    }
+ 
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/ntlp_course_agenda.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/date_picker.js');
+    
+    cache_set("ntlp_user_register:" . session_id(), NULL, 'cache', CACHE_TEMPORARY);
+    $output = drupal_render($form);
+    return $output;
+}
+
+//function ntlp_school_watchdog($log = array()) {
+//    global $user;
+//    $lf = new logfile();
+//    $lf->lwrite(''.$log['type'].' | '.date('Y-m-d H:i:s',$log['timestamp']).' | '.$log['message'].' | '.$user->name .' ');
+//}
+//Changes the password of currently logged in user
+function ntlp_change_password_current_user($newpasswd) {
+    global $user;
+
+    //Check to see if user is in ldap
+    $user_obj = array('pass' => $newpasswd);
+    $data = unserialize(db_result(db_query('SELECT data FROM {users} WHERE uid = %d', $user->uid)));
+    if (isset($data['ldap_authentified']) && $data['ldap_authentified'] == 1) {
+        _ldapdata_user_submit($user_obj, $user, 'account');
+    }
+    //Reset array, because other modules modify the passed array.
+    $user_obj = array('pass' => $newpasswd);
+    user_save($user, $user_obj);
+
+
+    db_query("UPDATE {ntlp_user} SET password_change = 0 WHERE uid = %d", $user->uid);
+
+
+
+
+//    watchdog('chgpwd', 'User:'.$user->uid.', Pwd: '.print_r($user_obj, true));
+//    user_save((object) array('uid' => $user->uid),
+//            array('pass' => $form_state['clicked_button']['#post']['password']['pass1']));
+}
+
+function ntlp_change_password_other_user($newpasswd, $user_uid) {
+    //Change password in ldap
+    $data = unserialize(db_result(db_query('SELECT data FROM {users} WHERE uid = %d', $user_uid)));
+    if (isset($data['ldap_authentified']) && $data['ldap_authentified'] == 1) {
+        $user_account = user_load($user_uid);
+        $user_obj = array('pass' => $newpasswd);
+        _ldapdata_user_submit($user_obj, $user_account, 'account');
+    }
+}
+
+function ntlp_get_upload_file_detail($fid) {
+    global $base_path;
+
+    $file_detail = get_file_detail($fid);
+
+    list($width, $height, $type, $attr) = getimagesize($file_detail->filepath);
+
+    if ($width > 400) {
+        $width = $width / 2;
+        $height = $height / 2;
+    }
+
+    $HTML = '<img src="' . $base_path . $file_detail->filepath . '" width="' . $width . '" height="' . $height . '" />';
+
+    print $HTML;
+}
+
+//Cache functions to be used by AJAX calls
+
+function ntlp_get_cache($cache_id) {
+    $cache_table = isset($_POST['cache_table']) ? $_POST['cache_table'] : 'ntlp_cache';
+    print cache_get($cache_id, $cache_table);
+}
+
+function ntlp_set_cache($cache_id) {
+
+    $cache_table = isset($_POST['cache_table']) ? $_POST['cache_table'] : 'ntlp_cache';
+    $expire_type = isset($_POST['expiry']) ? $_POST['expiry'] : 'CACHE_TEMPORARY';
+
+    cache_set($cache_id, $_POST['cache_data'], $cache_table, ($expire_type == 'CACHE_TEMPORARY' ? CACHE_TEMPORARY : CACHE_PERMANENT));
+
+    watchdog("cache set", "$cache_id, " . $_POST['cache_data'] . ", $cache_table, $expire_type");
+    print $_POST['cache_data'];
+}
+
+function ntlp_validate_text_field_tags($content) {
+
+    if (stristr($content, "<script>") != false)
+        return false;
+
+    return true;
+}

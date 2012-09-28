@@ -1,0 +1,135 @@
+<?php
+
+/**
+ * @file
+ * Allows core and module javascript files to be loaded from alternate locations.
+ */
+ 
+/**
+ * Implementation of hook_js_alter()
+ */
+function jsregistry_js_alter(&$aJavascript, $sScope = 'header') {
+  $aRegistry = jsregistry_get_registry();
+  foreach ($aJavascript as $sType => $aJavascriptForType) {
+    if (!in_array($sType, array('setting', 'inline'))) {
+      $aAlteredJavascriptForType = array();
+      foreach ($aJavascriptForType as $sFile => $aInfo) {
+        $sAltFile = isset($aRegistry[$sFile]['filename']) ? $aRegistry[$sFile]['filename'] : $sFile;
+        $aAlteredJavascriptForType[$sAltFile] = $aInfo;
+      }
+      $aJavascript[$sType] = $aAlteredJavascriptForType;
+    }
+  }
+}
+ 
+/**
+ * jsregistry_get_registry
+ */
+function jsregistry_get_registry() {
+  static $aRegistry;
+  
+  if (!is_array($aRegistry)) {
+    $oCache = cache_get('jsregistry_registry');
+    if (is_object($oCache)) {
+      $aRegistry = $oCache->data;
+    }
+  }
+  
+  if (!is_array($aRegistry)) {
+    $aRegistry = jsregistry_build_registry();
+    cache_set('jsregistry_registry', $aRegistry);
+  }
+  
+  return $aRegistry;
+}
+
+/**
+ * jsregistry_build_registry
+ */
+function jsregistry_build_registry() {
+  $sMask = '\.js$';
+  $aRegistry = array();
+  
+  // Get the path of each module
+  $aModules = module_list();
+  $aModulePaths = array();
+  foreach ($aModules as $sModule) {
+    $aModulePaths[$sModule] = drupal_get_path('module', $sModule);
+  }
+  
+  // Get all of the .js files across the various paths
+  $aCoreFiles = file_scan_directory('misc', $sMask);
+  $aModuleFiles = array();
+  $aModuleFilesBase = array();
+  foreach ($aModules as $sModule) {
+    foreach (file_scan_directory($aModulePaths[$sModule], $sMask) as $sFileName => $oFile) {
+      $sBaseName = substr($sFileName, strlen($aModulePaths[$sModule])+1);
+      $aModuleFiles[$sFileName] = array(
+        'file' => $oFile,
+        'basename' => $sBaseName,
+        'module' => $sModule,
+      );
+      $aModuleFilesBase[$sBaseName] = $oFile;
+    }
+  }
+  $aExtraSystemFiles = array();
+  $aExtraSystemFilesBase = array();
+  foreach (drupal_system_listing($sMask, 'misc', 'filename', 0) as $sFileName => $oFile) {
+    // Skip over ones in drupal core directory
+    if (substr($sFileName, 0, 5) !== 'misc/') {
+      $sPrefix = substr($sFileName, 0, strpos($sFileName, '/misc/'));
+      $sBaseName = substr($sFileName, strlen($sPrefix)+1);
+      $aExtraSystemFiles[$sFileName] = array(
+        'file' => $oFile,
+        'basename' => $sBaseName,
+      );
+      $aExtraSystemFilesBase[$sBaseName] = $oFile;
+    }
+  }
+  $aAllFiles = array_merge($aCoreFiles, $aModuleFiles, $aExtraSystemFiles);
+  
+  // Build registry for overrides of <core>/misc files
+  foreach ($aCoreFiles as $sFileName => $oFile) {
+    $sFileNameOverriden = $sFileName;
+    $sBaseName = $sFileName;
+    if (isset($aExtraSystemFilesBase[$sBaseName]) && is_object($aExtraSystemFilesBase[$sBaseName])) {
+      $sFileNameOverriden = $aExtraSystemFilesBase[$sBaseName]->filename;
+    }
+    elseif (isset($aModuleFilesBase[$sBaseName]) && is_object($aModuleFilesBase[$sBaseName])) {
+      $sFileNameOverriden = $aModuleFilesBase[$sBaseName]->filename;
+    }
+    $aRegistry[$sFileName] = array('filename' => $sFileNameOverriden);
+  }
+  
+  // Build registry for overrides of <module_path>/misc and <module_path> files
+  foreach ($aModuleFiles as $sFileName => $aFileInfo) {
+    $sFileNameOverriden = $sFileName;
+    $sBaseName = $aFileInfo['basename'];
+    if (substr($sBaseName, 0, 5) === 'misc/') {
+      if (isset($aExtraSystemFilesBase[$sBaseName]) && is_object($aExtraSystemFilesBase[$sBaseName])) {
+        $sFileNameOverriden = $aExtraSystemFilesBase[$sBaseName]->filename;
+      }
+    }
+    else {
+      $sBaseName = 'misc/module_override/' . $aFileInfo['module'] . '/' . $sBaseName;
+      if (isset($aExtraSystemFilesBase[$sBaseName]) && is_object($aExtraSystemFilesBase[$sBaseName])) {
+        $sFileNameOverriden = $aExtraSystemFilesBase[$sBaseName]->filename;
+      }
+    }
+    $aRegistry[$sFileName] = array('filename' => $sFileNameOverriden);
+  }
+  
+  // Build registry for overrides of <extra_system_path>/misc files
+  foreach ($aExtraSystemFiles as $sFileName => $aFileInfo) {
+    $sFileNameOverriden = $sFileName;
+    $sBaseName = $aFileInfo['basename'];
+    if (isset($aExtraSystemFilesBase[$sBaseName]) && is_object($aExtraSystemFilesBase[$sBaseName])) {
+      $sFileNameOverriden = $aExtraSystemFilesBase[$sBaseName]->filename;
+    }
+    $aRegistry[$sFileName] = array('filename' => $sFileNameOverriden);
+  }
+  
+  // Allow modules to alter the registry
+  drupal_alter('js_registry', $aRegistry);
+  return $aRegistry;
+}

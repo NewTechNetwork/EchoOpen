@@ -1,0 +1,5 @@
+; $Id$
+name = "Mini Feed Comments"
+description = "This provides a simple form for submitting comments"
+core = 6.x
+php = 5.1

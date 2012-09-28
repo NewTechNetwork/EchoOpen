@@ -1,0 +1,91 @@
+<?php
+// $Id: ntlp_school.install,v .01 $
+
+/**
+ * Implementation of hook_install().
+ */
+/*function ntlp_school_install() {
+  // Create tables.
+  drupal_install_schema('ntlp_school');
+}*/
+
+/**
+ * Implementation of hook_uninstall().
+ */
+/*function ntlp_school_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('ntlp_school');
+}*/
+
+/**
+ * Implementation of hook_schema().
+ */
+/*function ntlp_school_schema() {
+  $schema['ntlp_school'] = array(
+    'description' => 'Stores NTLP School records',
+    'fields' => array(
+      'id'     => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => "The ntlp_school's unique identifier."
+        ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 80,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'School name.'
+        ),
+      'oauth_consumer_key' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Google OAuth Consumer Key for this School.'
+        ),
+      'domain_name' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'School\'s internet domain name, e.g. techvalleyhs.org.'
+        ),
+      'location_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Region where School is located. This is a Taxonomy referenced field. The field is mapped with Vocabulary id of "NTLP Location"'
+        ),
+      'active'  => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Boolean indicating whether or not the ntlp_school is open.',
+        ),
+      'mdl_coursecat_id'  => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Id of Course Category created in Moodle.',
+        ),
+      'category_cxt_id'  => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Context id of Course Category created in Moodle.',
+        ),
+      ),
+    'indexes' => array(
+      'name' => array('name')
+      ),
+    'primary key' => array('id'),
+    );
+
+  return $schema;
+}*/
+

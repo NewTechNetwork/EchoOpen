@@ -1,0 +1,15 @@
+; $Id: ntlpprojectactivity.info,v 1.0.0.0 2011/05/28 09:27:04 Asad Exp $
+name = NTLP PROJECT ACTIVITY
+description = "Enable activity notifications for ntlp project."
+core = 6.x
+dependencies[] = activity
+dependencies[] = ntlp_project
+dependencies[] = ntlp_library
+package = Activity
+
+; Information added by drupal.org packaging script on 2009-04-27
+version = "6.x-1.2"
+core = "6.x"
+project = "activity"
+datestamp = "1240798502"
+

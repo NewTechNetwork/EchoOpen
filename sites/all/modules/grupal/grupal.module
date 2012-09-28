@@ -1,0 +1,338 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+/* 
+ * grupal - Google Apps integrations for Drupal
+ * Copyright 2009 Sam Johnston <samj@samj.net> http://samj.net/
+ *                  Australian Online Solutions Pty Ltd http://www.aos.net.au/
+ * 
+ * $Id: grupal.module 59 2009-09-05 10:05:35Z samj@samj.net $
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+/**
+ * Display help and module information
+ */
+module_load_include('inc', 'grupal', 'appsapis');
+module_load_include('inc', 'ntlp_school', 'data_access');
+
+/**
+ * Valid permissions for this module
+ * @return array An array of valid permissions for the grupal module
+ */
+function grupal_perm() {
+    return array('use google apps',
+    'administer google apps',
+    'administer grupal'); // TODO implement this
+} // function grupal_perm()
+
+/**
+ * Display help and module information
+ * @param path which path of the site we're displaying help
+ * @param arg array that holds the current path as would be returned by arg()
+ * @return help text for the path
+ */
+function grupal_help($path, $arg) {
+    $output = '';
+    switch ($path) {
+        case "admin/help#grupal":
+            $output = '<p>'.  t("Google Apps integrations for Drupal") .'</p>';
+            break;
+        case "admin/settings/grupal":
+            $output = t(<<<END
+                <p><a href="http://code.google.com/p/grupal/">Grupal</a> provides seamless
+integration between <a href="http://www.drupal.org/">Drupal</a> and
+<a href="http://www.google.com/a/">Google Apps</a>. Supports creating Google
+Apps users, suspending users when blocked in Drupal, synchronising passwords
+when updated in Drupal and suspending or deleting users when deleted in Drupal.
+</p>
+<p>Modified for NTLP to support multiple school configuration.</p>
+END
+            );
+            if (isset($arg[3]))
+                $output .= '<p>Configure now for: <u>'.get_school_name($arg[3]).'</u>';
+            else
+                $output .= '<p>DO NOT USE IT WITHOUT NTLP SCHOOLS, THIS WILL HAVE NO EFFECT</p>';
+            break;
+    }
+    return $output;
+} // function grupal_help
+
+/**
+ * Menu items for this module
+ * @return array An array of menu items
+ */
+function grupal_menu() {
+
+    $items['grupal/dsignin'] = array(
+        'title' => t('Google Apps Sign In'),
+        'page callback' => 'grupal_direct_sign_in',
+        'access arguments' => array('access content'),
+        'file' => 'grupal.sso.inc',
+        'type' => MENU_CALLBACK,
+    );
+    $items['grupal/dsignout'] = array(
+        'title' => t('Google Apps Sign Out'),
+        'page callback' => 'grupal_direct_sign_out',
+        'access callback' => TRUE,
+        'access arguments' => TRUE,
+        'file' => 'grupal.sso.inc',
+        'type' => MENU_CALLBACK,
+    );
+    $items['grupal/signin'] = array(
+        'title' => t('Google Apps SAML 2 IdP Sign In'),
+        'page callback' => 'grupal_single_sign_in',
+        'access arguments' => array('access content'),
+        'file' => 'grupal.sso.inc',
+        'type' => MENU_CALLBACK,
+    );
+    $items['grupal/signout'] = array(
+        'title' => t('Google Apps SAML 2 IdP Sign Out'),
+        'page callback' => 'grupal_single_sign_out',
+        'access arguments' => array('access content'),
+        'file' => 'grupal.sso.inc',
+        'type' => MENU_CALLBACK,
+    );
+    $items['grupal/password'] = array(
+        'title' => t('Google Apps SAML 2 IdP Password Change'),
+        'page callback' => 'grupal_password',
+        'access arguments' => array('use google apps'),
+        'file' => 'grupal.sso.inc',
+        'type' => MENU_CALLBACK,
+    );
+    $items['admin/settings/grupal/%'] = array(
+        'title' => t('Grupal settings'),
+        'description' => 'Configuration of Google Apps integration points',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('grupal_admin_settings', 3),
+        //'page arguments' => array(3),
+        'access arguments' => array('administer grupal'),
+        'block callback' => 'system_admin_theme_settings',
+        'file' => 'grupal.admin.inc',
+    );
+
+    return $items;
+} // function grupal_menu
+
+/**
+ * Handle Drupal 'user' hook events
+ * http://api.drupal.org/api/function/hook_user
+ * @param op What kind of action is being performed.
+ * @param edit The array of form values submitted by the user.
+ * @param account The user object on which the operation is being performed.
+ * @param category The active category of user information being edited.
+ * @return depends on operation, usually none.
+ */
+function grupal_user($op, &$edit, &$account, $category = NULL) {
+    if (($op == 'load' || $op == 'register') or (!isset($edit) && !isset($edit['ntlp_schools']))) { return; }
+    //Get NTLP school id for the current user
+    $schoolid = $edit['ntlp_schools'];
+    $school = $schoolid.'_';
+
+    if (!variable_get('grupal_enabled'.$school, 0)) { return; } // Bail if disabled
+
+    $grupal_domain = variable_get('grupal_domain'.$school, '');
+    $grupal_oauth_ckey = variable_get('grupal_oauth_ckey'.$school, '');
+    // 0 = Ignore, 1 = Suspend, 2 = Enable*
+    $gsc = variable_get('grupal_status_created'.$school, 2);
+    // 0 = Ignore, 1 = Suspend*, 2 = Enable
+    $gsd = variable_get('grupal_status_deleted'.$school, 1);
+
+    
+    //drupal_set_message("For $account->uid, a $op operation was invoked.");
+    if (($gsc != 0) || ($gsd != 0)) {
+        if (in_array($op, array('insert', 'update', 'delete'), $op) && ($grupal_domain != '')) {
+            try {
+                $client = getClientLoginHttpClient(
+                    variable_get('grupal_admin_email'.$school, '').'@'.$grupal_domain,
+                    variable_get('grupal_admin_pass'.$school, ''));
+                //print_r($client);
+                assert($client);
+                $gapps = new Zend_Gdata_Gapps($client, variable_get('grupal_domain'.$school, ''));
+                assert($gapps);
+		/*  $logintoken = $_GET['captchatoken'];
+		  $logincaptcha = $_GET['captchaanswer'];
+		  $client = Zend_Gdata_ClientLogin::getHttpClient($username, $password, $service, null, $appName, $logintoken, $logincaptcha);
+                 *
+                 */
+            }
+            catch(Zend_Gdata_App_CaptchaRequiredException $cre){
+                drupal_goto('admin/settings/grupal/captcha/'.$cre->getCaptchaToken().'/'.$cre->getCaptchaUrl());
+                //TODO: Place it in a form to get user's CAPTCHA's response.
+                drupal_set_message(
+                    "CAPTCHA response required: " .
+                    '<img src="'.$cre->getCaptchaUrl(). '"/> <br />' .
+                    '<form action="'.$_SERVER['PHP_SELF'].'&id=1" method="GET">' .
+                    'Answer: <input type="text" id="captchaanswer" name="captchaanswer" />' .
+                    '<input type="hidden" id="id" name="id" value="'.$_GET['id'].'"/>' .
+                    '<input type="hidden" id="captchatoken" name="captchatoken" value="'.$cre->getCaptchaToken().'"/>' .
+                    '<input type="submit" value="Submit" />' .
+                    '</form>');
+                    //echo "Error : ". $cre->getResponse()->getRawBody();
+                    //echo $cre->getMessage();
+                    $client = null;
+            } catch (Zend_Gdata_App_AuthException $gae) {
+                drupal_set_message(
+                    "Drupal was unable to authenticate to Google Apps: " .
+                    $gae->getMessage());
+                    $client = null;
+                    //throw new blocks_gdata_exception('authfailed');
+            } catch (Zend_Gdata_App_Exception $ge) {
+                drupal_set_message(
+                    "Application error: " . $ge->getMessage());
+                $client = null;
+                //throw new blocks_gdata_exception('gappserror', 'block_gdata', $ge->getMessage());
+
+            } catch (Exception $e) { // Zend_Gdata_App_AuthException
+                drupal_set_message(
+                    "Unexpected error: " .
+                    $e->getMessage());
+                return false;
+            }
+        }
+    }
+
+    if ($op == 'insert') {
+        // Create a new account on 'insert'
+        $setupGoogle = $edit['setup_google'];       //Setup google account for this user?
+        $givenName = $edit['firstname'];
+        $familyName = $edit['lastname'];
+        //$sid = $edit['ntlp_schools'];
+        if ($gsc != 0) { // Ignore
+            try {
+            // TODO: Implement full name stored in $account->data['given_name']?
+            // http://mameou.wordpress.com/2008/05/09/drupal-working-with-users/
+                watchdog('grupal', 'CheckUser:'.$setupGoogle.'. Account:'.$edit['name'].", $givenName, $familyName, ".$edit['pass']);
+
+                if ($setupGoogle) {
+                    watchdog('grupal', 'CreateUser:'.$setupGoogle.'. Account:'.$edit['name'].", $givenName, $familyName, ".$edit['pass']);
+
+                    $user = $gapps->createUser(grupal_cleanname(remove_domain($edit['name'])),
+                        $givenName, $familyName, $edit['pass']);
+                    if (($gsc == 1) || ($edit['status'] == 0)) { // Suspend
+                        $user->login->suspended = true;
+                        $user->save();
+                    } // Enable (nothing to do)
+                    $edit['status_google'] = TRUE;       //Set success flag
+                }
+            } catch (Exception $e) { // Zend_Gdata_App_HttpException
+                $edit['status_google'] = FALSE;       //Set success flag
+                drupal_set_message(
+                    "There was a problem creating an associated Google Apps account: " .
+                    $e->getMessage());
+            }
+        }
+    }
+    elseif ($op == 'update') {
+        //drupal_set_message(var_dump($account));
+        // Update Google Apps details on 'update'
+        $gus = ($account->status != $edit['status']) && variable_get('grupal_update_suspend'.$school, 1);
+        $gup = $edit['pass'] && variable_get('grupal_update_password'.$school, 1);
+        if ($gus || $gup) {
+
+            try {
+            // Retrieve the user from Google Apps
+                $user = $gapps->retrieveUser(grupal_cleanname(remove_domain($edit['name'])));
+//                foreach ($user as $var){
+//                    echo 'user load from google apps '.$var;
+//                }
+                if ($user) {
+                // Update suspend status (if necessary)
+                    if ($gus) {
+                        $user->login->suspended = ($edit['status'] == 0);
+                    }
+
+                    // Update password (if necessary)
+                    if ($gup) {
+                        $user->login->password = $edit['pass'];
+                    }
+
+                    // Save the user back to Google Apps
+                    $user->save();
+                    drupal_set_message("Associated Google Apps user updated: " .
+                        $edit['name']);
+                    $edit['status_google'] = TRUE;       //Set success flag
+
+                } else {
+                    drupal_set_message("No associated Google Apps user was found:" .
+                        $edit['name']);
+                }
+            } catch (Exception $e) {
+                $edit['status_google'] = FALSE;       //Set success flag
+                drupal_set_message(
+                    "There was a problem updating an associated Google Apps account: " .
+                    $e->getMessage());
+            }
+        }
+    /*
+    // TODO: Update role/group memberships
+    foreach (array_keys($array['roles']) as $rid) {
+      if (!in_array($rid, array(DRUPAL_ANONYMOUS_RID, DRUPAL_AUTHENTICATED_RID))) {
+        //db_query('INSERT INTO {users_roles} (uid, rid) VALUES (%d, %d)', $account->uid, $rid);
+      }
+    */
+    }
+    elseif ($op == 'validate') {
+    // Prevent username changes to existing accounts (uid!=0) per Google Apps
+        if (!variable_get('grupal_change_username'.$school, 0) && (($account->uid) && $edit['name'] &&
+            ($edit['name'] != $account->name))) {
+            form_set_error('name',
+                t('Changing usernames is not permitted by Google Apps settings.'));
+        }
+    }
+    elseif ($op == 'delete') {
+    // Suspend or delete user on 'delete'
+        if ($gsd != 0) { // Ignore
+            try {
+                if ($gsd == 1) { // Suspend
+                    $user = $gapps->retrieveUser(grupal_cleanname(remove_domain($account->name)));
+                    if ($user !== null) {
+                        $user->login->suspended = true;
+                        $user->save();
+                    } else {
+                        drupal_set_message("No associated Google Apps user was found:" .
+                            $account->name);
+                    }
+                } elseif ($gsd == 2) { // Delete
+                    $gapps->deleteUser(grupal_cleanname(remove_domain($account->name)));
+                }
+            } catch (Exception $e) { // Zend_Gdata_App_HttpException
+                drupal_set_message("There was a problem deleting/suspending an " .
+                    "associated Google Apps account: " . $e->getMessage());
+            }
+        }
+    }
+} // function grupal_user
+
+/**
+ * Filter unsupported characters from username
+ * @param name Drupal username
+ * @return Google Apps compatible clean username
+ */
+function grupal_cleanname($name) {
+    return eregi_replace("[^a-z0-9_[-][.]]", "", strtolower($name));
+} // function grupal_cleanname
+
+function remove_domain($name) {
+    $i = strpos($name, '@');
+    if ($i) {
+        return substr($name, 0, $i);
+    }
+    return $name;
+}

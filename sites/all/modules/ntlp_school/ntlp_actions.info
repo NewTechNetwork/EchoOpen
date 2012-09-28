@@ -1,0 +1,7 @@
+; $Id: ntlp_actions.info,v .02 $
+name = NTLP Actions
+description = Actions and their handlers for Triggers
+package = NTLP
+core = 6.x
+version = "6.x-0.2"
+

@@ -1,0 +1,166 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+// $Id: ntlpgroupactivity.module,v 1.1.4.7 2009/04/21 08:51:21 jaydub Exp $
+
+/**
+ * Activity definition file
+ *
+ * This defines what hooks activity module should use
+ */
+function ntlpgroupactivity_activity_info() {
+  return array(
+    'ops' => array( 'join' => t('Join'),
+                    'leave' => t('Leave'),
+                    'request' => t('Request Membership'),
+                    'create' => t('Create Group'),
+                    'delete' => t('Delete Group')),
+    'types' => array(
+      'groupaction' => t('Group Action'),
+    ),
+    'roles' => array(
+      'author' => array(
+        '#name' => t('Author'),
+        '#description' => t('The person who made the group action.'),
+        '#default' => array(
+            'join' => '[author] joined the [node-link] group',
+            'leave' => '[author] left the [node-link] group',
+            'request' => '[author] requested membership of [node-link] group',
+            'create' => '[author] created the [node-link] group',
+            'delete' => '[author] deleted the [node-link] group',
+        ),
+      ),
+      'owner' => array(
+        '#name' => t('Owner'),
+        '#description' => t('The group owner.'),
+        '#default' => array(
+            'join' => '[author] joined the [node-link] group',
+            'leave' => '[author] left the [node-link] group',
+            'request' => '[author] requested membership of [node-link] group',
+            'create' => '[author] created the [node-link] group',
+            'delete' => '[author] deleted the [node-link] group',
+        ),
+      ),
+
+      // This is what corresponds to ACTIVITY_ALL
+      'all' => array(
+        '#name' => t('All'),
+        '#description' => t('The general public.'),
+        '#default' => array(
+            'join' => '[author-all] joined the [node-link] group',
+            'leave' => '[author-all] left the [node-link] group',
+            'request' => '[author-all] requested membership of [node-link] group',
+            'create' => '[author-all] created the [node-link] group',
+            'delete' => '[author-all] deleted the [node-link] group',
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Token module integration. Defines available default tokens.
+ */
+function ntlpgroupactivity_token_list($type = 'all') {
+  if ($type == 'ntlpgroupactivity') {
+    $tokens['ntlpgroupactivity'] = array(
+      'node-id'		=> t('Id of the node of the group'),
+      'node-title' 	=> t('Title of the group'),
+      'node-link' 	=> t('Link to the group'),
+      'node-type' 	=> t('The node type of the group'),
+    );
+    return $tokens;
+  }
+}
+
+/**
+ * Token module integration. Defines available default token values.
+ */
+function ntlpgroupactivity_token_values($type, $data = NULL, $options = array()) {
+  if ($type == 'ntlpgroupactivity' && !empty($data)) {
+    $data['node-type'] = theme('activity_node_type', $data['node-type']);
+    $data['node-link'] = l($data['node-title'], 'node/'. $data['node-id']);
+    return $data;
+  }
+}
+
+/**
+ * Implementation of hook_og().
+ */
+function ntlpgroupactivity_group($op, $gid, $owners_uid, $uid, $args) {
+
+    switch ($op) {
+    case 'join':
+    case 'leave':
+    case 'request':
+    case 'create':
+    case 'delete':
+
+      // If the group join action requires approval then the is_active
+      // arg will be 0 so in this case we bail out.
+      if ($op == 'join' && array_key_exists('is_active', $args) && $args['is_active'] == 0) {
+        return FALSE;
+      }
+
+      $node = node_load($gid);
+      $type = 'groupaction';
+
+      
+      // Check if both type and operation are
+      // enabled for activity. If not then stop here
+      if (!in_array($type, variable_get('ntlpgroupactivity_token_types', array($type)), TRUE) ||
+        !in_array($op, variable_get('ntlpgroupactivity_op_types', array($op)), TRUE)) {
+        return FALSE;
+      }
+
+      // Privacy setting check
+      $user = user_load(array('uid' => $uid));
+      if (activity_user_privacy_optout($user)) {
+        return FALSE;
+      }
+
+      // User hide activity permission check
+      if (user_access('hide activity', $user)) {
+        return FALSE;
+      }
+
+      $data = array(
+        'operation' 	=> $op,
+        'node-id'       => $node->nid,
+        'node-title' 	=> $node->title,
+        'node-type' 	=> $node->type,
+        'node-context'  => $gid,
+      );
+
+      for ($i=0; $i<count($owners_uid); $i++) {
+          $target_users_roles[$owners_uid[$i]] = 'owner';
+      }
+
+      $target_users_roles[ACTIVITY_ALL] = 'all';
+
+      activity_insert($user->uid, 'ntlpgroupactivity', $type, $op, $data, $target_users_roles);
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function ntlpgroupactivity_menu() {
+  $items = array();
+
+  $items['activity/og'] = array(
+    'title' => 'My groups activity',
+    'page callback' => 'ntlpgroupactivity_page',
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => 'user_access',
+    'access arguments' => array('view own activity'),
+  );
+    
+  return $items;
+}
+
+

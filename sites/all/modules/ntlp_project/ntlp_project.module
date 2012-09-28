@@ -1,0 +1,738 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+require_once "data_access.inc";
+require_once "project_mgmt.inc";
+require_once "project_page.contents.inc";
+require_once "project_section_mgmt.inc";
+require_once "existing_resouce_popup.inc";
+require_once "picture_attachment.inc";
+require_once "project_copy_mgmt.inc";
+require_once "project_delete_mgmt.inc";
+require_once "project_save_library_mgmt.inc";
+require_once "section_resource_mgmt.inc";
+require_once "ntlp_project_mgmt.inc";
+module_load_include('inc', 'ntlp_group', 'filter_functions');
+
+function ntlp_project_menu() {
+
+    $items['ntlp/project/myprojects/%'] = array(
+        'title' => 'View Project',
+        'page callback' => 'ntlp_project_myprojects_frm',
+        'access arguments' => array('view project'),
+        'page arguments' => array(3),
+        'description' => 'View My Projects.',
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/view/%/%'] = array(
+        'title' => 'View Project',
+        'page callback' => 'ntlp_project_form_view',
+        'access arguments' => array('view project'),
+        'page arguments' => array(4),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['edit_project_details'] = array(
+        'title' => t('JavaScript reload programs'),
+        'page callback' => 'edit_project_data',
+        'access arguments' => array('view project'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/main/%'] = array(
+        'title' => 'View Project',
+        'page callback' => 'ntlp_project_main',
+        'access arguments' => array('view project'),
+        'page arguments' => array(3),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/section/main/%'] = array(
+        'title' => 'View Project Section',
+        'page callback' => 'ntlp_project_section_main',
+        'access arguments' => array('view project'),
+        'page arguments' => array(4),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/project/add/section/%'] = array(
+        'title' => 'Add Project Section',
+        'page callback' => 'ntlp_project_section_add',
+        'access arguments' => array('view project'),
+        'page arguments' => array(4),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/add/%'] = array(
+        'title' => 'View Project',
+        'page callback' => 'ntlp_project_add',
+        'access arguments' => array('view project'),
+        'page arguments' => array(3),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/existing/resource/%/%/%'] = array(
+        'title' => 'Project Resource',
+        'page callback' => '_get_ntlp_existing_recourse_form',
+        'access arguments' => array('view project'),
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/existing/resource/data/%/%/%'] = array(
+        'title' => 'Project Resource',
+        'page callback' => 'add_existing_resrouce_data',
+        'access arguments' => array('view project'),
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/attachment/%'] = array(
+        'title' => 'Project Resource',
+        'page callback' => 'ntlp_project_attachment',
+        'access arguments' => array('view project'),
+        'page arguments' => array(3),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/existing/resource/search/%/%'] = array(
+        'page callback' => 'get_searched_resrouces',
+        'page arguments' => array(5, 6),
+        'type' => MENU_CALLBACK,
+        'access callback' => TRUE,
+    );
+
+    $items['ntlp/briefcase/edit'] = array(
+        'title' => 'View Project',
+        'page callback' => 'ntlp_project_breifcase_form',
+        'access arguments' => array('view project'),
+        'page arguments' => array(3),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['project/slider/%/%/%/%/%'] = array(
+        'title' => 'slide_up',
+        'page callback' => 'slider',
+        'access arguments' => array('view project'),
+        'page arguments' => array(2, 3, 4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/projcopy/%/%'] = array(
+        'title' => 'Copy Project',
+        'page callback' => 'ntlp_project_copy_frm',
+        'access arguments' => array('view project'),
+        'page arguments' => array(3, 4),
+        'type' => MENU_CALLBACK,
+    );
+
+    /* Project Save to Library Start */
+    $items['ntlp/project/save/library/popup/%/%'] = array(
+        'title' => 'Save To Project Library',
+        'page callback' => 'ntlp_project_save_to_library_frm',
+        'access arguments' => array('view project'),
+        'page arguments' => array(5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/SaveToLib/%/%/%'] = array(
+        'title' => 'Save To Project Library',
+        'page callback' => 'project_save_to_library_data',
+        'access arguments' => array('view project'),
+        'page arguments' => array(3, 4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    /* Project Save to Library End */
+
+    $items['ntlp/project/save/%/%/%/%'] = array(
+        'title' => 'Copy Project',
+        'page callback' => 'project_copy_data',
+        'access arguments' => array('view project'),
+        'page arguments' => array(3, 4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/delete/%/%'] = array(
+        'title' => 'Delete Project',
+        'page callback' => 'ntlp_project_delete_frm',
+        'access arguments' => array('view project'),
+        'page arguments' => array(3, 4),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/remove/%/%/%'] = array(
+        'title' => 'Delete Project',
+        'page callback' => 'project_delete_data',
+        'access arguments' => array('view project'),
+        'page arguments' => array(3, 4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['change/resource/order/%/%/%/%'] = array(
+        'page callback' => 'section_resource_order',
+        'access arguments' => array('edit project'),
+        'page arguments' => array(3, 4, 5, 6), //7th param not mentioned here, as Drupal doesn't support 7 params
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/projectsection/resource/showhide/%/%/%'] = array(
+        'page callback' => 'show_hide_resource',
+        'access arguments' => array('edit project'),
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/projectsection/activity/showhide/%/%/%'] = array(
+        'page callback' => 'show_hide_activity',
+        'access arguments' => array('edit project'),
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/projectsection/resource/delete/%/%/%'] = array(
+        'title' => t('Delete Project Resource'),
+        'page arguments' => array(4, 5, 6),
+        'page callback' => 'ntlp_courses_projects_delete_resource',
+        'access arguments' => array('edit project'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/projectsection/activity/delete/%/%/%'] = array(
+        'title' => t('Delete Project Activity'),
+        'page arguments' => array(4, 5, 6),
+        'page callback' => 'ntlp_courses_projects_delete_activity',
+        'access arguments' => array('edit project'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/save/project/image/%/%'] = array(
+        'title' => 'Project Image Save',
+        'page callback' => 'save_project_picture',
+        'access arguments' => array('edit project'),
+        'page arguments' => array(4, 5),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/project/ntk/popup/%/%'] = array(
+        'title' => 'All “Need to Knows”',
+        'page callback' => 'ntlp_courses_project_ntk_popup',
+        'access arguments' => array('view project'),
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/project/groups/popup/%'] = array(
+        'title' => 'All Project Groups',
+        'page callback' => 'ntlp_courses_project_groups_popup',
+        'access arguments' => array('view project'),
+        'page arguments' => array(4),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/project/groups/table/%'] = array(
+        'title' => 'All Project Groups',
+        'page callback' => 'ntlp_courses_project_groups_table',
+        'access arguments' => array('view project'),
+        'page arguments' => array(5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/activities/filter/callback/%'] = array(
+        'title' => t('Courses/Projects Activities Filter'),
+        'page arguments' => array(5, 6),
+        'page callback' => 'ntlp_courses_projects_activities_filter_callback',
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project_cat/add/%/%/%/%'] = array(
+        'title' => 'Project Section Add',
+        'page arguments' => array(3, 4, 5, 6),
+        'page callback' => 'ntlp_project_section_add_data',
+        'access arguments' => array('edit project'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/section/delete/%/%/%'] = array(
+        'title' => 'Project Section Delete',
+        'page arguments' => array(4, 5, 6),
+        'page callback' => 'ntlp_project_section_delete',
+        'access arguments' => array('edit project'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/ntk/delete/confirm/%'] = array(
+        'title' => 'Project Need to Know Delete',
+        'page arguments' => array(5),
+        'page callback' => 'ntlp_project_ntk_delete_confirm',
+        'access arguments' => array('view project'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/project/ntk/content/ajax/%'] = array(
+        'title' => 'Need to Know content through AJAX',
+        'page callback' => 'project_need_to_know_contents_ajax',
+        'page arguments' => array(5),
+        'access arguments' => array('edit project'),
+        'type' => MENU_CALLBACK,
+    );
+
+    // ntlp_project briefcase url items 3/1/2011
+
+    $items['ntlp/courses/project/%'] = array(
+        'title' => 'Projects',
+        'page callback' => 'ntlp_courses_project_frm',
+        'page arguments' => array(3),
+        'access arguments' => array('view project'),
+        'type' => MENU_CALLBACK,
+//        'file' => 'ntlp_project_mgmt.inc',
+    );
+
+        $items['ntlp/mycourses/myproject/stats/%'] = array(
+        'title' => 'Projects',
+        'page callback' => 'ntlp_courses_project_stats',
+        'page arguments' => array(4),
+        'access arguments' => array('view project'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses/project/setting/%/%'] = array(
+        'title' => 'Project Setting Page',
+        'page callback' => '_ntlp_project_setting_frm',
+        'page arguments' => array(4, 5),
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+//        'file' => 'ntlp_project_mgmt.inc',
+    );
+
+    $items['ntlp/courses/projects/%/%'] = array(
+        'title' => 'Project Page',
+        'page callback' => 'ntlp_project_view_frm',
+        'page arguments' => array(3, 4),
+        'access arguments' => array('view project'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/needtoknow/add/%'] = array(
+        'title' => 'Post Your “Need to Know”',
+        'page callback' => 'add_new_need_to_know',
+        'access arguments' => array('create ntlp_course content'),
+        'page arguments' => array(4),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/category/rename/%/%'] = array(
+        'title' => 'Rename Category',
+        'page callback' => 'rename_category_title',
+        'access arguments' => array('create ntlp_course content'),
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/project/category/add/%'] = array(
+        'title' => 'Create a New Category in the Project Briefcase',
+        'page callback' => 'add_new_category',
+        'access arguments' => array('create ntlp_course content'),
+        'page arguments' => array(4),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/project/copy/%/%/%/%'] = array(
+        'title' => 'Copy an Existing Activity from this Course',
+        'page callback' => 'copy_existing_activity_dialog',
+        'access arguments' => array('create ntlp_course content'),
+        'page arguments' => array(3, 4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/copy/project/resource/%'] = array(
+        'title' => 'Copy existing resource table',
+        'page callback' => 'copy_existing_resource_table',
+        'access arguments' => array('create ntlp_course content'),
+        'page arguments' => array(4),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/copy/project/activity/%'] = array(
+        'title' => 'Copy existing activity table',
+        'page callback' => 'copy_existing_activity_table',
+        'access arguments' => array('create ntlp_course content'),
+        'page arguments' => array(4),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/add/needtoknowpost/%/%'] = array(
+        'title' => 'Post Your “Need to Know”',
+        'page callback' => 'add_new_need_to_know_data',
+        'access arguments' => array('create ntlp_course content'),
+        'page arguments' => array(3, 4),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/section/showhide/%/%/%'] = array(
+        'page callback' => 'show_hide_section',
+        'access arguments' => array('edit project'),
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/copydata/%/%/%/%'] = array(
+        'page callback' => 'add_existing_resrouce_data',
+        'access arguments' => array('edit project'),
+        'page arguments' => array(3, 4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/courses_project/associate/activity/%/%'] = array(
+        'page callback' => 'render_project_activities_table',
+        'access arguments' => array('edit project'),
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/project/keyword/autocomplete/%'] = array(
+        'title' => t('City autocomplete'),
+        'page callback' => 'project_keywork_autocomplete',
+        'access callback' => TRUE,
+        'page arguments' => array(4),
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    return $items;
+}
+
+function ntlp_project_myprojects_frm($useruid) {
+    include('project_myprojects.inc');
+    return drupal_get_form('ntlp_project_myprojects_form', $useruid);
+}
+
+function ntlp_project_delete_frm($course_id, $project_id) {
+    modalframe_child_js();
+
+    return drupal_get_form('ntlp_project_delete_form', $course_id, $project_id);
+}
+
+function ntlp_project_copy_frm($course_id, $project_id) {
+    modalframe_child_js();
+
+    return drupal_get_form('ntlp_project_copy_form', $course_id, $project_id);
+}
+
+function ntlp_project_breifcase_form() {
+    return drupal_get_form('ahah_example_form');
+}
+
+function ntlp_project_save_to_library_frm($course_id, $project_id) {
+    modalframe_child_js();
+    return drupal_get_form('ntlp_project_save_to_library_form', $course_id, $project_id);
+}
+
+function ntlp_project_perm() {
+    return array('view project', 'edit project', 'delete project');
+}
+
+function ntlp_project_form_view() {
+    include('activity_template.inc');
+
+    return drupal_get_form('ntlp_project_view_form');
+}
+
+function ntlp_project_section_add() {
+    modalframe_child_js();
+    drupal_add_js(drupal_get_path('module', 'ntlp_project') . '/ntlp_project.js');
+
+    drupal_add_js("
+        $(function(){
+            $('#ntlp-project-section-add-form').submit(function(){
+                parent.Drupal.modalFrame.close();
+                parent.window.location.reload();
+            });
+        });
+    ", 'inline');
+
+    return drupal_get_form('ntlp_project_section_add_form');
+}
+
+function ntlp_project_add() {
+    modalframe_child_js();
+
+    return drupal_get_form('ntlp_project_add_form');
+}
+
+function _get_ntlp_existing_recourse_form($course_id, $project_id, $section_tid) {
+    return drupal_get_form('ntlp_add_existing_resource_form', $course_id, $project_id, $section_tid);
+}
+
+function ntlp_project_main() {
+    return drupal_get_form('ntlp_project_main_form');
+}
+
+function ntlp_project_section_main() {
+    return drupal_get_form('ntlp_project_section_form');
+}
+
+function ntlp_project_block($op = 'list', $delta = 0, $edit = array()) {
+
+    switch ($op) {
+        case 'list':
+            $blocks[0] = array(
+                'info' => t('NTLP: Project Briefcase'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[1] = array(
+                'info' => t('NTLP: Project Need to Know'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[2] = array(
+                'info' => t('NTLP: Project Details'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[3] = array(
+                'info' => t('NTLP: Project Group'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[4] = array(
+                'info' => t('NTLP: Course Project Filter'),
+                'pages' => 'nav/*',
+            );
+
+            $blocks[5] = array(
+                'info' => t('NTLP: Project Activities Filter'),
+                'pages' => 'nav/*',
+            );
+
+            $blocks[6] = array(
+                'info' => t('NTLP: Course Project Activities'),
+            );
+
+            return $blocks;
+
+        case 'configure':
+            $form = array();
+            return $form;
+
+        case 'save':
+
+
+        case 'view': default:
+
+            switch ($delta) {
+                case 0:
+                    watchdog('briefcase', 'block op ' . $op);
+                    $block['subject'] = t('NTLP: Project Briefcase');
+                    $block['content'] = project_briefcase_contents();
+                    break;
+
+                case 1:
+                    $block['subject'] = t('NTLP: Project Need To Know');
+                    $block['content'] = project_need_to_know_contents();
+                    break;
+
+                case 2:
+
+                    $block['subject'] = t('NTLP: Project Detail');
+                    $block['content'] = project_details_contents();
+                    break;
+
+                case 3:
+                    $block['subject'] = t('NTLP: Project Group');
+                    $block['content'] = project_group_contents();
+                    break;
+
+                case 4:
+                    $block['subject'] = t('NTLP: Course Project Filter');
+                    $block['content'] = ntlp_course_project_filter();
+
+                case 5:
+                    $block['subject'] = t('NTLP: Project Activities Filter');
+                    $block['content'] = ntlp_project_activities_filter();
+
+                case 6:
+                    $block['subject'] = t('NTLP: Course Project Activities');
+                    $block['content'] = ntlp_course_project_activities();
+            }
+            return $block;
+    }
+}
+
+function slider($slide_way, $course_nid, $slide_order, $tid, $project_id) {
+
+
+    watchdog('slider ', $slide_way . ' ' . $slide_order . ' ' . $tid . ' ' . $project_id);
+
+    if ($slide_way == 'slide_down') {
+
+        $change_order = $slide_order + 1;
+    } else {
+
+        $change_order = $slide_order - 1;
+    }
+
+    $result = db_query('SELECT tid FROM {ntlp_course_section} WHERE course_nid = %d AND section_order = %d', $project_id, $change_order);
+
+    if ($result->num_rows > 0) {
+        $data = db_fetch_object($result);
+        $previous_tid = $data->tid;
+
+        // update current section order
+        db_query("UPDATE {ntlp_course_section} SET section_order =%d WHERE course_nid = %d AND tid = %d", $change_order, $project_id, $tid);
+
+        // update next section order
+        db_query("UPDATE {ntlp_course_section} SET section_order =%d WHERE course_nid = %d AND tid = %d", $slide_order, $project_id, $previous_tid);
+    }
+    echo get_project_sections_data($course_nid, $project_id);
+}
+
+function save_project_picture($fid, $project_id) {
+    global $base_path;
+
+    watchdog('uploadimage', "UPDATE {ntlp_course} SET picture_fid = " . $fid . " WHERE nid = " . $project_id);
+
+    db_query("UPDATE {ntlp_course} SET picture_fid = %d WHERE nid = %d", $fid, $project_id);
+
+    $file_Obj = get_file_detail($fid);
+    watchdog('uploadimage', print_r($file_Obj, true));
+
+    watchdog('uploadimage', 'file updated successfully');
+    echo drupal_get_form('ntlp_activeimage', $base_path . $file_Obj->filepath, 0, 150);
+}
+
+function get_file_detail($fid) {
+    $result = db_query("SELECT * FROM {files} WHERE fid = %d", $fid);
+    if ($result) {
+        return db_fetch_object($result);
+    } else {
+        return false;
+    }
+}
+
+function ntlp_project_theme() {
+
+
+    return array(
+        // The form ID.
+        'ntlp_project_setting_form' => array(
+            // Forms always take the form argument.
+            'arguments' => array('form' => NULL),
+        ),
+    );
+}
+
+function theme_ntlp_project_setting_form($form) {
+
+//    watchdog('theme_ntlp_forum', print_r($form, true));
+    $form['#fileupload_embed'] = true;
+    $form['#fileupload_auto_upload'] = true;
+
+    $variables_to_restore = cache_get("ntlp_project_setting:" . session_id(), 'cache');
+    $variables_to_restore = $variables_to_restore->data;
+    watchdog("theme", 'Variables:'. is_object($variables_to_restore) . '<br>'. print_r($variables_to_restore, true));
+    if (!empty($variables_to_restore) && is_object($variables_to_restore)) {
+//        $project_nid = $variables_to_restore->project_nid;
+        $linksarray = get_links($variables_to_restore->picture_link);
+        $vupload_fileid = 0;
+        foreach ($linksarray as $l) {
+            list($vtype, $vupload_fileid, $vupload_filename) = $l;
+            if (!empty($vtype) && $vtype != 'X') {
+                $attached_files_data .= '<div id="F_' . abs($vupload_fileid) . '"><a style="vertical-align:middle;" onclick="delete_attach(\'F_' . abs($vupload_fileid) . '\');" ><img src="' . $base_path . 'themes/Boldr/Images/DeleteBtn.png" border="0" /></a>&nbsp;&nbsp;'.$vupload_filename.'</div>';
+            } else {
+                $vupload_fileid = 0;
+            }
+        }
+        if ($vupload_fileid != 0) {
+            $attach_fileupload_link = '<div id="upload_control_div" style="width: 180px;" >' . $attached_files_data . '<a onmouseover="place_fileupload_control(\'edit-project-setting-upload-control\', this);" onmouseout="place_fileupload_control_mouseout(this);" style="float:left;text-decoration:none;color: #3399CC;display:none;" id="attach_link" >+ Attach file</a></div>';
+        } else {
+            $attach_fileupload_link = '<div id="upload_control_div" style="width: 180px;" ><a onmouseover="place_fileupload_control(\'edit-project-setting-upload-control\', this);" onmouseout="place_fileupload_control_mouseout(this);" style="float:left;text-decoration:none;color: #3399CC;" id="attach_link">+ Attach file</a></div>';
+        }
+
+        $form['project_setting']['upload_control']['#prefix'] = '<tr>
+            <th style="width:139px; vertical-align:top; padding:10px 10px 10px 0;" >' . t('Project Image') . '</th>
+            <td style="background-color:#cfe5f3;cursor:default !important"  ><span class="pro_box">For best results, upload a square image that is at least 125 x 125 pixels.</span>' . $attach_fileupload_link;
+        $form['project_setting']['upload_control']['#suffix'] = '</td></tr>';
+
+        $form['project_setting']['attached_files_hidden']['#value'] = $variables_to_restore->picture_link;
+    }
+
+    if (isset($form['project_setting']['#post']['project_setting'])) {
+        $form['project_setting']['title']['#value'] = $form['project_setting']['title']['#post']['project_setting']['title'];
+        $form['project_setting']['visibility']['#value'] = $form['project_setting']['visibility']['#post']['project_setting']['visibility'];
+        $form['project_setting']['proj_duration_from']['#value'] = $form['project_setting']['proj_duration_from']['#post']['project_setting']['proj_duration_from'];
+        $form['project_setting']['proj_duration_to']['#value'] = $form['project_setting']['proj_duration_to']['#post']['project_setting']['proj_duration_to'];
+        $form['project_setting']['driving_question']['#value'] = $form['project_setting']['driving_question']['#post']['project_setting']['driving_question'];
+        $form['project_setting']['topic_unit']['#value'] = $form['project_setting']['topic_unit']['#post']['project_setting']['topic_unit'];
+        $form['project_setting']['curriculum_standards']['#value'] = $form['project_setting']['curriculum_standards']['#post']['project_setting']['curriculum_standards'];
+        $form['project_setting']['summary_for_library_project']['#value'] = $form['project_setting']['summary_for_library_project']['#post']['project_setting']['summary_for_library_project'];
+        $form['project_setting']['author']['#value'] = $form['#post']['project_setting']['author'];
+        for ($index = 0; $index < 4; $index++) {
+            $form['project_setting']['project_keyword_' . $index]['#value'] = $form['project_setting']['project_keyword_' . $index]['#post']['project_keywords'][$index];
+        }
+    }
+    $form_element_id = 'edit-project-setting-upload-control';
+    auto_upload_align_attach_control($form_element_id);
+
+
+    jquery_ui_add(array('ui.dialog', 'ui.draggable', 'ui.datepicker'));
+
+################### Date Picker Files ########################################################################################
+    drupal_add_js(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/date_picker.js');
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/jquery.ui.datepicker.css', 'module', 'all', FALSE);
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/demos.css', 'module', 'all', FALSE);
+    drupal_add_css(drupal_get_path('module', 'ntlp_courses_activity') . '/datepicker/jquery.ui.all.css', 'module', 'all', FALSE);
+# there is a white line coming on the lower left side of the calender due to background:
+#ffffff defined on line 14 of "datepicker/jquery.ui.theme.css" file
+################### END Of Date Picker Files #########################
+    drupal_add_js(drupal_get_path('module', 'ntlp_project') . '/ntlp_project.js');
+    $output = drupal_render($form);
+    return $output;
+}
+
+function project_keywork_autocomplete($args, $string) {
+    $matches = array();
+    $sql = t("SELECT tid, name FROM {term_data} td WHERE td.vid = ".NTLP_KEYWORDS_FOR_PROJECT_LIBRARY." AND td.name LIKE '$string%'");
+    watchdog('proj_kword', $sql);
+    $res = db_query($sql);
+
+    if ($res->num_rows > 0) {
+        while ($row = db_fetch_array($res)) {
+            $matches[$row['name']] = $row['name'];
+        }
+        print drupal_json($matches);
+    } else {
+        print drupal_json('');
+    }
+    watchdog('project_key', 'search string ' . $string . '  ' . print_r($matches, true));
+}
+
+function get_term_obj_by_name_and_vocabulary($taxonomy_name, $vocab_vid) {
+
+    $sql = db_query("SELECT tid from {term_data} where vid = %d  AND name = '%s' ", $vocab_vid, $taxonomy_name);
+
+    $result = db_fetch_object($sql);
+    if ($sql->num_rows > 0) {
+        return $result->tid;
+    } else {
+        return false;
+    }
+}
+
+?>

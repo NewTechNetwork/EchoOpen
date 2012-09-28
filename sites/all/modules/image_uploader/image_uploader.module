@@ -1,0 +1,95 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+module_load_include('inc', 'ntlp_school', 'fileupload');
+module_load_include('inc', 'ntlp_school', 'data_access');
+module_load_include('inc', 'ntlp_school', 'ui_tools');
+
+function image_uploader_menu() {
+
+    $items['ntlp/image/test'] = array(
+            'title' => t('Image Uploader'),      //This title helps in displaying the dialog header caption
+            'page callback' => 'uploader_form',
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    $items['ntlp/image/uploader'] = array(
+            'title callback' => 'image_uploader_get_page_title',
+            'title arguments' => array(3),          //This parameter is sent to the above callback function
+//            'title' => t('Image Uploader'),      //This title helps in displaying the dialog header caption
+            'page callback' => 'get_image_popup',
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+//            'page arguments' => array(4,5),
+    );
+
+    return $items;
+}
+
+function uploader_form() {
+    return drupal_get_form('ntlp_activeimage', '/drupal/sites/default/files/new_uploads/2010/_1270848965_12.jpg', 197, 827);
+}
+
+function ntlp_activeimage($form_state, $path, $height, $width) {
+    global $base_path, $user;
+    $form = array();
+
+    // Add the parent-side behaviors for the examples.
+    ahah_helper_register($form, $form_state);
+    modalframe_parent_js();
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/modalframe_setup.js');
+    drupal_add_js(drupal_get_path('module', 'image_uploader') . '/image_uploader.js');
+
+//    $image_path = get_image_path($user->uid);
+    $size = $width.','.$height;
+    $form['image_path'] = array(
+            '#type' => 'item',
+            '#value' => '<div id="showlink-wrapper" class="imgPlaceholder">
+                           <div>
+                           <img src="'.$path.'"  width="'.$width.'"
+                               onmouseover="ImageUploader_showLink();" onmouseout="ImageUploader_hideLink();" alt="image" />
+                           </div>
+                           <a onmouseout="ImageUploader_hideLink();" onmouseover="ImageUploader_showLink();"
+                                class="imgUploadLink modalframe-setup-child modalframe-setup-size['. $size .']"
+                                style="display:none" href="'.url('ntlp/image/uploader/edit').'">
+                           <span><div>change image</div></span>
+                           </a>
+                         </div>',
+//            '#id' => 'changeimage',
+    );
+
+    return $form;
+}
+
+//
+function get_image_popup() {
+    return drupal_get_form('fileupload_dialog');
+}
+
+function fileupload_dialog($form_state) {
+    global $user, $base_path;
+    $form = array();
+
+//    $id = check_plain(arg(5));
+//    $action = check_plain(arg(4));
+
+    modalframe_child_js();
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/modalframe_setup.js');
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/fileupload_ahah_helper.js', 'footer');
+
+    fileupload_get_control($form, $form_state);
+    return $form;
+}
+
+function image_uploader_get_page_title($action) {
+    if (check_plain(arg(3)) == 'link') {
+        return 'Upload an image';
+    } else {
+        return 'Attach a file';
+    }
+}
+?>

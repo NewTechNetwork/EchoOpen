@@ -1,0 +1,208 @@
+<?php
+
+// $Id: moodle_sso.module,v 1.3 2009/09/06 04:57:40 agerson Exp $
+
+/**
+* @file
+* Module for dynamic display of Moodle course memberships 
+* based on drupal username.
+* Drupal username and Moodle username must be identical.
+*/
+
+/**
+* Implementation of hook_help()
+*/
+function moodle_sso_help($path, $arg) {
+  if ($path == 'admin/help#moodle_sso') {
+    $txt =  'This module peform Single Sign On betweeen Moodle and Drupal'
+    .' logged in user. Drupal username and Moodle username must be identical.';
+    $replace = array();
+    return '<p>'. t($txt, $replace) .'</p>';
+  }
+}
+
+/**
+* Implementation of hook_uninstall()
+*/
+function moodle_sso_uninstall() {
+  variable_del('moodle_sso_mysqlserver');
+  variable_del('moodle_sso_mysqlusername');
+  variable_del('moodle_sso_mysqlpassword');
+  variable_del('moodle_sso_moodleurl');
+}
+
+/**
+* Implementation of hook_perm
+*/
+function moodle_sso_perm() {
+  return array('view moodle Single Sign On');
+}
+
+///**
+//* Implementation of hook_block
+//*/
+//function moodle_sso_block($op='list' , $delta=0, $edit=array()) {
+//  switch ($op) {
+//    case 'list':
+//      $blocks[0]['info'] = t('Moodle Course Memberships');
+//      return $blocks;
+//    case 'view':
+//      if (user_access('view moodle courselist')) {
+//        $server = variable_get('moodle_sso_mysqlserver', 'localhost');
+//        $username = variable_get('moodle_sso_mysqlusername', '');
+//        $password = variable_get('moodle_sso_mysqlpassword', '');
+//        $url = variable_get('moodle_sso_moodleurl', '');
+//
+//        if (!empty($server) && !empty($username) && !empty($password) && !empty($url)) {
+//          $rows = _moodle_sso_get_courselist_external();
+//          if (count($rows)) {
+////            $links = _moodle_sso_make_links($rows);
+////            $content = theme('moodle_sso', $links);
+//              $content = _moodle_mycourselist($rows);
+//          }
+//
+//          $blocks['subject'] = t('Moodle Courses');
+//          $blocks['content'] = $content;
+//
+//          return $blocks;
+//        }
+//        else {
+//          $link_to_settings = l('Moodle Courselist','admin/settings/moodle_sso');
+//          $error = "Please configure " . $link_to_settings . " before enabling it as a block.";
+//          drupal_set_message($error,'error');
+//        }
+//      }
+//    }
+//}
+
+/**
+* Implementation of hook_theme() 
+*/
+function moodle_sso_theme() {
+  return array(
+    'moodle_sso' => array(
+      'arguments' => array('linklist' => null),
+    ),
+  );
+}
+
+/**
+* Theme function for theming quotes.
+*
+* @param $linklist 
+*  A list of courses
+* @return 
+*  string An HTML themed list of links.
+*/
+//function theme_moodle_sso($linklist) {
+//  $output = '<div id="moodle_sso-links">'. $linklist .'</div>';
+//  return $output;
+//}
+
+/**
+* Implementation of hook_menu() 
+*/
+function moodle_sso_menu() {
+  $items = array();
+  $items['admin/settings/moodle_sso'] = array(
+    'title' => t('Moodle SSO'),
+    'description' => t('Perform Single Sign On between Drupal and Moodle'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('moodle_sso_admin_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+/**
+* Implementation of hook_admin_settings() 
+*/
+function moodle_sso_admin_settings() {
+  $form = array();
+  $form['moodle_sso_mysqlserver'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Moodle mysql server'),
+    '#default_value' => variable_get('moodle_sso_mysqlserver', 'localhost'),
+    '#description' => t('The mysql server where moodle is hosted. e.g. mysql.yoursite.org'),
+    '#required' => true,
+  );
+  $form['moodle_sso_mysqlusername'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Moodle mysql username'),
+    '#default_value' => variable_get('moodle_sso_mysqlusername', ''),
+    '#description' => t('The username for your mysql server'),
+    '#size' => 20,
+    '#required' => true,
+  );
+  $form['moodle_sso_mysqlpassword'] = array(
+    '#type' => 'password',
+    '#title' => t('Moodle mysql password'),
+    '#default_value' => variable_get('moodle_sso_mysqlpassword', ''),
+    '#description' => t('The password for your mysql server'),
+    '#size' => 20,
+    '#required' => true,
+  );
+  $form['moodle_sso_databasename'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Moodle mysql database name'),
+    '#default_value' => variable_get('moodle_sso_databasename', 'moodle'),
+    '#description' => t('The database name for your moodle database.'),
+    '#size' => 20,
+    '#required' => true,
+  );
+  $form['moodle_sso_databaseprefix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Moodle mysql database prefix'),
+    '#default_value' => variable_get('moodle_sso_databaseprefix', 'mdl_'),
+    '#description' => t('The database prefix for your moodle database'),
+    '#size' => 20,
+    '#required' => true,
+  );
+  $form['moodle_sso_moodleurl'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Moodle url'),
+    '#default_value' => variable_get('moodle_sso_moodleurl', ''),
+    '#description' => t('The base url for your moodle server. e.g. http://www.yoursite.org/moodle/ (Include trailing slash)'),
+    '#required' => true,
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+* Query a moodle database for any courses that the currently logged in drupal user belongs to.
+* Drupal username and Moodle username must be identical.
+*
+* @return
+*   An array of data about each course
+*/
+//function _moodle_sso_get_courselist_external() {
+//  global $user;
+//  $server = variable_get('moodle_sso_mysqlserver', 'localhost');
+//  $username = variable_get('moodle_sso_mysqlusername', '');
+//  $password = variable_get('moodle_sso_mysqlpassword', '');
+//  $database_name = variable_get('moodle_sso_databasename', '');
+//  $database_prefix = variable_get('moodle_sso_databaseprefix', '');
+//
+//  mysql_connect($server, $username, $password) or drupal_set_message(mysql_error(),'warning');
+//  mysql_select_db($database_name) or drupal_set_message(mysql_error(),'warning');
+//  $query = "SELECT c.fullname, c.id as cid, usr.id as uid, usr.firstname, usr.lastname,  c.timemodified
+//            FROM ".$database_prefix."course c
+//            INNER JOIN ".$database_prefix."context cx ON c.id = cx.instanceid
+//            AND cx.contextlevel = '50'
+//            INNER JOIN ".$database_prefix."role_assignments ra ON cx.id = ra.contextid
+//            INNER JOIN ".$database_prefix."role r ON ra.roleid = r.id
+//            INNER JOIN ".$database_prefix."user usr ON ra.userid = usr.id
+//            WHERE usr.username = '". mysql_real_escape_string($user->name) ."'";
+//
+//  $result = mysql_query($query) or drupal_set_message(mysql_error(),'warning');
+//
+//  while($row = mysql_fetch_array($result)){
+//    $rows[] = $row;
+//  }
+//  return $rows;
+//}
+
+

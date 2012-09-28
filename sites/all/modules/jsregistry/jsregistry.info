@@ -1,0 +1,11 @@
+name = JS Registry
+description = Allows core and module javascript files to be loaded from alternate locations.
+core = 6.x
+dependencies[] = jsalter
+
+; Information added by drupal.org packaging script on 2011-02-25
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "jsregistry"
+datestamp = "1298619512"
+

@@ -1,0 +1,94 @@
+/*// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+
+/* user information CSS Document */
+.UI {
+width:600px;
+}
+.UI .UI_topcenter {
+	background-image:url(../Images/userInfo/UI_topcenter.jpg);
+	background-repeat:repeat-x;
+	background-position:top left;
+}
+.UI .UI_bottomcenter {
+	background-image:url(../Images/userInfo/UI_bottomcenter.jpg);
+	background-repeat:repeat-x;
+	background-position:bottom left;
+}
+.UI .UI_middleleft {
+	background-image:url(../Images/userInfo/UI_middleleft.jpg);
+	background-repeat:repeat-y;
+	background-position:left;
+}
+.UI .UI_middleright {
+	background-image:url(../Images/userInfo/UI_middleright.jpg);
+	background-repeat:repeat-y;
+	background-position:right;
+}
+.UI .UI_topleft {
+	background-image:url(../Images/userInfo/UI_topleft.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+}
+.UI .UI_topright {
+	background-image:url(../Images/userInfo/UI_topright.jpg);
+	background-repeat:no-repeat;
+	background-position:top right;
+}
+.UI .UI_bottomleft {
+	background-image:url(../Images/userInfo/UI_bottomleft.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom left;
+}
+.UI .UI_bottomright {
+	background-image:url(../Images/userInfo/UI_bottomright.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom right;
+}
+
+.UI .UI_content {
+	padding:16px;
+	position:relative;
+}
+.UI .UI_printbtn {
+	position:absolute;
+	bottom:30px;
+	right:30px;
+}
+.UI .UI_heading h1 {
+	font-family:tahoma,verdana,arial;
+	font-weight:bold;
+	color:#1f497d;
+	font-size:25px;
+	text-align:center;
+	padding:0px;
+	margin:10px 0px 2px 0px;
+}
+.UI .UI_url {
+	text-align:center;
+}
+.UI .UI_url a {
+	font-family:tahoma,verdana,arial;
+	color:#e36c09;
+	font-size:18px;
+	text-align:center;
+	text-decoration:none;
+}
+.UI .UI_url a:hover {
+	text-decoration:none;
+}
+.UI .UI_info {
+	color:#1f497d;
+	font-size:16px;
+	font-family:tahoma,verdana,arial;
+	width:600px;
+	margin:0 auto;
+	padding:40px 0 60px 20px;
+}
+.UI .UI_info b {
+	color:#1f497d;
+	font-size:16px;
+	font-family:tahoma,verdana,arial;
+}

@@ -1,0 +1,393 @@
+/*// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+
+/*------------- Courses Grades ---------------*/
+#Courses-Grades {
+    width:842px;
+}
+
+#Courses-Grades .mid-right-blueCorner {
+    background-image:url(../Images/CoursesGradebluemidRightImage.jpg);
+    background-position:top right;
+    background-repeat:repeat-y;
+}
+
+#Courses-Grades .mid-left-blueCorner {
+    background-image:url(../Images/CoursesGradebluemidLeftImage.jpg);
+    background-position:top left;
+    background-repeat:repeat-y;
+}
+
+#Courses-Grades .top-right-blueCorner {
+    background-image:url(../Images/CoursesGradebluetopRightImage.jpg);
+    background-position:top right;
+    background-repeat:no-repeat;
+    background-color:#d5e9f5;
+
+}
+
+#Courses-Grades .top-left-blueCorner {
+    background-image:url(../Images/CoursesGradebluetopLeftImage.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+}
+#Courses-Grades .bottom-right-blueCorner {
+    background-image:url(../Images/CoursesGradebluebotRightImage.jpg);
+    background-position:bottom right;
+    background-repeat:no-repeat;
+
+}
+#Courses-Grades .bottom-left-blueCorner {
+    background-image:url(../Images/CoursesGradebluebotLeftImage.jpg);
+    background-position:bottom left;
+    background-repeat:no-repeat;
+
+}
+#Courses-Grades .bottom-center-blueCorner {
+    background-image:url(../Images/CoursesGradebluebotCenterImage.jpg);
+    background-position:bottom left;
+    background-repeat:repeat-x;
+
+}
+#Courses-Grades a.greenlink {
+    color:#009900;
+    text-decoration:none;
+}
+#Courses-Grades a.greenlink:hover {
+    color:#009900;
+    text-decoration:underline;
+}
+#Courses-Grades .StudentGradeMainPanel {
+    padding:17px 7px 7px 7px;
+}
+#Courses-Grades .RunReportBtn {
+    background-image:url(../Images/CoursesGradeRunReportBtn.jpg);
+    display:block;
+    height:23px;
+    width:89px;
+    text-decoration:none;
+}
+#Courses-Grades .student {
+    padding:5px 0 0 0;
+}
+#Courses-Grades .StudentHeading {
+    background-color:#b2d5eb;
+    height:50px;
+    padding:9px;
+    border:1px solid #b2d5eb;
+}
+#Courses-Grades .StudentHeading h2 {
+    padding:15px 0 0 10px;
+    margin:0px;
+    color:#339900;
+    font-size:16px;
+}
+#Courses-Grades .StudentDetail table,#Courses-Grades .StudentDetail td {
+    border:1px dotted #9ecce9;
+    border-bottom:none;
+    border-collapse:collapse;
+
+}
+
+#Courses-Grades .GradeBlock {
+    padding:5px;
+}
+#Courses-Grades .GradeBlock  div.whitebg {
+    background-color:#FFFFFF;
+    height:177px;
+    padding:10px 0 0 0;
+}
+#Courses-Grades .GradeBlock .current-grade {
+    font-size:15px;
+    color:#3591cb;
+    font-weight:bold;
+}
+#Courses-Grades .GradeBlock .grade {
+    font-size:47px;
+    color:#ef7c23;
+    font-weight:bold;
+}
+#Courses-Grades .GradeBlock .percent {
+    font-size:25px;
+    color:#ef7c23;
+    font-weight:bold;
+    line-height:18px;
+    margin-top: 10px;
+}
+#Courses-Grades .StudentDetail .innertable {
+    border:none;
+}
+#Courses-Grades .StudentDetail .innertable td {
+    border-left:none;
+    border-right:none;
+    border-top:none;
+    border-bottom:1px dotted #9ecce9;
+    padding:5px 8px 5px 8px;
+
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv {
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentHeading {
+    float:left;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentHeading h4 {
+    padding:3px 0 0 0;
+    margin:0px;
+    font-size:12px;
+    color:#3570aa;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentlistbg {
+    background-image:url(../Images/percentImgBgcenter.jpg);
+    background-position:top left;
+    background-repeat:repeat-x;
+    float:right;
+    width:630px;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentlistRightbg {
+    background-image:url(../Images/percentImgBgright.jpg);
+    background-position:top right;
+    background-repeat:no-repeat;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentlistLeftbg {
+    background-image:url(../Images/percentImgBgleft.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentlist {
+    background-image:url(../Images/percentImg.jpg);
+    background-position:top left;
+    background-repeat:repeat-x;
+    height:22px;
+}
+#Courses-Grades .StudentDetail .innertable .innertableMainDiv .percentlisttext {
+    margin-top:-19px;
+    position:absolute;
+    padding:0 0 0 5px;
+    font-weight:bold;
+    color:#ad2b2b;
+}
+#Courses-Grades .ActivitiesHeading {
+
+}
+#Courses-Grades .ActivitiesHeading h3 {
+    font-size:18px;
+    color:#3570aa;
+    padding:0px;
+    margin:0px;
+}
+#Courses-Grades .ActivitiesPanel {
+    padding:17px 7px 0 7px;
+}
+#Courses-Grades .ActivitiesTable thead {
+}
+#Courses-Grades .ActivitiesTable thead th {
+    background-color:#d6e9f5;
+    border:1px solid #fff;
+    border-left:1px solid #d6e9f5;
+    border-right:1px solid #d6e9f5;
+    border-bottom:none;
+    text-align:left;
+    height:44px;
+    color:#009900;
+    font-weight:bold;
+    padding:0 0 0 5px;
+}
+#Courses-Grades .ActivitiesTable tbody {
+}
+#Courses-Grades .ActivitiesTable tbody td {
+    border:1px solid #d6e9f5;
+    border-top:none;
+    text-align:left;
+    padding:0 0 0 5px;
+    height:44px;
+    font-size:14px;
+    color:#666666;
+    border-collapse:collapse;
+}
+#Courses-Grades .ActivitiesTable tbody td a {
+    color:#009900;
+    text-decoration:none;
+}
+
+#Courses-Grades .ActivitiesTable tbody td a:hover {
+    color:#009900;
+    text-decoration:underline;
+}
+#Courses-Grades .ActivitiesPanel .pager {
+    float:right;
+}
+
+#Courses-Grades .ActivitiesPanel .pager span {
+    font-weight:bold;
+    color:#4279af;
+}
+#Courses-Grades .ActivitiesPanel .pager a {
+    color:#009900;
+    text-decoration:none;
+
+}
+#Courses-Grades .ActivitiesPanel .pager a:hover {
+    color:#009900;
+    text-decoration:underline;
+
+}
+.CourseSettingLeftNav {
+    width:218px
+}
+.CourseSettingLeftNav ul {
+    list-style:none;
+    padding:0px;
+    margin:0px;
+}
+.CourseSettingLeftNav li {
+    padding:0 0 1px 0;
+}
+.CourseSettingLeftNav a.active {
+    background-repeat:no-repeat;
+    text-decoration:none;
+    color:#FFF;
+    font-size:14px;
+    font-weight:bold;
+}
+.CourseSettingLeftNav a.active div.activeArrow {
+    background-image:url(../Images/CoursesSettingArrow.jpg);
+    background-position:95% 50%;
+    background-color:#ef7d23 !important;
+    background-repeat:no-repeat;
+
+}
+.CourseSettingLeftNav a.active div.activeArrow div.topright {
+    background-image:url(../Images/CoursesSettingActiveTopRight.jpg);
+    background-position:top right;
+    background-repeat:no-repeat;
+
+}
+.CourseSettingLeftNav a.active div.activeArrow div.topright div.topleft {
+    background-image:url(../Images/CoursesSettingActiveTopLeft.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+}
+.CourseSettingLeftNav a.active div.activeArrow div.topright div.topleft div.bottomright {
+    background-image:url(../Images/CoursesSettingActiveBottomright.jpg);
+    background-position:bottom right;
+    background-repeat:no-repeat;
+
+}
+.CourseSettingLeftNav a.active div.activeArrow div.topright div.topleft div.bottomright div.bottomleft {
+    background-image:url(../Images/CoursesSettingActiveBottomleft.jpg);
+    background-position:bottom left;
+    background-repeat:no-repeat;
+    height:23px;
+    width:208px;
+    padding:8px 0 0 10px;
+    color:#fff !important;
+}
+.CourseSettingLeftNav a {
+    background-repeat:no-repeat;
+    text-decoration:none;
+    font-size:14px;
+    font-weight:bold;
+}
+.CourseSettingLeftNav a div.activeArrow {
+    background-color:#3591cb !important;
+}
+.CourseSettingLeftNav a div.activeArrow div.topright {
+    background-image:url(../Images/CoursesSettingLeftNavTopRight.jpg);
+    background-position:top right;
+    background-repeat:no-repeat;
+
+}
+.CourseSettingLeftNav a div.activeArrow div.topright div.topleft {
+    background-image:url(../Images/CoursesSettingLeftNavTopLeft.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+}
+.CourseSettingLeftNav a div.activeArrow div.topright div.topleft div.bottomright {
+    background-image:url(../Images/CoursesSettingLeftNavBottomright.jpg);
+    background-position:bottom right;
+    background-repeat:no-repeat;
+
+}
+.CourseSettingLeftNav a div.activeArrow div.topright div.topleft div.bottomright div.bottomleft {
+    background-image:url(../Images/CoursesSettingLeftNavBottomleft.jpg);
+    background-position:bottom left;
+    background-repeat:no-repeat;
+    height:23px;
+    width:208px;
+    padding:8px 0 0 10px;
+    color:#9ecce9 !important;
+}
+.left_tab_menu a {
+}
+.left_tab_menu a:hover {
+    text-decoration: none !important;
+}
+.left_tab_menu a .left_tab {
+    background-image:url(../Images/left_tab_disactive.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+    background-color: #3591cb;
+}
+.left_tab_menu a .right_tab {
+    background-image:url(../Images/right_tab_disactive.jpg);
+    background-position:top right;
+    background-repeat:no-repeat;
+    color:#9ecce9;
+
+}
+.left_tab_menu a .arrow_tab {
+}
+.left_tab_menu a .arrow_tab .tab_text {
+    padding:9px 0 8px 5px;
+}
+.left_tab_menu a.active {
+}
+.left_tab_menu a.active .left_tab {
+    background-image:url(../Images/left_tab_active.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+    background-color: #ef7d23;
+}
+.left_tab_menu a.active .right_tab {
+    background-image:url(../Images/right_tab_active.jpg);
+    background-position:top right;
+    background-repeat:no-repeat;
+    color:#fff;
+
+}
+.left_tab_menu a.active .arrow_tab {
+    background-image:url(../Images/CoursesSettingArrow.jpg);
+    background-position:95% 50%;
+    background-repeat: no-repeat;
+}
+.left_tab_menu a.active .arrow_tab .tab_text {
+    padding:9px 0 8px 5px;
+}
+.msg_box_left {
+    background-image:url(../Images/left_tab_active.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+    background-color: #ef7d23;
+    width: 6px;
+    height:31px;
+}
+.msg_box_center {
+    background-color: #ef7d23;
+    height:31px;
+}
+.msg_box_right {
+    background-image:url(../Images/right_tab_active.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+    background-color: #ef7d23;
+    width: 6px;
+    height:31px;
+}
+.msg_box_center p {
+    padding:0px;
+    margin:0px;
+    color:#fff;
+    font-size:15px;
+}

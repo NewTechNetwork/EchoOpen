@@ -1,0 +1,140 @@
+/*// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+
+body {
+	padding:0px;
+	margin:0px;
+}
+.certificate {
+	padding:5px;
+	font-family:Myriad Pro, Helvetica, Tahoma, sans-serif ;
+	width:762px;
+}
+
+.certificate_bg_topleft {
+	background-image:url(../Images/certificate/certificate_topleft.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+
+.certificate_bg_topright {
+	background-image:url(../Images/certificate/certificate_topright.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+
+.certificate_bg_bottomleft {
+	background-image:url(../Images/certificate/certificate_bottomleft.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+
+.certificate_bg_bottomright {
+	background-image:url(../Images/certificate/certificate_bottomright.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+}
+
+.certificate_bg_middleleft {
+	background-image:url(../Images/certificate/certificate_middleleft.jpg);
+	background-position:top left;
+	background-repeat:repeat-y;
+}
+
+.certificate_bg_middleright {
+	background-image:url(../Images/certificate/certificate_middleright.jpg);
+	background-position:top right;
+	background-repeat:repeat-y;
+}
+.certificate_bg_topcenter {
+	background-image:url(../Images/certificate/certificate_topcenter.jpg);
+	background-position:top center;
+	background-repeat:repeat-x;
+}
+
+.certificate_bg_bottomcenter {
+	background-image:url(../Images/certificate/certificate_bottomcenter.jpg);
+	background-position:bottom center;
+	background-repeat:repeat-x;
+}
+.certificate_data {
+	padding:18px;
+}
+.certificate {
+	text-align:center;
+	font-size:24px;
+	color:#699dca;
+	font-weight:normal;
+	padding:0px;
+	margin:0px;
+}
+.certificate .semester {
+	text-align:center;
+	font-size:30px;
+	color:#000;
+	font-weight:normal;
+	padding:0px;
+	margin:0px;
+}
+.certificate .name {
+	text-align:center;
+	font-size:54px;
+	color:#13158b;
+	font-weight:bold;
+}
+.certificate_description_topleft {
+	background-image:url(../Images/certificate/certificate_description_topleft.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+.certificate_description_topright {
+	background-image:url(../Images/certificate/certificate_description_topright.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+.certificate_description_bottomleft {
+	background-image:url(../Images/certificate/certificate_description_bottomleft.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+.certificate_description_bottomright {
+	background-image:url(../Images/certificate/certificate_description_bottomright.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+}
+.certificate_description_middleleft {
+	background-image:url(../Images/certificate/certificate_description_middleleft.jpg);
+	background-position:top left;
+	background-repeat:repeat-y;
+	background-color:#dae5ee;
+}
+.certificate_description_middleright {
+	background-image:url(../Images/certificate/certificate_description_middleright.jpg);
+	background-position:top right;
+	background-repeat:repeat-y;
+}
+.certificate_description_bottomcenter {
+	background-image:url(../Images/certificate/certificate_description_bottomcenter.jpg);
+	background-position:bottom center;
+	background-repeat:repeat-x;
+}
+.certificate_description_topcenter {
+	background-image:url(../Images/certificate/certificate_description_topcenter.jpg);
+	background-position:top center;
+	background-repeat:repeat-x;
+}
+.certificate_description_topcenter .description {
+	font-size:18px;
+	text-align:center;
+	padding:10px;
+}
+.certificate .school_name {
+	 text-align:left;float:right;font-size:18px;
+ }
+ .certificate .signature_name {
+	 border-top:1px solid #000;width:25%;
+	 font-size:14px;
+	 font-weight:bold;
+ }

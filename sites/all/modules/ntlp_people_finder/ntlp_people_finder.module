@@ -1,0 +1,300 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+module_load_include('inc', 'ntlp_school', 'data_access');
+module_load_include('inc', 'ntlp_school', 'constants');
+module_load_include('inc', 'ntlp_grade', 'grade_content');
+
+require_once "form_def.inc";
+
+function ntlp_people_finder_menu() {
+
+    //Finalized
+    $items['ntlp/people_finder/enrollments/%/%/%/%'] = array(
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('multi_user', 2, 3, 4, 5, 6, TRUE), //course_nid is passed
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    $items['ntlp/people_finder/guests/%'] = array(
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array("guest_enrollment", "guest_enrollment", 3),           //course_nid is passed
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+    $items['ntlp/people_finder/primaryteacher_multi/%/%/%/%'] = array(
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('multi_user', 2, 3, 4, 5, 6, TRUE), //course_nid is passed
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+    
+    $items['ntlp/people_finder/teacher_multi/%/%/%/%'] = array(
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('multi_user', 2, 3, 4, 5, 6, TRUE), //course_nid is passed
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+    
+    $items['ntlp/people_finder/student_multi/%/%/%/%'] = array(
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('multi_user', 2, 3, 4, 5, 6, TRUE), //course_nid is passed
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    $items['ntlp/people_finder/get_rubric_users/%/%/%/%'] = array(
+            'page callback' => 'drupal_get_form',
+            'title' => 'People Finder',
+            'page arguments' => array('multi_user', 2, 3, 4, 5, 6, TRUE), //course_nid is passed
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    $items['ntlp/people_finder/multi_users/%/%/%/%'] = array(
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('multi_user', 2, 3, 4, 5, 6, TRUE), //course_nid is passed
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    $items['ntlp/people_finder/single_student/%/%/%/%'] = array(
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('multi_user', 2, 3, 4, 5, 6, TRUE), //course_nid is passed
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    //For Testing
+    $items['ntlp_people_finder/search'] = array(
+            'page callback' => 'info',
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    $items['single_record/search'] = array(
+            'page callback' => 'get_single_student_record',
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+
+    $items['ntlp_people_finder/people_record/%'] = array(
+            'page callback' => 'selected_users',
+            'page arguments' => array(1),
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    $items['single_student/search'] = array(
+            'page callback' => 'single_student_finder_form',
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    $items['studetn_finder/test'] = array(
+            'page callback' => 'single_student_form',
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    $items['ntlp/people_finder/filter/multi'] = array(
+            'page callback' => 'ntlp_people_finder_filter_multi',
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    $items['ntlp/people_finder/filter/single'] = array(
+            'page callback' => 'ntlp_people_finder_filter_single',
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+
+    return $items;
+}
+
+function ntlp_people_finder_block( $op = 'list', $delta = 0, $edit = array()  ) {
+    switch( $op ) {
+        case 'list':
+            $blocks[0] = array(
+                    'info' => t('NTLP: People Finder Filter'),
+            );
+            return $blocks;
+        case 'view':
+            switch( $delta ) {
+                case 0:
+                    $block['subject'] = t('NTLP: People Finder Filter');
+                    $block['content'] = ntlp_people_finder_filter();
+            }
+            return $block;
+    }
+}
+
+function info() {
+
+    $find = array();
+
+    $string =$_GET['name'];
+
+//    $res = db_query("SELECT  uid,name,mail FROM {users} WHERE name LIKE '%s%' ORDER BY LOWER(name)",$string);
+    $res = search_for_enrollment($string, 0);
+
+    echo '<div style="height:150px;overflow:scroll"><table cellpadding="0" cellspacing="0" width="100%"><tr><th></th><th>Name</th><th>Email</strong></th></tr>';
+
+    if($res != null) {
+
+        // Using Counter so that we can get multiple date for same hidden filed
+        $i=0;
+
+        while ($row = db_fetch_array($res)) {
+
+//            if($row['uid'] > 0) {
+
+            echo '<tr><td><input type="checkbox" name="uid[]" value='.$row['uid'].' /><input type="hidden" name="uids'.$i.'" value="'.$row['uid'].'" /></td><td>'.$row['name'].'<input type="hidden" name="names'.$i.'" value="'.$row['name'].'" /></td><td>'.$row['mail'].'<input type="hidden" name="mails'.$i.'" value="'.$row['mail'].'" /></td></tr>';
+
+//            }
+            $i++;
+        }
+
+    }
+    else {
+
+        echo '<tr><td colspan="2">No record found</td></tr>';
+    }
+    echo '</table></div>';
+}
+
+function selected_users() {
+
+    $uid = check_plain(arg(1));
+
+    watchdog('selected_users','ntlp_people_finder/search checking'.$uid);
+
+    echo '<div id="popups-body">s</div>';
+
+    print_r($uid);
+
+    watchdog('selected_users','ntlp_people_finder/search checking'.$uid);
+
+    // echo ' arg '.$arg. ' string '. $string .' <br>' ;
+}
+
+##################### Searching Single User ###########################################
+
+function single_student_finder_form() {
+    return  drupal_get_form('single_student_popup');
+
+}
+
+function single_student_popup() {
+
+    $form['people_finder']['link'] = array(
+            '#title' => t('Document Link'),
+            '#type'  => 'item',
+            '#value' => l("Pop up entire local page.", 'studetn_finder/test',
+            array('attributes' => array('class' => 'popups-form-noupdate'))),
+
+
+
+    );
+
+    $form['people_finder']['userlists'] = array(
+            '#type'  => 'item',
+            '#prefix' => '<div id="records">',
+            '#suffix' => '</div>',
+
+    );
+
+
+    $form['people_finder']['userid'] = array(
+            '#type'  => 'item',
+            '#prefix' => '<div id="userid">',
+            '#suffix' => '</div>',
+
+    );
+
+
+    return $form;
+}
+
+
+function single_student($form_state) {
+
+    $path = drupal_get_path('module', 'ntlp_people_finder');
+    drupal_add_js($path . '/people_finder.js', 'module');
+
+
+    $form['student'] = array(
+            '#title' => t('People Finder'),
+            '#type'  => 'fieldset',
+            '#id'  => 'searchp',
+    );
+
+    $form['student']['student_finder'] = array(
+            '#title' => t('Write Name To Search'),
+            '#type' => 'textfield',
+            '#size' => '40',
+            '#id' => 'finder',
+//            '#attributes' => array('onkeypress' => "search_single_record();"),
+    );
+
+    $form['student']['student_list'] = array(
+            '#type' => 'item',
+            '#value' => '<div id="searchstudent"></div>',
+    );
+
+    $form['student']['course_id'] = array(
+            '#type' => 'hidden',
+            '#value' => 2,
+    );
+
+    return $form;
+
+}
+
+function single_student_form() {
+
+    return drupal_get_form('single_student');
+
+}
+
+function get_single_student_record() {
+
+    $find = array();
+
+    $string =$_GET['name'];
+
+    $res = student_record($string);
+
+    echo '<div style="height:150px;overflow:scroll"><table cellpadding="0" cellspacing="0" width="100%"><tr><th></th><th>Name</th><th>Email</strong></th></tr>';
+
+    if($res != null) {
+
+        // Using Counter so that we can get multiple date for same hidden filed
+        $i=0;
+
+        while ($row = db_fetch_array($res)) {
+
+            if($row['uid'] > 0) {
+
+                print_r('<tr><td><input type="hidden" name="uid[]" id="user_id" value="'.$row['uid'].'" /></td><td><a id="'.$row['uid'].','.$row['name'].'" href="#" onclick="single_student_search(this); Drupal.popups.close();">'.$row['name'].'<input type="hidden" id="'.$row['uid'].'" name="names'.$i.'" id="user_name" value="'.$row['name'].'" /></a></td><td>'.$row['mail'].'<input type="hidden"  name="mails'.$i.'" value="'.$row['mail'].'" /></td></tr>');
+
+            }
+            $i++;
+        }
+
+    }
+    else {
+
+        echo 'No record found';
+    }
+    echo '</table></div>';
+}
+
+
+?>

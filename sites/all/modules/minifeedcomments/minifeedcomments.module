@@ -1,0 +1,78 @@
+<?php
+// $Id$
+
+/**
+ * Implements hook_node_info().
+ */
+
+function minifeedcomments_node_info() {
+    return array(
+    'minifeedcomments' => array(
+    'name' => t('Mini Feed Comments form'),
+    'module' => 'minifeedcomments',
+    'description' => t('Shows Mini Feed Comments form.'),
+    'has_title' => TRUE,
+    'title_label' => t(''),
+    'has_body' => TRUE,
+    'body_label' => t('Overview'),
+    )
+    );
+}
+
+
+function custom_comments() {
+	return drupal_get_form('custom_comments_form');
+}
+
+function custom_comments_form() {
+	$form['title'] = array(
+	'#type'  => 'textfield',
+	'#title' => 'Change Status',
+	);
+	$form['submit'] = array(
+	'#type'  => 'submit',
+	'#value' => 'Share',
+	);
+	return $form;
+}
+
+function custom_comments_form_submit($form, &$form_state) {
+    global $user;
+    module_load_include('inc', 'node', 'node.pages');
+
+    $node_id = 0;
+    if ( arg(0) == 'node' && is_numeric(arg(1)) ) {
+        $node_id = arg(1);
+    }
+    $profile_node = new stdClass();
+    $profile_node->title = $form_state['values']['title'];
+    $profile_node->type = 'comments';   // Your specified content type
+    $profile_node->created = $time;
+    $profile_node->changed = $time;
+    $profile_node->status = 1;
+    $profile_node->promote = 0;
+    $profile_node->sticky = 0;
+    $profile_node->format = 1;       // Filtered HTML
+    $profile_node->uid = $user->uid; // UID of content owner
+
+    // organic groups
+    $profile_node->og_initial_groups = array();
+    $profile_node->og_groups = array($node_id => $node_id);
+    $profile_node->og_public = false;
+
+/*  // common extra fields
+  $node->field_embedded_video = _x_node_embedded($xc['content']);
+  list($images, $attach) = _x_node_files($xc['content']);
+  $node->field_picture = $images;
+  $node->field_attachment = $attach;
+  $node->field_external_link = _x_node_ext_links($xc['content']);
+  foreach ($node->field_external_link as $ex_link) {
+    // check to see if any of the links are embedded video
+    if (count(emfield_parse_embed(content_fields('field_embedded_video'), $em_link, 'video_cck'))) {
+      $node->field_embedded_video[]['embed'] = $em_link;
+    }
+  }
+*/
+    node_save($profile_node);
+    drupal_set_message( t('Your status ['.$form_state['values']['title'].'] is set.') );
+} 

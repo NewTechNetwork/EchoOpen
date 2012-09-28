@@ -1,0 +1,684 @@
+<?php
+// $Id: admin_menu.module,v 1.43.2.18 2009/06/21 18:58:04 sun Exp $
+
+/**
+ * @file
+ * Example forms.
+ */
+
+define ('MIN_TEXT', 5);
+define ('MAX_CHOICES', 3);
+
+/**
+ * Implementation of hook_menu().
+ */
+function ahah_example_forms_menu() {
+  $items = array();
+  $items['example1'] = array(
+    'description' => t('Example 1'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ahah_example_forms_example1_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['example2'] = array(
+    'description' => t('Example 2'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ahah_example_forms_example2_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['example3'] = array(
+    'description' => t('Example 3'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ahah_example_forms_example3_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['example4'] = array(
+    'description' => t('Example 4'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ahah_example_forms_example4_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['example5'] = array(
+    'description' => t('Example 5'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ahah_example_forms_example5_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['example6'] = array(
+    'description' => t('Example 6'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ahah_example_forms_example6_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['example7'] = array(
+    'title' => t('Example 7'),
+    'description' => t('Example 7'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ahah_example_forms_example7_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Example form #1. No AHAH.
+ */
+function ahah_example_forms_example1_form($form_state) {
+  $form = array();
+  $form['text'] = array(
+      '#title' => t('Enter some text here'), 
+      '#type' => 'textarea', 
+      '#default_value' => $form_state['values']['text'],
+      '#required' => TRUE,
+      );
+ $form['submit']	= array(
+      '#type' => 'submit',
+      '#value' => t('Submit It'),
+     );
+ return $form;
+}
+
+/**
+ * Example form #1. No AHAH.
+ */
+function ahah_example_forms_example1_form_validate($form, $form_state) {
+  $text = $form_state['values']['text'];
+  if (strlen(trim($text)) < MIN_TEXT) {
+    form_set_error('text', t('Text must be at least @min characters', array('@min'=>MIN_TEXT)));
+  }
+}
+
+/**
+ * Example form #1. No AHAH.
+ */
+function ahah_example_forms_example1_form_submit($form, $form_state) {
+  $text = $form_state['values']['text'];
+  drupal_set_message(t('Thank you for entering your text. This is what you
+        provided: @text', array('@text' => $text)));
+}
+
+/**
+ * Example form #2 with AHAH.
+ */
+function ahah_example_forms_example2_form($form_state) {
+  //sleep(5);
+  $form = array();
+
+  /* STEP 1 - ADD ahah_helper_register CALL */
+  ahah_helper_register($form, $form_state);
+
+  /* STEP 2 - ADD FIELDSET WRAPPER */
+  $form['example2'] = array(
+      '#type' => 'fieldset',
+      '#prefix' => '<div id="example2-wrapper">', // This is our wrapper div
+      '#suffix' => '</div>',
+      '#tree' => TRUE, // don't forget to set #tree!
+      );
+
+  /* STEP 3 - ADD FIELDSET TO FORM FIELDS */
+  $form['example2']['text'] = array(
+      '#title' => t('Enter some text here'), 
+      '#type' => 'textarea', 
+      '#default_value' => $form_state['values']['example2']['text'],
+      '#required' => TRUE,
+      );
+
+ /* STEP 4 - ADD AHAH PROPERTIES TO FORM FIELDS */
+ $form['example2']['submit']	= array(
+      '#type' => 'submit',
+      '#value' => t('Submit It'),
+      '#ahah' => array(
+        'event' => 'click',
+        'path' => ahah_helper_path(array('example2')),
+        'wrapper' => 'example2-wrapper',
+        'method' => 'replace',
+        //'progress' => 'none',
+        'progress' => 'throbber',
+        //'progress' => 'bar',
+        ),
+     );
+
+ return $form;
+}
+
+/**
+ * Example form #2.
+ */
+function ahah_example_forms_example2_form_validate($form, $form_state) {
+  /* STEP 5 - ADD FIELDSET TO FORM FIELDS */
+  $text = $form_state['values']['example2']['text'];
+  if (strlen(trim($text)) < MIN_TEXT) {
+    form_set_error('text', t('Text must be at least @min characters', array('@min'=>MIN_TEXT)));
+  }
+}
+
+/**
+ * Example form #2.
+ */
+function ahah_example_forms_example2_form_submit($form, $form_state) {
+  /* STEP 6 - ADD FIELDSET TO FORM FIELDS */
+  $text = $form_state['values']['example2']['text'];
+  drupal_set_message(t('Thank you for entering your text. This is what you
+        provided: @text', array('@text' => $text)));
+}
+
+/**
+ * Example form #3. No AHAH.
+ */
+function ahah_example_forms_example3_form($form_state) {
+  $form = array();
+  $options = array(
+      'one' => t('One'),
+      'two' => t('Two'),
+      'three' => t('Three'),
+      'four' => t('Four'),
+      'five' => t('Five'),
+      );
+  $form['choices'] = array(
+      '#title' => t('Choices'), 
+      '#description' => t('Choose up to 3 options'), 
+      '#type' => 'select', 
+      '#options' => $options,
+      '#default_value' => $form_state['values']['choices'],
+      '#required' => TRUE,
+      '#multiple' => FALSE,
+      );
+ $form['submit']	= array(
+      '#type' => 'submit',
+      '#value' => t('Submit It'),
+     );
+ return $form;
+}
+
+/**
+ * Example form #3. No AHAH.
+ */
+function ahah_example_forms_example3_form_validate($form, $form_state) {
+  $choices = $form_state['values']['choices'];
+  if (sizeof($choices) > MAX_CHOICES) {
+    form_set_error('choices', t('You must choose only @max items or less', array('@max'=>MAX_CHOICES)));
+  }
+}
+
+/**
+ * Example form #3. No AHAH.
+ */
+function ahah_example_forms_example3_form_submit($form, $form_state) {
+  $choices = $form_state['values']['choices'];
+  drupal_set_message(t('Thank you for choosing your options. This is what you
+        provided: @choices', array('@choices' => implode(', ', $choices))));
+}
+
+/**
+ * Example form #4 with AHAH.
+ */
+function ahah_example_forms_example4_form($form_state) {
+  $form = array();
+
+  /* STEP 1 - ADD ahah_helper_register CALL */
+  ahah_helper_register($form, $form_state);
+
+  /* STEP 2 - ADD FIELDSET WRAPPER */
+  $form['example4'] = array(
+      '#type' => 'fieldset',
+      '#prefix' => '<div id="example4-wrapper">', // This is our wrapper div
+      '#suffix' => '</div>',
+      '#tree' => TRUE, // don't forget to set #tree!
+      );
+
+  $options = array(
+      'one' => t('One'),
+      'two' => t('Two'),
+      'three' => t('Three'),
+      'four' => t('Four'),
+      'five' => t('Five'),
+      );
+
+  /* STEP 3 - ADD FIELDSET TO FORM FIELDS */
+  $form['example4']['choices'] = array(
+      '#title' => t('Choices'), 
+      '#description' => t('Choose up to 3 options'), 
+      '#type' => 'select', 
+      '#options' => $options,
+      '#default_value' => $form_state['values']['example4']['choices'],
+      '#required' => TRUE,
+      '#multiple' => TRUE,
+      );
+
+ /* STEP 4 - ADD AHAH PROPERTIES TO FORM FIELDS */
+ $form['example4']['submit']	= array(
+      '#type' => 'submit',
+      '#value' => t('Submit It'),
+      '#ahah' => array(
+        'event' => 'click',
+        'path' => ahah_helper_path(array('example4')),
+        'wrapper' => 'example4-wrapper',
+        'method' => 'replace',
+        ),
+     );
+
+ return $form;
+}
+
+/**
+ * Example form #4.
+ */
+function ahah_example_forms_example4_form_validate($form, $form_state) {
+  /* STEP 5 - ADD FIELDSET TO FORM FIELDS */
+  $choices = $form_state['values']['example4']['choices'];
+  if (sizeof($choices) > MAX_CHOICES) {
+    form_set_error('choices', t('You must choose only @max items or less', array('@max'=>MAX_CHOICES)));
+  }
+}
+
+/**
+ * Example form #4.
+ */
+function ahah_example_forms_example4_form_submit($form, $form_state) {
+  /* STEP 6 - ADD FIELDSET TO FORM FIELDS */
+  $choices = $form_state['values']['example4']['choices'];
+  drupal_set_message(t('Thank you for choosing your options. This is what you
+        provided: @choices', array('@choices' => implode(', ', $choices))));
+}
+
+/**
+ * Example form #5 with AHAH.
+ */
+function ahah_example_forms_example5_form($form_state) {
+  $form = array();
+
+  ahah_helper_register($form, $form_state);
+
+  $form['example5'] = array(
+      '#type' => 'fieldset',
+      '#prefix' => '<div id="example5-wrapper">', // This is our wrapper div
+      '#suffix' => '</div>',
+      '#tree' => TRUE, // don't forget to set #tree!
+      );
+
+  $options = array(
+      'one' => t('One'),
+      'two' => t('Two'),
+      'three' => t('Three'),
+      'four' => t('Four'),
+      'five' => t('Five'),
+      );
+
+  $choice = $form_state['values']['example5']['choices1'];
+
+  $form['example5']['choices1'] = array(
+      '#title' => t('Choices'), 
+      '#type' => 'select', 
+      '#options' => $options,
+      '#default_value' => $choice,
+      '#required' => TRUE,
+      '#multiple' => FALSE,
+      );
+
+  if ($choice == 'one' || $choice == 'four') {
+    $choice2 = $form_state['values']['example5']['choices2'];
+    $options2 = array(
+        'six' => t('Six'),
+        'seven' => t('Seven'),
+        'eight' => t('Eight'),
+        'nine' => t('Nine'),
+        'ten' => t('Ten'),
+        );
+    $form['example5']['choices2'] = array(
+        '#title' => t('Choices 2'), 
+        '#type' => 'select', 
+        '#options' => $options2,
+        '#default_value' => $choice2,
+        '#multiple' => FALSE,
+        );
+  }
+  else if ($choice == 'two' || $choice == 'five') {
+    $choice3 = $form_state['values']['example5']['choices3'];
+    $options3 = array(
+        'apple' => t('Apple'),
+        'orange' => t('Orange'),
+        'pear' => t('Pear'),
+        'banana' => t('Banana'),
+        'grape' => t('Grape'),
+        );
+    $form['example5']['choices3'] = array(
+        '#title' => t('Choices 3'), 
+        '#type' => 'select', 
+        '#options' => $options3,
+        '#default_value' => $choice3,
+        '#multiple' => FALSE,
+        );
+  }
+  else if ($choice == 'three') {
+    $text = $form_state['values']['example5']['three_text'];
+    $form['example5']['three_text'] = array(
+        '#title' => t('Text'), 
+        '#type' => 'textfield', 
+        '#default_value' => $text,
+        );
+  }
+
+ $form['example5']['submit']	= array(
+      '#type' => 'submit',
+      '#value' => t('Submit It'),
+      '#ahah' => array(
+        'event' => 'click',
+        'path' => ahah_helper_path(array('example5')),
+        'wrapper' => 'example5-wrapper',
+        'method' => 'replace',
+        ),
+     );
+
+ return $form;
+}
+
+/**
+ * Example form #5.
+ */
+function ahah_example_forms_example5_form_validate($form, $form_state) {
+}
+
+/**
+ * Example form #5.
+ */
+function ahah_example_forms_example5_form_submit($form, $form_state) {
+  $choice1 = $form_state['values']['example5']['choices1'];
+  $choice2 = $form_state['values']['example5']['choices2'];
+  $choice3 = $form_state['values']['example5']['choices3'];
+  $text = $form_state['values']['example5']['three_text'];
+  drupal_set_message(t('Thank you for choosing your options. This is what you
+        provided: <br>choice 1 = @choice1 <br>choice 2 = @choice2 
+        <br>choice 3 = @choice3 <br>text = @text', array(
+          '@choice1' => $choice1,
+          '@choice2' => $choice2,
+          '@choice3' => $choice3,
+          '@text' => $text,
+          )));
+}
+
+/**
+ * Example form #6 with AHAH.
+ */
+function ahah_example_forms_example6_form($form_state) {
+  $form = array();
+
+  ahah_helper_register($form, $form_state);
+
+  $form['example6'] = array(
+      '#type' => 'fieldset',
+      '#prefix' => '<div id="example6-wrapper">', // This is our wrapper div
+      '#suffix' => '</div>',
+      '#tree' => TRUE, // don't forget to set #tree!
+      );
+
+  $options = array(
+      '' => t('Choose'),
+      'one' => t('One'),
+      'two' => t('Two'),
+      'three' => t('Three'),
+      'four' => t('Four'),
+      'five' => t('Five'),
+      );
+
+  $choice = $form_state['values']['example6']['choices1'];
+
+  $form['example6']['choices1'] = array(
+      '#title' => t('Choices'), 
+      '#type' => 'select', 
+      '#options' => $options,
+      '#default_value' => $choice,
+      '#required' => TRUE,
+      '#multiple' => FALSE,
+      '#ahah' => array(
+        'event' => 'change',
+        'path' => ahah_helper_path(array('example6')),
+        'wrapper' => 'example6-wrapper',
+        'method' => 'replace',
+        ),
+      );
+
+  if ($choice == 'one' || $choice == 'four') {
+    $choice2 = $form_state['values']['example6']['choices2'];
+    $options2 = array(
+        '' => t('Choose'),
+        'six' => t('Six'),
+        'seven' => t('Seven'),
+        'eight' => t('Eight'),
+        'nine' => t('Nine'),
+        'ten' => t('Ten'),
+        );
+    $form['example6']['choices2'] = array(
+        '#title' => t('Choices 2'), 
+        '#type' => 'select', 
+        '#options' => $options2,
+        '#default_value' => $choice2,
+        '#multiple' => FALSE,
+        '#ahah' => array(
+          'event' => 'change',
+          'path' => ahah_helper_path(array('example6')),
+          'wrapper' => 'example6-wrapper',
+          'method' => 'replace',
+          ),
+        );
+  }
+  else if ($choice == 'two' || $choice == 'five') {
+    $choice3 = $form_state['values']['example6']['choices3'];
+    $options3 = array(
+        '' => t('Choose'),
+        'apple' => t('Apple'),
+        'orange' => t('Orange'),
+        'pear' => t('Pear'),
+        'banana' => t('Banana'),
+        'grape' => t('Grape'),
+        );
+    $form['example6']['choices3'] = array(
+        '#title' => t('Choices 3'), 
+        '#type' => 'select', 
+        '#options' => $options3,
+        '#default_value' => $choice3,
+        '#multiple' => FALSE,
+        '#ahah' => array(
+          'event' => 'change',
+          'path' => ahah_helper_path(array('example6')),
+          'wrapper' => 'example6-wrapper',
+          'method' => 'replace',
+          ),
+        );
+  }
+  else if ($choice == 'three') {
+    $text = $form_state['values']['example6']['three_text'];
+    $form['example6']['three_text'] = array(
+        '#title' => t('Text'), 
+        '#type' => 'textfield', 
+        '#default_value' => $text,
+        '#ahah' => array(
+          'event' => 'blur',
+          'path' => ahah_helper_path(array('example6')),
+          'wrapper' => 'example6-wrapper',
+          'method' => 'replace',
+          ),
+        );
+  }
+
+ $form['example6']['submit']	= array(
+      '#type' => 'submit',
+      '#value' => t('Submit It'),
+      '#ahah' => array(
+        'event' => 'click',
+        'path' => ahah_helper_path(array('example6')),
+        'wrapper' => 'example6-wrapper',
+        'method' => 'replace',
+        ),
+     );
+
+ return $form;
+}
+
+/**
+ * Example form #6.
+ */
+function ahah_example_forms_example6_form_validate($form, $form_state) {
+}
+
+/**
+ * Example form #6.
+ */
+function ahah_example_forms_example6_form_submit($form, $form_state) {
+  $choice1 = $form_state['values']['example6']['choices1'];
+  $choice2 = $form_state['values']['example6']['choices2'];
+  $choice3 = $form_state['values']['example6']['choices3'];
+  $text = $form_state['values']['example6']['three_text'];
+  drupal_set_message(t('Thank you for choosing your options. This is what you
+        provided: <br>choice 1 = @choice1 <br>choice 2 = @choice2 
+        <br>choice 3 = @choice3 <br>text = @text', array(
+          '@choice1' => $choice1,
+          '@choice2' => $choice2,
+          '@choice3' => $choice3,
+          '@text' => $text,
+          )));
+}
+
+/**
+ * Example form #7 with AHAH.
+ */
+function ahah_example_forms_example7_form($form_state) {
+
+  drupal_add_css(drupal_get_path('module', 'ahah_example_forms') . "/ahah_example_forms.css", 'module', 'all');
+
+  //sleep(1000);
+
+  $form = array();
+
+  ahah_helper_register($form, $form_state);
+
+  $form['example7'] = array(
+      '#type' => 'fieldset',
+      '#prefix' => '<div id="example7-wrapper">', // This is our wrapper div
+      '#suffix' => '</div>',
+      '#tree' => TRUE, // don't forget to set #tree!
+      );
+
+  $choice1 = $form_state['values']['example7']['choices1'];
+  $choice2 = $form_state['values']['example7']['choices2'];
+  $choice3 = $form_state['values']['example7']['choices3'];
+  $text = $form_state['values']['example7']['three_text'];
+
+  $results = '
+    <br>
+    <br>
+    <b>Your current selections</b>:
+    <table style="width:150px">
+    <tr><td style="width:75px">choice 1</td><td style="width:75px">'.($choice1 ? $choice1 : 'n/a').'</td></tr>
+    <tr><td>choice 2</td><td>'.($choice2 ? $choice2 : 'n/a').'</td></tr>
+    <tr><td>choice 3</td><td>'.($choice3 ? $choice3 : 'n/a').'</td></tr>
+    <tr><td>text</td><td>'.($text ? $text : 'n/a').'</td></tr>
+    </table>';
+
+  $options = array(
+      '' => t('Choose'),
+      'one' => t('One'),
+      'two' => t('Two'),
+      'three' => t('Three'),
+      'four' => t('Four'),
+      'five' => t('Five'),
+      );
+
+  $form['example7']['choices1'] = array(
+      '#title' => t('Choices'), 
+      '#type' => 'select', 
+      '#options' => $options,
+      '#default_value' => $choice1,
+      '#ahah' => array(
+        'event' => 'change',
+        'path' => ahah_helper_path(array('example7')),
+        'wrapper' => 'example7-wrapper',
+        'method' => 'replace',
+        ),
+      '#prefix' => $results,
+      );
+
+  if ($choice1 == 'one' || $choice1 == 'four') {
+    $options2 = array(
+        '' => t('Choose'),
+        'six' => t('Six'),
+        'seven' => t('Seven'),
+        'eight' => t('Eight'),
+        'nine' => t('Nine'),
+        'ten' => t('Ten'),
+        );
+    $form['example7']['choices2'] = array(
+        '#title' => t('Choices 2'), 
+        '#type' => 'select', 
+        '#options' => $options2,
+        '#default_value' => $choice2,
+        '#ahah' => array(
+          'event' => 'change',
+          'path' => ahah_helper_path(array('example7')),
+          'wrapper' => 'example7-wrapper',
+          'method' => 'replace',
+          ),
+        );
+  }
+  else if ($choice1 == 'two' || $choice1 == 'five') {
+    $options3 = array(
+        '' => t('Choose'),
+        'apple' => t('Apple'),
+        'orange' => t('Orange'),
+        'pear' => t('Pear'),
+        'banana' => t('Banana'),
+        'grape' => t('Grape'),
+        );
+    $form['example7']['choices3'] = array(
+        '#title' => t('Choices 3'), 
+        '#type' => 'select', 
+        '#options' => $options3,
+        '#default_value' => $choice3,
+        '#ahah' => array(
+          'event' => 'change',
+          'path' => ahah_helper_path(array('example7')),
+          'wrapper' => 'example7-wrapper',
+          'method' => 'replace',
+          ),
+        );
+  }
+  else if ($choice1 == 'three') {
+    $form['example7']['three_text'] = array(
+        '#title' => t('Text'), 
+        '#type' => 'textfield', 
+        '#default_value' => $text,
+        '#ahah' => array(
+          'event' => 'blur',
+          'path' => ahah_helper_path(array('example7')),
+          'wrapper' => 'example7-wrapper',
+          'method' => 'replace',
+          ),
+        );
+  }
+
+ $form['example7']['submit']	= array(
+      '#type' => 'submit',
+      '#value' => t('Submit It'),
+      '#attributes' => array('class' => 'no-js'),
+     );
+
+ return $form;
+}
+
+/**
+ * Example form #7.
+ */
+function ahah_example_forms_example7_form_validate($form, $form_state) {
+}
+
+/**
+ * Example form #7.
+ */
+function ahah_example_forms_example7_form_submit($form, $form_state) {
+}

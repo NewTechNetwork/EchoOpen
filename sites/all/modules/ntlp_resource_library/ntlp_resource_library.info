@@ -1,0 +1,6 @@
+; $Id: ntlp_resource_library, v .01$
+name = NTLP Resource Library
+description = NTLP Network Resource Library Module.
+package = NTLP
+core = 6.x
+version = "6.x-0.1"

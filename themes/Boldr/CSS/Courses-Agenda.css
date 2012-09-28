@@ -1,0 +1,240 @@
+/*// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+
+#Courses-Agenda {
+    font-size:12px;
+}
+#Courses-Agenda .Heading {
+    padding:10px 0 0 11px;
+}
+#Courses-Agenda .Heading h2 {
+    font-size:15px;
+    color:#3570aa;
+    padding:0px;
+    margin:0px;
+}
+#Courses-Agenda .Heading h3 {
+    font-size:18px;
+    color:#3591cb;
+    padding:0px;
+    margin:0px;
+    white-space:nowrap;
+}
+#Courses-Agenda .Heading h3 span {
+    color:#99c9e7;
+}
+#Courses-Agenda .EditBtn {
+    background-image:url(../Images/Courses/EditBtn.jpg);
+    background-position:top left;
+    display:block;
+    height:23px;
+    width:57px;
+}
+#Courses-Agenda .C-ABottomRightCorner {
+    background-image:url(../Images/Courses/CoursesAgendaBottomRightCorner.jpg);
+    background-position:bottom right;
+    background-repeat:no-repeat;
+}
+#Courses-Agenda .C-ATopRightCorner {
+    background-image:url(../Images/Courses/CoursesAgendaTopRightCorner.jpg);
+    background-position:top right;
+    background-repeat:no-repeat;
+    background-color:#d5e9f5;
+}
+#Courses-Agenda .C-ABottomLeftCorner {
+    background-image:url(../Images/Courses/CoursesAgendaBottomLeftCorner.jpg);
+    background-position:bottom left;
+    background-repeat:no-repeat;
+}
+#Courses-Agenda .C-ATopLeftCorner {
+    background-image:url(../Images/Courses/CoursesAgendaTopLeftCorner.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+    min-height:374px;
+}
+#Courses-Agenda .Btn {
+    padding:10px 11px 0 0;
+}
+#Courses-Agenda .Btn a {
+    margin:0 5px 0 0;
+}
+
+#Courses-Agenda .Btn .PrintBtn {
+    background-image:url(../Images/Courses/PrintBtn.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+    width:57px;
+    height:23px;
+    text-decoration:none;
+    display:block;
+    float:right;
+}
+#Courses-Agenda .Btn .ExportBtn {
+    background-image:url(../Images/Courses/ExportBtn.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+    width:57px;
+    height:23px;
+    text-decoration:none;
+    display:block;
+    float:right;
+}
+#Courses-Agenda .Btn .CopyBtn {
+    background-image:url(../Images/Courses/CopyBtn.jpg);
+    background-position:top left;
+    background-repeat:no-repeat;
+    width:57px;
+    height:23px;
+    text-decoration:none;
+    display:block;
+    float:right;
+}
+
+#Courses-Agenda .SubHeading {
+    padding:16px 0 0 11px;
+}
+
+#Courses-Agenda .SubHeading h5 {
+    color:#666666;
+    font-size:12px;
+    padding:0px;
+    margin:0px;
+}
+#Courses-Agenda .dottedLine {
+}
+#Courses-Agenda .datalist {
+    padding:10px 11px 10px 11px;
+}
+#Courses-Agenda .datalist ul {
+    padding:0px;
+    margin:0px;
+}
+#Courses-Agenda .datalist ul li {
+    border-bottom:1px dotted #b6cedc;
+    list-style-type:decimal;
+    list-style-position:inside;
+    padding:3px 0 3px 0;
+}
+#Courses-Agenda .datalist ul li a {
+    color:#009900;
+    text-decoration:none;
+}
+#Courses-Agenda .datalist ul li a:hover {
+    text-decoration:underline;
+}
+#Courses-Agenda .Calender {
+}
+#Courses-Agenda .MonthsAndYears {
+    background-color:#3570aa;
+    color:#FFF;
+    font-size:15px;
+    padding:5px 6px 2px 6px;
+    text-align:center;
+}
+#Courses-Agenda .MonthsAndYears span {
+    float: left;
+    width: 170px;
+}
+
+#Courses-Agenda .MonthsAndYears a.LeftArrow {
+    background-image:url(../Images/Courses/Calender/LeftArrow.jpg);
+    background-repeat: no-repeat;
+    height:14px;
+    width:14px;
+    float:left;
+}
+#Courses-Agenda .MonthsAndYears a.RightArrow {
+    background-image:url(../Images/Courses/Calender/RightArrow.jpg);
+    background-repeat: no-repeat;
+    height:14px;
+    width:14px;
+    float:right;
+}
+#Courses-Agenda .Days td {
+    text-align:center;
+    background-color:#9fc1d6;
+    color:#FFFFFF;
+    font-size:9px;
+}
+#Courses-Agenda .FirstRow td {
+    font-size:9px;
+    background-color:#ceecf4;
+    border:1px solid #fff;
+    border-collapse:collapse;
+    text-align:right;
+    vertical-align:text-top;
+    height:14px;
+}
+#Courses-Agenda .FirstRow a {
+    text-align:right;
+    vertical-align:text-top;
+    color:#FFF;
+    text-decoration:none;
+    background-color:#3591cb;
+    padding:5px 3px 5px 3px;
+    height:19px;
+    width:23px;
+    display:block;
+}
+#Courses-Agenda .FirstRow a:hover {
+    background-color:#3570aa;
+}
+#Courses-Agenda .FirstRow a.active {
+    background-color:#ef7d23;
+}
+
+#Courses-Agenda .FirstRow a.mainDate {
+    position:absolute;
+    height:40px;
+    background-image:url(../Images/mainDate.png);
+    width:37px;
+    margin:-25px 0 0 -12px;
+    padding:15px 13px 0 0;
+    background-position:top left;
+    background-color:transparent !important;
+}
+
+#Courses-Agenda .Numday td {
+    font-size:9px;
+    background-color:#ceecf4;
+    border:0.5px solid #fff;
+    text-align:right;
+    vertical-align:top;
+    height:14px;
+    position:relative;
+        padding:0px;
+}
+#Courses-Agenda .Numday a {
+    text-align:right;
+    vertical-align:text-top;
+    color:#FFF;
+    text-decoration:none;
+    background-color:#3591cb;
+    padding:5px 3px 5px 3px;
+    height:19px;
+    width:23px;
+    display:block;
+}
+#Courses-Agenda .Numday a:hover {
+    background-color:#3570aa;
+}
+#Courses-Agenda .Numday a.active {
+    background-color:#ef7d23;
+}
+#Courses-Agenda .Numday a.mainDate {
+    background-image:url(../Images/mainDate.png);
+ 
+}
+
+#Courses-Agenda .Numday a.mainDate {
+    position:absolute;
+    height:40px;
+    width:37px;
+    z-index: 1;
+    margin:-15px 0 0 -12px;
+    padding:15px 13px 0 0;
+    background-position:top left;
+    background-color:transparent !important;
+}

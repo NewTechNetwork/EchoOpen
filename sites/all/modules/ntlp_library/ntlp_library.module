@@ -1,0 +1,622 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+module_load_include('inc', 'ntlp_school', 'data_access');
+module_load_include('inc', 'ntlp_blocks', 'default_header.contents');
+module_load_include('inc', 'ntlp_blocks', 'search.contents');
+include 'ntlp_library_myprojects.inc';
+include 'ntlp_library_project_detail.inc';
+include 'ntlp_library_project_archive.inc';
+include 'ntlp_library_project_request_archive.inc';
+include 'ntlp_library_project_publish.inc';
+include 'ntlp_library_project_copy.inc';
+include 'ntlp_library_project_exemplary.inc';
+include 'library_header.content.inc';
+
+require_once 'data_access.inc';
+require_once "form_def.inc";
+
+function ntlp_library_menu() {
+
+    $items['ntlp/library/add/resource/%'] = array(
+        'title' => 'Library Add Resource',
+        'page callback' => 'ntlp_library_addresource_frm',
+        'access arguments' => array('view library'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(4),
+        'description' => 'NTLP Library Add Resource',
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/library/project/myprojects'] = array(
+        'title' => 'View Project',
+        'page callback' => 'ntlp_library_myprojects_frm',
+        'access arguments' => array('view library'), //On Load: check if teacher/student is enrolled in this course
+//            'page arguments' => array(3),
+        'description' => 'NTLP View My Projects.',
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/library/project/%'] = array(
+        'title' => 'View Project',
+        'page callback' => 'ntlp_library_project_detail_frm',
+        'access arguments' => array('view library'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(3),
+        'description' => 'NTLP View Projects.',
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/library/projects/manage'] = array(
+        'title' => 'Project Library',
+//            'page arguments' => array(2, 3),        //[new/edit], [course_nid]
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_module_form_controller'), //ntlp_admincourse_form'),
+        'access arguments' => array('create ntlp_course content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/save/module/image/%/%'] = array(
+        'page callback' => 'ntlp_save_module_image',
+        'access arguments' => array('edit own profile'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(4, 5),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/project/copy/popup/%'] = array(
+        'page callback' => 'ntlp_library_projects_copy_frm',
+        'access arguments' => array('copy library project'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(5),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/project/copy/%/%/%'] = array(
+        'page callback' => 'ntlp_library_project_copy_data',
+        'access arguments' => array('copy library project'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/project/template/%/%/%'] = array(
+        'page callback' => 'ntlp_library_project_template_data',
+        'access arguments' => array('copy library project'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/project/request/popup/%'] = array(
+        'page callback' => 'ntlp_library_project_request_archive_frm',
+        'access arguments' => array('copy library project'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(5),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/request/archive/%/%/%'] = array(
+        'page callback' => 'ntlp_library_project_request_archive_data',
+        'access arguments' => array('copy library project'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/project/archived/%'] = array(
+        'page callback' => 'ntlp_library_project_archived_data',
+        'access arguments' => array('copy library project'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(4),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/project/published/%'] = array(
+        'page callback' => 'ntlp_library_project_published_data',
+        'access arguments' => array('copy library project'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(4),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/project/popup/%/%'] = array(
+        'page callback' => 'ntlp_library_project_archive_frm',
+        'access arguments' => array('archive library project'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(4, 5),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/project/%/%/%/%'] = array(
+        'page callback' => 'ntlp_library_projects_comment_add',
+        'access arguments' => array('view library'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(3, 4, 5, 6),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/project/search/filter'] = array(
+        'page callback' => 'ntlp_library_project_search_filter_callback',
+        'access arguments' => array('view library'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/library/project/view/%'] = array(
+        'title' => 'NTLP Library Project Page',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_project_library_form', 4),
+        'access arguments' => array('view library'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/library/project/content/%/%'] = array(
+        'page callback' => 'ntlp_library_project_contents_data',
+        'access arguments' => array('view library'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(4, 5),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/projectresource/edit/%/%'] = array(
+        'page callback' => 'get_new_resrouce_frm',
+        'access arguments' => array('manage library'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(4, 5),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/libprojectresource/delete/%/%/%'] = array(
+        'page callback' => 'ntlp_library_projectresource_delete_frm',
+        'access arguments' => array('manage library'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['library/libprojectresource/delete/data/%/%/%'] = array(
+        'title' => 'Delete Resource',
+        'page callback' => 'ntlp_library_project_resource_delete_data',
+        'access arguments' => array('manage library'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(4, 5, 6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/library/projectresource/delete/%/%'] = array(
+        'page callback' => 'get_new_resrouce_frm',
+        'access arguments' => array('manage library'), //On Load: check  If use have rights to change the profile
+        'page arguments' => array(4, 5),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['ntlp/library/project/setting/%/%'] = array(
+        'title' => 'Project Setting Page',
+        'page callback' => '_ntlp_project_setting_frm',
+        'page arguments' => array(4, 5),
+        'access arguments' => array('manage library'),
+        'type' => MENU_CALLBACK,
+//        'file' => 'ntlp_project_mgmt.inc',
+    );
+    
+    return $items;
+}
+
+function ntlp_save_module_image($fid, $module_nid) {
+    global $base_path;
+
+    watchdog('uploadimage', 'fid ' . $fid . ' modulenid ' . $module_nid);
+    $file_Obj = _get_dpl_files_obj($fid);
+
+    watchdog('uploadimage', "UPDATE {ntlp_module} SET icon_fid = " . $file_Obj->fid . " WHERE nid = " . $module_nid);
+
+    db_query("UPDATE {ntlp_module} SET icon_fid = %d WHERE nid = %d", $file_Obj->fid, $module_nid);
+
+    echo drupal_get_form('ntlp_activeimage', $base_path . $file_Obj->filepath, 0, 80);
+}
+
+function ntlp_library_perm() {
+    return array('review project in library', 'view library', 'manage library', 'archive library project', 'copy library project', 'publish library project');
+}
+
+function ntlp_library_myprojects_frm() {
+
+    return drupal_get_form('ntlp_library_myprojects_form');
+}
+
+function ntlp_library_project_detail_frm($project_id) {
+
+    return drupal_get_form('ntlp_library_project_detail_form', $project_id);
+}
+
+function ntlp_library_projects_comment_add($comment_type, $lib_project_nid, $comment_cid, $is_exemplary, $text) {
+    global $user, $base_path;
+    $root = $base_path;
+    if ($comment_type == 'reviewing' or $comment_type == 'posting') {
+        if ($comment_cid != 0)
+            $edit['cid'] = $comment_cid;
+    }
+    $edit['nid'] = $lib_project_nid;
+    $edit['pid'] = 0;
+    $edit['uid'] = $user->uid;
+    $edit['name'] = $user->name;
+    $edit['comment'] = $text;
+    $edit['format'] = 1;
+    $edit['subject'] = '';
+    $edit['format'] = '';
+    $edit['hostname'] = '';
+    $edit['timestamp'] = time();
+    $edit['status'] = '';
+    $edit['thread'] = '';
+    $edit['mail'] = '';
+    $edit['homepage'] = '';
+//  watchdog('comments', print_r($edit, true));
+
+    $cid = comment_save($edit);
+    if ($comment_type == 'reviewing') {
+        db_query("UPDATE {ntlp_library_project} SET reviewer_comment_cid = %d,is_exemplary = %d WHERE nid = %d", $cid, $is_exemplary, $lib_project_nid);
+        $lib_project_node = node_load($lib_project_nid);
+        $lib_project_node->promote = $is_exemplary;
+        node_save($lib_project_node);
+
+        $results = db_query("SELECT is_exemplary, submitted_by  FROM {ntlp_library_project} WHERE nid = %d", $lib_project_nid);
+        $lib_project_obj = db_fetch_object($results);
+
+        $objComment = _comment_load($comment_cid);
+        $commentadd = $objComment->comment; //"<div class=\"img\"><img src=\"/drupal/themes/Boldr/Images/common/exemplary_project.png\" height=\"50\" /></div><div class=\"text\">Exemplary Project</div>";
+        if ($lib_project_obj->is_exemplary == 1) {
+            $commentadd .= "<div class=\"img\" style='float:left'><img src=\"" . $root . "themes/Boldr/Images/ProjectsImages/exemplary_project.png\"  height=\"50\" /></div><div class=\"text\">Exemplary Project</div>";
+            
+            ntlpprojectactivity_submit("exemplary", $lib_project_nid, $lib_project_obj->submitted_by, $user->uid);
+            $lib_project_node->submitted_by = $lib_project_obj->submitted_by;
+            module_invoke_all('ntlpcontent', $lib_project_node, 'project_awarded_exemplary');
+        }
+        print($commentadd);
+    }
+    elseif ($comment_type == 'posting') {
+        db_query("UPDATE {ntlp_library_project} SET teacher_comment_cid = %d WHERE nid = %d", $cid, $lib_project_nid);
+        $objComment = _comment_load($comment_cid);
+        $commentadd = $objComment->comment; //"<div class=\"img\"><img src=\"/drupal/themes/Boldr/Images/common/exemplary_project.png\" height=\"50\" /></div><div class=\"text\">Exemplary Project</div>";
+        print($commentadd);
+    } elseif ($comment_type == 'comments') {
+        $type = 'node';
+        $lib_project_node = node_load($lib_project_nid);
+
+        $results = db_query("SELECT teacher_comment_cid,reviewer_comment_cid  FROM {ntlp_library_project} WHERE nid = %d", $lib_project_nid);
+        $rows = db_fetch_array($results);
+        $comment_cid = array(0 => $rows['teacher_comment_cid'], 1 => $rows['reviewer_comment_cid']);
+        $lib_project_node->skip_comment_cid = $comment_cid;
+        $nodeComments = ntlp_view_comments($lib_project_node);
+        print($nodeComments);
+    }
+
+//    print ntlp_view_comments($lib_project_nid);
+//    print node_view($node, false);
+//    drupal_set_message(t('Your comment has been added successfully.'));
+//    return true;
+}
+
+function ntlp_library_block($op = 'list', $delta = 0, $edit = array()) {
+    switch ($op) {
+        case 'list':
+            $blocks[0] = array(
+                'info' => t('NTLP: Library - Projects Detail'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[1] = array(
+                'info' => t('NTLP: Library - Projects Info'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[2] = array(
+                'info' => t('NTLP: Library - Projects Detail'),
+                'info' => t('NTLP: Library - Projects Info'),
+                'info' => t('NTLP: Library - Projects Student Work tab'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[3] = array(
+                'info' => t('NTLP: Library - Projects Commentary tab'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[4] = array(
+                'info' => t('NTLP: Library - Projects Meta deta view'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[5] = array(
+                'info' => t('NTLP: Library Project Search'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[6] = array(
+                'info' => t('NTLP: Library Project Filter Block'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[7] = array(
+                'info' => t('NTLP: Library Project Search Block'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[8] = array(
+                'info' => t('NTLP: Recent Comments on Library Project Block'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[9] = array(
+                'info' => t('NTLP: Library All Projects Search Block'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[10] = array(
+                'info' => t('NTLP: Project Library Recent Comments'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[11] = array(
+                'info' => t('NTLP: Library Project Activities'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            return $blocks;
+
+        case 'configure':
+            $form = array();
+            return $form;
+
+        case 'view': default:
+            switch ($delta) {
+                case 0:
+                    $block['subject'] = t('NTLP: Library - Projects Detail');
+                    $block['content'] = _get_ntlp_library_project_detail_contents();
+                    break;
+
+                case 1:
+                    $block['subject'] = t('NTLP: Library - Projects Info');
+                    $block['content'] = _get_ntlp_library_project_info_contents();
+                    break;
+
+                case 2:
+                    $block['subject'] = t('NTLP: Library - Projects Student Work tab');
+                    $block['content'] = _get_ntlp_library_project_student_work_contents();
+                    break;
+
+                case 3:
+                    $block['subject'] = t('NTLP: Library - Projects Commentary tab');
+                    $block['content'] = _get_ntlp_library_project_commentary_contents();
+                    break;
+
+                case 4:
+                    $exemplary_block = _get_ntlp_library_total_projects_contents();
+                    $exemplary_block .= _get_ntlp_library_project_community_favorites_contents();
+                    $exemplary_block .= _get_ntlp_library_project_recent_additions_contents();
+                    //$exemplary_block .= _get_ntlp_library_project_hall_of_fame_contents();
+
+                    $block['subject'] = t('NTLP: Library - Projects Meta deta view');
+                    $block['content'] = $exemplary_block;
+                    break;
+
+                case 5:
+                    $block['subject'] = t('NTLP: Library Project Search');
+                    $block['content'] = ntlp_resource_get_search_contents();
+                    break;
+
+                case 6:
+                    $block['subject'] = t('NTLP: Library Project Filter Block');
+                    $block['content'] = ntlp_project_filter_block();
+                    break;
+
+                case 7:
+                    $block['subject'] = t('NTLP: Library Project Search Block');
+                    $block['content'] = ntlp_library_project_search_block();
+                    break;
+
+                case 8:
+                    $block['subject'] = t('NTLP: Recent Comments on Library Project Block');
+                    $block['content'] = ntlp_library_project_recent_comments_block();
+                    break;
+
+                case 9:
+                    $block['subject'] = t('NTLP: Library All Projects Search Block');
+                    $block['content'] = ntlp_library_all_projects_search_block_content();
+                    break;
+
+                case 10:
+                    $block['subject'] = t('NTLP: Project Library Recent Comments');
+                    $block['content'] = ntlp_project_library_recent_comments();
+                    break;
+
+                case 11:
+                    $block['subject'] = t('NTLP: Library Project Activities');
+                    $block['content'] = ntlp_library_project_activities();
+                    break;
+            }
+
+
+
+            return $block;
+    }
+}
+
+function ntlp_library_project_render_tabs($active_tab = "NOP") {
+    drupal_add_css(drupal_get_path('theme', 'Boldr') . '/StylishSelect/stylish-select.css', 'module', 'all', FALSE);
+    drupal_add_js(drupal_get_path('theme', 'Boldr') . '/StylishSelect/externalFile.js');
+    drupal_add_js(drupal_get_path('theme', 'Boldr') . '/StylishSelect/jquery.stylish-select.js');
+
+    include "library_header.template.inc";
+
+    $output = $HTML_library_tabs;
+
+    if ($active_tab == "NOP") {
+        $get = $_GET['q'];
+        $br = explode("/", $get);
+        $cnt = count($br);
+        $active_tab = "@IS_" . strtoupper($br[$cnt - 1]);
+    }
+
+    $output = str_replace($active_tab, "active", $output);          //Set the active tab
+    $output = str_replace("@PROJECT_URL", url("/ntlp/library/project"), $output);
+    $output = str_replace("@MYPROJECTS_URL", url('/ntlp/library/project/myprojects'), $output);
+
+    $output = str_replace("@IS_PROJECT", "", $output);
+    $output = str_replace("@IS_MYPROJECTS", "", $output);
+
+
+    return $output;
+}
+
+function ntlp_library_project_search_block() {
+
+    $args = array();
+    if (isset($_GET['subject']) and !empty($_GET['subject'])) {
+        $sub_id = (int) $_GET['subject'];
+        if ($sub_id) {
+            $terms = $sub_id;
+        }
+    }
+    if (isset($_GET['keyword']) and !empty($_GET['keyword'])) {
+        $key_id = (int) $_GET['keyword'];
+        if ($key_id) {
+            if (!empty($term)) {
+                $terms .= '+' . $key_id;
+            } else {
+                $terms .= $key_id;
+            }
+        }
+    }
+    if (empty($terms)) {
+        $args[] = 'all';
+    } else {
+        $args[] = $terms;
+    }
+    $args[] = 'all'; // Teacher reflection param
+    $args[] = isset($_GET['exp']) ? 1 : 'all';
+
+    $view->get_total_rows = TRUE;
+
+    $view = views_get_view('ntlp_library_projects');
+    $content = $view->preview('default', $args);
+
+    $result_text = ($view->total_rows > 0) ? "Viewing <b>" . $view->total_rows . "</b> project" : "";
+    $result_text .= ( $view->total_rows > 1) ? "s" : "";
+
+    $script = "
+        $(document).ready(function() {
+            $('div[name=search_result_text]').html('" . $result_text . "');
+        });
+        ";
+
+    drupal_add_js($script, 'inline');
+    $content = "<div id=\"ntlpLibrarySearchWrapper\">$content</div>";
+
+    return $content;
+}
+
+function ntlp_library_projectresource_delete_frm($resource_type, $lib_project_nid, $resource_nid) {
+
+    return drupal_get_form('ntlp_library_projectresource_delete_form', $resource_type, $lib_project_nid, $resource_nid);
+}
+
+function ntlp_library_projectresource_delete_form($form_state = null, $resource_type, $lib_project_nid, $resource_nid) {
+
+    drupal_add_js(drupal_get_path('module', 'ntlp_library') . '/ntlp_library.js');
+    modalframe_child_js();
+    if ($resource_type == 'activity') {
+        drupal_set_title("Confirm Delete Activity");
+    } else {
+        drupal_set_title("Confirm Delete Resource");
+    }
+
+    $form = array();
+
+    $form['delete_resource'] = array(
+        '#type' => 'fieldset',
+        '#tree' => true,
+        '#prefix' => '<div class="ntlp_people_finder">
+                               <div class="content">
+                                   <div class="top_right">
+                                       <div class="top_left">
+                                           <div class="bot_left">
+                                               <div class="bot_right_2">',
+        '#suffix' => '</div></div></div></div></div></div>',
+    );
+
+    $form['delete_resource']['table'] = array(
+        '#type' => 'item',
+        '#prefix' => '<table>',
+        '#suffix' => '</table>',
+    );
+
+    $form['delete_resource']['table']['row1'] = array(
+        '#type' => 'item',
+        '#prefix' => '<tr>',
+        '#suffix' => '</tr>',
+    );
+
+     if ($resource_type == 'activity') {
+         $message = t('You are about to delete this activity.<br /><br />Are you sure you want to delete this activity?<br /><br />');
+     }else{
+         $message = t('You are about to delete this resource.<br /><br />Are you sure you want to delete this resource?<br /><br />');
+     }
+    $form['delete_resource']['table']['row1']['td'] = array(
+        '#type' => 'item',
+        '#value' => $message,
+        '#prefix' => '<td style="color:#3570AA;font-weight:bold">',
+        '#suffix' => '</td>',
+        '#id' => 'txt_activity_name',
+    );
+
+    $form['delete_resource']['table']['row3'] = array(
+        '#type' => 'item',
+        '#prefix' => '<tr>',
+        '#suffix' => '</tr>',
+    );
+
+    $form['delete_resource']['table']['row3']['delete'] = array(
+        '#type' => 'item',
+        '#value' => '<table><tr><td><a class="SaveBtn" onclick="delete_library_resource(\'' . $resource_type . '\',' . $lib_project_nid . ',' . $resource_nid . ')">Delete</a></td><td>&nbsp;</td><td><a class="SaveBtn" onclick="parent.Drupal.modalFrame.close();return false;">Cancel</a></td>',
+        '#prefix' => '<td>',
+        '#suffix' => '</td>',
+    );
+
+    return $form;
+}
+
+function ntlp_library_project_resource_delete_data($resource_type, $lib_project_nid, $resource_nid) {
+
+
+    if ($resource_type == 'resource') {
+        db_query("DELETE FROM {ntlp_course_resource} WHERE nid =%d", $resource_nid);
+        db_query("DELETE FROM {ntlp_project_resource} WHERE nid =%d", $resource_nid);
+        db_query("DELETE FROM {ntlp_resource_attachment} WHERE resource_nid = %d", $resource_nid);
+    } else {
+        db_query("DELETE FROM {ntlp_course_activity} WHERE nid = %d AND course_nid = %d", intval($resource_nid), $lib_project_nid);
+        db_query("DELETE FROM {ntlp_gb_activity_outcome} WHERE activity_nid = %d", intval($resource_nid));
+    }
+}

@@ -1,0 +1,6 @@
+; $Id: admin_menu.info,v 1.5.2.1 2008/11/30 12:50:36 sun Exp $
+name = Ahah Example Forms
+description = Example Forms using Drupal Form API and AHAH
+package = Examples
+core = 6.x
+dependencies[] = ahah_helper

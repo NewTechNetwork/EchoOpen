@@ -1,0 +1,125 @@
+<?php
+function combobox_test_menu() {
+
+    $items['combobox/test'] = array(
+            'title' => 'Popup Test',
+            'page callback' => 'combobox_test',
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    return $items;
+
+}
+
+function combobox_test_form($form_state) {
+
+
+
+    drupal_add_css(drupal_get_path('module', 'combobox_test') . '/stylish-select.css', 'module', 'all', FALSE);
+    drupal_add_js(drupal_get_path('module', 'combobox_test') . '/externalFile.js');
+    drupal_add_js(drupal_get_path('module', 'combobox_test') . '/jquery.stylish-select.js');
+
+
+//    drupal_add_css(drupal_get_path('module', 'combobox_test') . '/stylish-select.css', 'module', 'all', FALSE);
+//
+//
+//// drupal_add_js(drupal_get_path('module', 'combobox_test') . '/jquery.min.js');
+//    drupal_add_js(drupal_get_path('module', 'combobox_test') . '/externalFile.js');
+//    drupal_add_js(drupal_get_path('module', 'combobox_test') . '/jquery.stylish-select.js');
+
+    $typeoption = array('1' => 'test1','2' => '<a href="http://www.softnology.com">test2</a>','3' => '<a href="http://www.test.com">test3<a>');
+
+
+
+
+    $form['main-wrapper'] = array(
+            '#type'   => 'fieldset',
+            '#title'  => '',
+            '#tree'   => TRUE, // Don't forget to set #tree!
+            '#prefix' => '<table>', // This is our wrapper div.
+            '#suffix' => '</table>',
+    );
+
+
+
+    $form['main-wrapper']['combo1'] = array(
+            '#type' => 'select',
+            '#options' => $typeoption,
+            //           '#default_value' => $selected_coursetype,
+            '#prefix' =>'<tr><td><div>'. t('Type').'</div></td><td><div><span style="width:120px;position:relative" class="comboboxBgLeft">',
+
+            '#suffix' =>'<a href="http://www.click2pay.com" class="comboBoxLink">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a></span></div><br clear="all"/></td></tr>',
+            '#attributes' => array('class' => 'my-dropdown'),
+
+    );
+
+
+    $form['main'] = array(
+            '#type'   => 'fieldset',
+            '#title'  => '',
+            '#tree'   => TRUE, // Don't forget to set #tree!
+            '#prefix' => '<div id="activity-main-wrapper">', // This is our wrapper div.
+            '#suffix' => '</div>',
+    );
+
+
+
+    $typeoption = array('1' => 'test1','2' => 'test2','3' => 'test3');
+    $selected_coursetype = $form_state['values']['main']['coursetype'];
+
+
+    $form['main']['coursetype'] = array(
+            '#type' => 'select',
+            '#options' => $typeoption,
+            '#default_value' => $selected_coursetype,
+            '#prefix' =>'<div>'. t('Type').'</div><div style="width:300px;" class="comboboxBgLeft">',
+            '#ahah' => array(
+                    'event'   => 'change',
+                    'path'    => ahah_helper_path(),
+                    'wrapper' => 'activity-main-wrapper',
+            ),
+
+            '#suffix' =>'</div>',
+            '#attributes' => array('class' => 'my-dropdown'),
+
+
+    );
+
+
+
+    $coursetype = $form_state['values']['main']['coursetype'];
+
+
+    if (isset($coursetype)) {
+
+
+        $form['main']['activityid'] = array(
+                '#type' => 'textfield',
+                '#value' => $coursetype,
+        );
+
+
+
+
+    }
+
+
+
+
+
+
+    return $form;
+}
+
+
+
+
+
+function combobox_test() {
+
+    return drupal_get_form('combobox_test_form');
+
+}
+
+?>

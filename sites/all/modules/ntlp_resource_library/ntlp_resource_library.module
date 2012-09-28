@@ -1,0 +1,426 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+require_once "form_def.inc";
+require_once "data_access.inc";
+require_once "ntlp_resource_library_category_edit.inc";
+require_once "ntlp_resource_library_category.inc";
+require_once "ntlp_resource_lib_cate_resources.inc";
+require_once "ntlp_resource_library_mgmt.inc";
+require_once "ntlp_resource_library_header.content.inc";
+
+module_load_include('inc', 'ntlp_document_library', 'ntlp_document_mgmt');
+
+function ntlp_resource_library_menu() {
+// $items = array();
+
+
+    $items['ntlp/resource/library/manage'] = array(
+            'title' => 'Network Resource Library',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('ntlp_library_resource_form_controller'),  //ntlp_admincourse_form'),
+            'access arguments' => array('Network: resource add category'),
+            'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/resource/library/delcategory/%'] = array(
+            'title' => 'Network Resource Library',
+            'page callback' => 'ntlp_library_resource_delete_category',
+            'page arguments' => array(4),
+            'access arguments' => array('Network: resource add category'),
+            'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/resource/library/add/category/%/%'] = array(
+            'title' => 'Add Library Category',
+            'page callback' => 'ntlp_resource_library_category_add_frm',
+            'access arguments' => array('Network: resource add category'),  //On Load: check if teacher/student is enrolled in this course
+            'page arguments' => array(5, 6),
+            'type' => MENU_CALLBACK,
+
+    );
+
+    $items['ntlp/resource/savecategory/%/%/%/%'] = array(
+            'title' => 'Save Library Category',
+            'page callback' => 'ntlp_resource_library_category_add_data',
+            'access arguments' => array('Network: resource add category'),  //On Load: check if teacher/student is enrolled in this course
+            'page arguments' => array(3, 4, 5, 6 ),
+            'type' => MENU_CALLBACK,
+
+    );
+
+    $items['ntlp/resource/library/add/resource'] = array(
+            'title' => 'Library Add Resrouces',
+            'page callback' => 'ntlp_document_library_frm',
+            'page arguments' => array(5),               //Resource id, Comment text
+            'access arguments' => array('Network: view resources'),
+            'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/resource/library/edit/resource/%'] = array(
+            'title' => 'Library Add Resrouces',
+            'page callback' => 'ntlp_document_library__edit_frm',
+            'page arguments' => array(5),               //Resource id, Comment text
+            'access arguments' => array('Network: edit resources'),
+            'type' => MENU_CALLBACK,
+    );
+    
+    $items['ntlp/resource/library/filter/%'] = array(
+            'title' => 'Resource Library Filter',
+            'page callback' => 'ntlp_resource_library_search_result',
+            'page arguments' => array(4, 5),               //Category, Is Ajax?
+            'access arguments' => array('Network: view resources'),
+            'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/node/resource/delete/%'] = array(
+            'title' => 'Resource Delete',
+            'page callback' => 'delete_resource_lib_resource',
+            'page arguments' => array(4),               //Resource id, Comment text
+            'access arguments' => array('Network: edit resources'),
+            'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/resource/library/search'] = array(
+            'title' => 'Network Resource Library Search',
+            'page callback' => 'ntlp_resource_library_search_page',
+            'access arguments' => array('Network: view resources'),
+            'type' => MENU_CALLBACK,
+    );
+
+    return $items;
+}
+
+/* implementation of hook perm */
+function ntlp_resource_library_perm() {
+    return array("Network: add resources","Network: resource add category","Network: edit category","Network: edit resources",
+            "Network: view resources", "Network: delete own resources", "Network: delete comment", "Network: view comment",
+            "Network: delete own comment" );
+}
+
+function ntlp_resource_library_block($op = 'list', $delta = 0, $edit = array()) {
+
+    switch ($op) {
+        case 'list':
+            $blocks[0] = array(
+                    'info'       => t('NTLP: Network Resoruce Library'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[1] = array(
+                    'info'       => t('NTLP: Network Resoruce Library Search'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[2] = array(
+                    'info'       => t('NTLP: Network Resource Library Category Data'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[3] = array(
+                    'info'       => t('NTLP: Network Resource Library Category Information'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[4] = array(
+                    'info'       => t('NTLP: Network Resource Library Resources View'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[5] = array(
+                    'info'       => t('NTLP: Network Resource Library Popular Resource'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[6] = array(
+                    'info'       => t('NTLP: Network Resource Library Total Resource'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[7] = array(
+                    'info'       => t('NTLP: Resource Library Recent Additions By Category'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[8] = array(
+                    'info'       => t('NTLP: Resource Library Category/Keyword'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[9] = array(
+                    'info'       => t('NTLP: Resource Library Filter'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[10] = array(
+                    'info'       => t('NTLP: Resource Library Category Filter'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[11] = array(
+                    'info'       => t('NTLP: Resource Library Search Block'),
+                    'status'     => TRUE,
+                    'weight'     => 0,
+                    'visibility' => 1,
+                    'pages'      => 'nav/*',
+            );
+
+            $blocks[12] = array(
+                    'info'       => t('NTLP: Resource Library Search Result Block'),
+            );
+
+            return $blocks;
+
+        case 'configure':
+            $form = array();
+            return $form;
+
+        case 'save':
+
+
+        case 'view': default:
+
+            switch ($delta) {
+                case 0:
+
+                    $block['subject'] = t('NTLP: Network Resoruce Library');
+                    $block['content'] = network_resource_library_category_contents();
+                    break;
+
+                case 1:
+
+                    $block['subject'] = t('NTLP: Network Resoruce Library Search');
+                    $block['content'] = network_resource_library_search_contents();
+                    break;
+
+                case 2:
+
+                    $block['subject'] = t('NTLP: Network Resource Library Category Data');
+                    $block['content'] = resources_library_category_contents();
+                    break;
+
+                case 3:
+                    $block['subject'] = t('NTLP: Network Resource Library Category Information');
+                    $block['content'] = ntlp_resource_lib_category_info();
+                    break;
+
+
+                case 4:
+
+                    $block['subject'] = t('NTLP: Network Resource Library Resources View');
+                    $block['content'] = ntlp_resource_lib_view_contents();
+                    break;
+
+                case 5:
+
+                    $block['subject'] = t('NTLP: Network Resource Library Popular Resource');
+                    $block['content'] = ntlp_most_popular_resource_lib_contents();
+
+                    break;
+
+                case 6:
+
+                    $block['subject'] = t('NTLP: Network Resource Library Total Resources');
+                    $block['content'] = ntlp_total_resource_lib_contents();
+
+                    break;
+
+                
+                case 7:
+                    $block['subject'] = t('NTLP: Resource Library Recent Additions By Category');
+                    $block['content'] = ntlp_recent_additions_resource_lib_contents_by_category();
+                    break;
+
+                case 8:
+                    $block['subject'] = t('NTLP: Resource Library Category/Keyword');
+                    $block['content'] = ntlp_resource_lib_contents_category_keyword();
+                    break;
+
+                case 9:
+                    $block['subject'] = t('NTLP: Resource Library Filter');
+                    $block['content'] = ntlp_resource_lib_filter_block();
+                    break;
+
+                case 10:
+                    $block['subject'] = t('NTLP: Resource Library Category Filter');
+                    $block['content'] = ntlp_category_resource_lib_filter();
+                    break;
+
+                case 11:
+                    $block['subject'] = t('NTLP: Resource Library Search Block');
+                    $block['content'] = ntlp_resource_library_search_block_content();
+                    break;
+
+                case 12:
+                    $block['subject'] = t('NTLP: Resource Library Search Result Block');
+                    $block['content'] = ntlp_resource_library_search_result();
+                    break;
+            }
+
+            return $block;
+    }
+}
+
+
+
+function ntlp_resource_library_search_result($category_tid = 0, $ajax = false, $types = array(), $featured = false) {
+
+    $module_Obj = _get_module_detail('ntlp_network_resource_library');
+    $module_nid = $module_Obj->nid; // module_nid
+
+    $vargs = array();
+    $vargs[] = $module_nid;
+
+    if ($category_tid == 0) {
+        $category_tid = arg(4);
+        }
+    if ($ajax == 1 && isset($_REQUEST['category'])) {
+        $category_tid = $_REQUEST['category'];
+    }
+    if ($category_tid > 0) {
+        $vargs[] = $category_tid;
+    }
+
+    //--- Check for Selected Types
+    $typesTotal = array(
+            'link' => 'lo_link',
+            'images' => 'lo_image',
+            'documents' => 'lo_document',
+            'pages' => 'lo_page',
+            'videos' => 'lo_video',
+    );
+    $types = array_keys($typesTotal);
+
+    $selected_types = array();
+    if( isset( $_REQUEST['type'] ) ) {
+        foreach( $_REQUEST['type'] as $type ) {
+            if(in_array( $type, $types )) {
+                $selected_types[] = $typesTotal[$type];
+    }
+        }
+    }
+    $is_featured = 0;
+    if( isset( $_REQUEST['other'] ) ) {
+        $other_filters = $_REQUEST['other'];
+        $is_featured = $other_filters['featured'];
+    }
+
+    $view = views_get_view('ntlp_network_resource_lib');
+
+    //If type filter is selected then we will get value here, and then we can filter node types
+    if($selected_types) {
+        $filter_type = array (
+            'type' => array (
+                'operator' => 'in',
+                'value' => $selected_types,
+                'table' => 'node',
+                'field' => 'type',
+            ),
+        );
+        $view->display['default']->display_options['filters'] = array_merge($view->display['default']->display_options['filters'], $filter_type);
+    }
+    if ($is_featured == 1) {
+        $filter_other = array (
+            'promote' => array (
+                'operator' => '=',
+                'value' => 1,
+                'table' => 'node',
+                'field' => 'promote',
+            ),
+        );
+        $view->display['default']->display_options['filters'] = array_merge($view->display['default']->display_options['filters'], $filter_other);
+    }
+//    watchdog('res_view_ftr', print_r($view->display['default']->display_options['filters'], true));
+//    watchdog('res_view_arg', print_r($vargs, true));
+
+    $output = '<div id="library_document_table_view">'. $view->preview('default', $vargs) .'</div>';
+    if ($ajax) {
+        $output .= '
+            <script type="text/javascript">
+                fixDocumentSearchResultPager();
+            </script>
+        ';
+        print $output;
+    } else {
+        return $output;
+    }
+}
+
+function delete_resource_lib_resource($resourse_id){
+
+    watchdog('library resource del','resource_id'.$resourse_id);
+    db_query("DELETE FROM {ntlp_library_resource} where nid = %d", $resourse_id);
+
+}
+function ntlp_library_resource_delete_category($category_id) {
+    db_query("DELETE FROM {ntlp_library_category} where category_tid = %d", $category_id);
+    if (db_affected_rows() > 0) {
+        //Remove references of this category from all mapped resources
+        db_query("DELETE FROM {term_node} where tid = %d", $category_id);
+
+        drupal_set_message('Category successfully deleted');
+    }
+}
+
+function ntlp_resource_library_search_page() {
+
+    if (!user_is_logged_in()) {
+        return "";
+    }
+
+$HTML_homepage = t(<<<END
+    <div>
+        @CATEGORYINFO
+    </div>
+    <div>
+        <div style="width:70%;float:left;">
+            <div>@SEARCHBOX</div>
+            <div>@SEARCHRESULT</div>
+        </div>
+        <div style="float:left;"></div>
+        <div style="width:25%;float:right;">
+            @FILTERS
+        </div>
+    </div>
+END
+);
+
+    $html = str_replace('@CATEGORYINFO', ntlp_resource_lib_category_info(), $HTML_homepage);
+    $html = str_replace('@SEARCHBOX', ntlp_resource_library_search_block_content(), $html);
+    $html = str_replace('@SEARCHRESULT', ntlp_resource_library_search_result(), $html);
+    $html = str_replace('@FILTERS', ntlp_resource_lib_filter_block(), $html);
+    return $html;
+}

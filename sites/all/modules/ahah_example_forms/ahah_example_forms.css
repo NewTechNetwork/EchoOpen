@@ -1,0 +1,20 @@
+#example7-wrapper .fieldsets-outer {
+  min-height:250px;
+}
+#example7-wrapper label,
+#example7-wrapper .form-item {
+  clear:both;
+  float:left;
+  display:inline;
+}
+#example7-wrapper .form-item {
+  margin-right:10px;
+  width:175px;
+}
+#example7-wrapper .form-text {
+  margin-right:10px;
+  width:200px;
+}
+#example7-wrapper #edit-example7-three-text-wrapper {
+  width:300px;
+}

@@ -1,0 +1,490 @@
+/*// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+
+.teacherProfile {
+    margin-bottom:5px;
+}
+.teacherProfile .clear {
+	clear:both;
+	height:10px;
+        font-size:10px;
+}
+.teacherProfile .yellowBacktopleft{
+	background-image:url(../Images/teacherProfile/yellowBacktopleft.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	background-color:#fff9c2;
+}
+.teacherProfile .yellowBacktopright{
+	background-image:url(../Images/teacherProfile/yellowBacktopright.jpg);
+	background-repeat:no-repeat;
+	background-position:top right;
+}
+.teacherProfile .yellowBackbottomleft{
+	background-image:url(../Images/teacherProfile/yellowBackbottomleft.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom left;
+}
+.teacherProfile .yellowBackbottomright{
+	background-image:url(../Images/teacherProfile/yellowBackbottomright.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom right;
+	padding-left:0px;
+}
+.teacherProfile .skyblueBacktopleft{
+	background-image:url(../Images/teacherProfile/skyblueBacktopleft.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	background-color:#d5e9f5;
+}
+.teacherProfile .skyblueBacktopright{
+	background-image:url(../Images/teacherProfile/skyblueBacktopright.jpg);
+	background-repeat:no-repeat;
+	background-position:top right;
+}
+.teacherProfile .skyblueBackbottomleft{
+	background-image:url(../Images/teacherProfile/skyblueBackbottomleft.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom left;
+}
+.teacherProfile .skyblueBackbottomright{
+	background-image:url(../Images/teacherProfile/skyblueBackbottomright.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom right;
+	padding:10px;
+}
+.teacherProfile .greenBacktopleft{
+	background-image:url(../Images/teacherProfile/greenBacktopleft.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	background-color:#d3ffc2;
+}
+.teacherProfile .greenBacktopright{
+	background-image:url(../Images/teacherProfile/greenBacktopright.jpg);
+	background-repeat:no-repeat;
+	background-position:top right;
+}
+.teacherProfile .greenBackbottomleft{
+	background-image:url(../Images/teacherProfile/greenBackbottomleft.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom left;
+}
+.teacherProfile .greenBackbottomright{
+	background-image:url(../Images/teacherProfile/greenBackbottomright.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom right;
+	padding:10px;
+}
+.teacherProfile .whiteBacktopleft{
+	background-image:url(../Images/teacherProfile/whiteBacktopleft.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+	background-color:#fff;
+}
+.teacherProfile .whiteBacktopright{
+	background-image:url(../Images/teacherProfile/whiteBacktopright.jpg);
+	background-repeat:no-repeat;
+	background-position:top right;
+}
+.teacherProfile .whiteBackbottomleft{
+	background-image:url(../Images/teacherProfile/whiteBackbottomleft.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom left;
+}
+.teacherProfile .whiteBackbottomright{
+	background-image:url(../Images/teacherProfile/whiteBackbottomright.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom right;
+}
+
+.teacherProfile .blueBacktopleft-ProfileDetailLogo{
+	background-image:url(../Images/teacherProfile/profileDatailIcon.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+}
+.teacherProfile .blueBacktopleft-CoursesLogo{
+	background-image:url(../Images/teacherProfile/coursesIcon.jpg);
+	background-repeat:no-repeat;
+	background-position:top left;
+}
+.teacherProfile .blueBacktopcenter{
+	background-image:url(../Images/teacherProfile/profileDatailTopcenter.jpg);
+	background-repeat:repeat-x;
+	background-position:top left;
+	background-color:#3570aa;
+}
+.teacherProfile .blueBacktopcenter-Courses{
+	background-image:url(../Images/teacherProfile/Coursestopcenter.jpg);
+	background-repeat:repeat-x;
+	background-position:top left;
+	background-color:#3570aa;
+}
+.teacherProfile .blueBacktopright{
+	background-image:url(../Images/teacherProfile/profileDatailTopright.jpg);
+	background-repeat:no-repeat;
+	background-position:top right;
+}
+.teacherProfile .blueBacktopright-Courses{
+	background-image:url(../Images/teacherProfile/Coursestopright.jpg);
+	background-repeat:no-repeat;
+	background-position:top right;
+}
+.teacherProfile .blueBackbottomleft{
+	background-image:url(../Images/teacherProfile/blueBackbottomleft.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom left;
+}
+.teacherProfile .blueBackbottomright{
+	background-image:url(../Images/teacherProfile/blueBackbottomright.jpg);
+	background-repeat:no-repeat;
+	background-position:bottom right;
+	padding:8px 0px 8px 8px;
+	}
+.teacherProfile .blueBackbottomright .profileDetail{
+	margin:0 9px 0 0;
+	}
+
+
+.teacherProfile h2.teacherHeading {
+		color:#3570aa;
+		padding:0px;
+		margin:0px;
+		font-size:15px;
+}
+.teacherProfile h2.teacherprofileHeading {
+		color:#fff;
+		padding:0px;
+		margin:0px;
+		font-size:18px;
+		padding-left:0px;
+                padding-top:2px;
+}
+.teacherProfile h2.teachercoursesHeading {
+		color:#fff;
+		padding:0px;
+		margin:0px;
+		font-size:18px;
+		padding-left:55px;
+		padding-top:5px;
+}
+.teacherProfile h2.teacherComment {
+		color:#3570aa;
+		padding:0px;
+		margin:0px;
+		font-size:15px;
+}
+.teacherProfile span.commentBy {
+		color:#3570aa;
+		padding:0px;
+		margin:0px;
+		font-size:12px;
+		font-weight:bold;
+}
+.teacherProfile .profileDetail {
+	padding-top:16px;
+}
+.teacherProfile .table {
+	border-top:1px dotted #a0c2d5;
+	border-collapse:collapse;
+}
+.teacherProfile .table th {
+	border-bottom:1px dotted #a0c2d5;
+	border-right:1px dotted #a0c2d5;
+	border-collapse:collapse !important;
+	width:93px;
+	color:#3591cb;
+	text-align:right;
+	vertical-align:top;
+}
+
+.teacherProfile .table td {
+	border-bottom:1px dotted #a0c2d5;
+	border-collapse:collapse !important;
+	color:#666666;
+}
+
+.teacherProfile a.link {
+		color:#339900 !important;
+		font-size:12px !important;
+		text-decoration:none !important;
+}
+.teacherProfile a:hover.link {
+		color:#339900 !important;
+		font-size:12px !important;
+		text-decoration:underline !important;
+}
+.teacherProfile div.teacherHeading {
+		
+}
+.teacherProfile div.teacherHeading b {
+		color:#666666;
+		font-size:12px;
+}
+.teacherProfile div.teacherHeading .links {
+		color:#b2d5eb;
+		font-size:12px;
+}
+.teacherProfile .teacherImage {
+	padding-top:5px;
+}
+.teacherProfile .contactInformation {
+	padding-top:5px;
+	padding-left:8px;
+}
+.teacherProfile .contactInformation ul.information {
+	padding:0px;
+	margin:0px;
+       	list-style:none !important;
+        table-layout:fixed;
+	width:200px;
+
+
+}
+
+.teacherProfile .contactInformation ul.information li {
+	padding: 2px 5px;
+	overflow:hidden;
+	white-space:nowrap;
+}
+.teacherProfile .contactInformation ul.information li {
+	border-bottom:1px dotted #aba88d;
+	color:#666666;
+	padding-left:25px;
+        line-height:30px;
+        width:170px;
+	background-position:0 8px;
+	background-repeat:no-repeat;
+
+}
+
+
+.teacherProfile .contactInformation ul.information li.email {
+	background-image:url(../Images/teacherProfile/emailIcon.jpg);
+}
+.teacherProfile .contactInformation ul.information li.docs {
+	background-image:url(../Images/teacherProfile/commentIcon.jpg);
+}
+.teacherProfile .contactInformation ul.information li.phone {
+	background-image:url(../Images/teacherProfile/phoneIcon.jpg);
+}
+.teacherProfile .contactInformation ul.information li.url {
+	background-image:url(../Images/teacherProfile/calenderIcon.jpg);
+	border-bottom:none;
+}
+.teacherProfile .coursesLinks {
+	list-style:none;
+	padding:0px;
+	margin:0px;
+}
+.teacherProfile .coursesLinks  li {
+	color:#666;
+	line-height:20px;
+}
+.teacherProfile .coursesLinks  li a {
+	color:#339900 !important;
+	font-size:12px !important;
+	text-decoration:none !important;
+        font-weight: normal !important;
+}
+.teacherProfile .coursesLinks  li a:hover {
+	color:#339900 !important;
+	font-size:12px !important;
+	text-decoration:underline !important;
+}
+h1.pageHeading {
+	color:#3570aa;
+        padding:0px;
+        margin:0px;
+        font-size: 20px;
+}
+li.docs .form-item {
+    padding:0 0 0 25px;
+}
+li.docs #edit-user-profile-personinfo-contact-im-name-wrapper {
+    float: left;
+    padding:0 0 0 5px !important;
+}
+li.docs #edit-user-profile-personinfo-contact-im-id-wrapper {
+    float: left;
+    padding:0 0 0 25px !important;
+
+}
+
+.imgPlaceholder {
+		position:relative;
+		width:auto;
+		float:left;
+	}
+	.imgPlaceholder img {
+	}
+	a.imgUploadLink {
+		position:absolute;
+		height:25px;
+		bottom:0px;
+        	background-image:url(../Images/imageUploader/bg_linkHover.png);
+		width:100%;
+		color:#FFF !important;
+		font-size:12px;
+		text-decoration:none !important;
+		display:block;
+}
+	a:hover.imgUploadLink {
+        	background-image:url(../Images/imageUploader/bg_imgHover.png);
+                text-decoration: none  !important;
+}
+.imgUploadLink div {
+                background-image:url(../Images/imageUploader/imgIcon.gif);
+		background-repeat:no-repeat;
+		background-position:5px 7px;
+	}
+	.imgUploadLink div {
+		padding:5px 0 0 25px;
+	}
+        .modalframe-page-container #display-files-wrapper fieldset .form-item {
+  float: left;
+        }
+        .modalframe-page-container #display-files-wrapper fieldset .form-submit {
+  float: left;
+  margin-top: 15px;
+        }
+
+
+
+#AgendaShareStuff #AgendaShareStuffContent .likesCommentsCopies {
+	padding-top:5px;
+
+}
+#AgendaShareStuff #AgendaShareStuffContent .likesCommentsCopies .text {
+	margin:2px 0 0 5px;
+
+}
+#AgendaShareStuff #AgendaShareStuffContent .likesCommentsCopies a {
+	color:#090;
+	font-size:11px;
+
+}
+
+#AgendaShareStuff #AgendaShareStuffContent .likesCommentsCopies img {
+	border:none;
+
+}
+
+#AgendaShareStuff #AgendaShareStuffContent .likesCommentsCopies ul {
+	padding:0px;
+	margin:0px;
+}
+#AgendaShareStuff #AgendaShareStuffContent .likesCommentsCopies li {
+		list-style:none;
+		float:left;
+		width:100px;
+		height:30px;
+}
+#AgendaShareStuff #AgendaShareStuffContent .likesCommentsCopies li div {
+		float:left;
+}
+#AgendaShareStuff #AgendaShareStuffContent .SubHeading {
+	color:#3570aa;
+	font-weight:bold;
+	font-size:12px;
+
+}
+#AgendaShareStuff #AgendaShareStuffContent .SubHeading div {
+		width:90px;
+}
+
+#AgendaShareStuff #AgendaShareStuffContent .SubHeading a {
+	color:#090;
+	font-weight:bold;
+	font-size:12px;
+	text-decoration:none;
+}
+#AgendaShareStuff #AgendaShareStuffContent .SubHeading a:hover {
+	text-decoration:underline;
+}
+#AgendaShareStuff #AgendaShareStuffContent .subData {
+	padding-top:10px;
+
+}
+#AgendaShareStuff #AgendaShareStuffContent .subData h2 {
+	padding:0px;
+	margin:0px;
+	color:#3570aa;
+	font-weight:bold;
+	font-size:15px;
+
+}
+#AgendaShareStuff #AgendaShareStuffContent .subData p {
+	font-size:12px;
+	padding:0px;
+	margin:0px;
+	color:#666;
+
+}
+#AgendaShareStuff .moreExemplary {
+	padding-top:18px;
+	padding-right:2px;
+}
+#AgendaShareStuff .moreExemplary a {
+	font-size:12px;
+	color:#FFF;
+	font-weight:bold;
+	text-decoration:none;
+
+}
+#AgendaShareStuff #AgendaShareStuffHeading .FeaturedProjectIcon {
+	float:left;
+	background-image:url(../Images/teacherProfile/FavorateProjectIcon.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	width:42px;
+	height:44px;
+}
+
+.profile_PostBtn input {
+    background-image:url(../Images/PostBtnBg.png) !important;
+    background-position: top left !important;
+    background-repeat: no-repeat !important;
+    height:23px !important;
+    width:67px !important;
+    float:right !important;
+    border:none !important;
+    background-color: transparent  !important;
+    margin:0 0 5px 0 !important;
+    cursor: pointer !important;
+    color:#fff !important;
+}
+#AgendaShareStuff #AgendaShareStuffContent .likesTopRightCommentsCopies {
+	padding-top:5px;
+
+}
+#AgendaShareStuff .likesTopRightCommentsCopies .text {
+	margin:2px 0 0 5px;
+        color:#fff;
+
+}
+#AgendaShareStuff .likesTopRightCommentsCopies a {
+	color:#090;
+	font-size:11px;
+
+}
+
+#AgendaShareStuff .likesTopRightCommentsCopies img {
+	border:none;
+
+}
+
+#AgendaShareStuff .likesTopRightCommentsCopies ul {
+	padding:0px;
+	margin:0px;
+}
+#AgendaShareStuff .likesTopRightCommentsCopies li {
+		list-style:none;
+		float:left;
+		width:120px;
+		height:30px;
+}
+#AgendaShareStuff .likesTopRightCommentsCopies li div {
+		float:left;
+}

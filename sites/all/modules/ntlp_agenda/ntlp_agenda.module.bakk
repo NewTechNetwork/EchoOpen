@@ -1,0 +1,848 @@
+<?php
+// $Id: ntlp_agenda.module,v 1.3 2010/5/2 Shahbaz Ahmer, Saifuddin $
+
+/**
+ * NTLP Agenda Module
+ * Uses month rendering functions from:
+ * Availability Calendars Module
+ *
+ */
+
+module_load_include('inc', 'ntlp_agenda', 'agenda.contents');
+module_load_include('inc', 'ntlp_school', 'data_access');
+
+/**
+ * Implementation of hook_menu().
+ */
+function ntlp_agenda_menu() {
+    $items = array();
+
+    $items['ntlp/agenda/edit/%/%/%/%'] = array(
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('agenda_edit', 3,4,5,6),
+            'access callback' => 'returntrue',
+            'access arguments' => array('edit availability calendars'),
+            'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/agenda/eit'] = array(
+            'page callback' => 'agenda_edit_new',
+//            'page arguments' => array('agenda_edit_new', 3,4,5,6),
+            'type' => MENU_CALLBACK,
+            'access callback' => TRUE,
+    );
+
+    $items['ntlp/agenda/%/%/%/%'] = array(
+            'page callback' => 'agenda_main',
+            'page arguments' => array(2,3,4,5),
+            'access callback' => 'returntrue',
+            'type' => MENU_CALLBACK,
+
+    );
+
+    $items['ntlp/agenda/view/%/%/%/%'] = array(
+            'page callback' => 'view_agenda',
+            'page arguments' => array(3,4,5,6),
+            'access callback' => 'returntrue',
+            'type' => MENU_CALLBACK,
+
+    );
+
+    $items['ntlp/agenda/previous/%/%/%'] = array(
+            'page callback' => 'previous_month',
+            'page arguments' => array(3,4,5),
+            'access callback' => 'returntrue',
+            'type' => MENU_CALLBACK,
+
+    );
+
+    $items['ntlp/agenda/next/%/%/%'] = array(
+            'page callback' => 'next_month',
+            'page arguments' => array(3,4,5),
+            'access callback' => 'returntrue',
+            'type' => MENU_CALLBACK,
+
+    );
+
+//    $items['agenda-calendar/%'] = array(
+//            'page callback' => 'get_agenda_calendar',
+//            'page arguments' => array(1),
+//            'access callback' => 'returntrue',
+//            'access arguments' => TRUE,
+//            'type' => MENU_CALLBACK,
+//
+//    );
+
+    return $items;
+}
+
+//function get_agenda_calendar($node_id) {
+//
+//    $node = node_load($node_id);
+//    return node_view($node);
+//
+//}
+
+function returntrue() {
+
+    return true;
+}
+
+function agenda_edit_new() {
+    echo drupal_get_form('agenda_edit_form');
+}
+
+function agenda_edit_form() {
+
+    $path = drupal_get_path('module', 'ntlp_agenda');
+    drupal_add_css($path.'/theme/ui.all.css');
+
+
+    $course_nid=1;
+    $year = 2010;
+    $month = 2;
+    $day = 2;
+
+
+    $agenda_desc = '';
+    $title = '';
+    $fdt = getdate();
+    $event_end['year']= $fdt['year'];
+    $event_end['month']= $fdt['mon'];
+    $event_end['day']= $fdt['mday'];
+    $event_end['hour']= $fdt['hours'];
+    $event_end['minutes']= $fdt['minutes'];
+    $event_start = $event_end;
+    $nid = 0;
+
+    if($course_nid != 0) {
+        $agenda_obj = get_agenda($course_nid, $year, $month, $day);
+//        echo 'Result: Agenda found';
+        if($agenda_obj) {
+            $agenda_desc = $agenda_obj->body;
+            $title = $agenda_obj->title;
+            $nid = $agenda_obj->nid;
+
+            list($tyear, $tmonth, $tday, $thour, $tmin, $tsec) = split('[: -]', $agenda_obj->event_end);
+
+            $event_end['year']= $tyear;
+            $event_end['month']= $tmonth;
+            $event_end['day']= $tday;
+            $event_end['hour']= $thour;
+            $event_end['minutes']= $tmin;
+
+            list($fyear, $fmonth, $fday, $fhour, $fmin, $fsec) = split('[: -]', $agenda_obj->event_start);
+
+            $event_start['year']= $fyear;
+            $event_start['month']= $fmonth;
+            $event_start['day']= $fday;
+            $event_start['hour']= $fhour;
+            $event_start['minutes']= $fmin;
+        }
+    }
+
+    $form['nid'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $nid,
+    );
+    $form['course_nid'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $course_nid,
+    );
+
+    $form['year'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $year,
+    );
+
+    $form['month'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $month,
+    );
+
+
+    $form['agenda_title'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Agenda Title'),
+            '#size' => '40',
+            '#default_value' => $title,
+//            '#default_value' => (!empty($title) ? $title  : 'Today\'s Agenda'),
+    );
+
+    $form['fromdate'] = array(
+            '#type' => 'event',
+            '#size' => 10,
+            '#title' => t('From'),
+            '#attributes' => array('onclick' => "callme();"),
+            '#default_value'=> $event_start,
+//            '#default_value' => isset($fromdate) ? $fromdate : _event_user_time(),
+
+    );
+
+    $form['todate'] = array(
+            '#type' => 'event',
+            '#size' => 10,
+            '#title' => t('To'),
+            '#attributes' => array('onclick' => "callme();"),
+            '#default_value' => $event_end,
+    );
+
+    $form['agenda_desc'] = array(
+            '#type' => 'textarea',
+            '#title' => t('Detail'),
+            '#default_value' => '',
+            '#required' => TRUE,
+            '#default_value' => $agenda_desc,
+    );
+
+
+    $form['submit'] = array(
+            '#type' => 'submit',
+            '#value' => t('Submit'),
+            '#submit' => array('agenda_edit_submit'),
+    );
+
+    return $form;
+
+}
+
+function agenda_details_contents($course_nid=0, $year = 2010, $month = 2, $day = 2) {
+    return drupal_get_form('_agenda_edit_form',$course_nid, $year, $month, $day);
+}
+
+function _agenda_edit_form($form_state, $course_nid=0, $year = 2010, $month = 2, $day = 2) {
+    include "agenda.template.inc";
+
+    if(check_plain(arg(2)) != 'view') {
+        $course_nid = check_plain(arg(2));
+        $year = check_plain(arg(3));
+        $month = check_plain(arg(4));
+        $day = check_plain(arg(5));
+    }
+    watchdog('agenda',$year .' '. $day .' '.$month.' '. $course_nid .' '.$agendaid);
+    $agenda_desc = '';
+    $title = '';
+    $fdt = getdate();
+
+    $event_end['year']  = $fdt['year'];
+    $event_end['month'] = $fdt['mon'];
+    $event_end['day']   = $fdt['mday'];
+    $event_end['hour']  = $fdt['hours'];
+    $event_end['minutes']= $fdt['minutes'];
+    $event_start = $event_end;
+    $nid = 0;
+
+
+    if(isset($form_state)) {
+        watchdog('info', 'op '.$form_state['values']['op'].' value '.$form_state['values']['Edit Agenda Details']);
+    }
+
+    /*********************** Start view  form ************************/
+    $form['agenda_details'] = array(
+            '#type'   => 'fieldset',
+            '#title'  => '',
+            '#tree'   => TRUE, // Don't forget to set #tree!
+            '#prefix' => '<div id="edit_agenda_details_test">'.$HTMLcontainerHeader,
+            '#suffix' => $HTMLcontainerFooter.'</div>',
+    );
+
+
+    if (!isset($form_state['values']['op'])) {
+        $view_state = '';
+    }
+    else {
+        $view_state =  $form_state['values']['op'];
+
+        if(isset($form_state['values']['agenda_details']['course_nid'])) {
+            $course_nid = $form_state['values']['agenda_details']['course_nid'];
+            $agendaid = $form_state['values']['agenda_details']['nid'];
+            $year = $form_state['values']['agenda_details']['year'];
+            $month = $form_state['values']['agenda_details']['month'];
+            $day = $form_state['values']['agenda_details']['day'];
+        }
+    }
+
+    if($course_nid != 0) {
+        $agenda_obj = get_agenda($course_nid, $year, $month, $day);
+//      echo 'Result: Agenda found';
+        watchdog('info', 'Agenda found');
+        if($agenda_obj) {
+            $agenda_desc = $agenda_obj->body;
+            $title = $agenda_obj->title;
+            $nid = $agenda_obj->nid;
+
+            list($tyear, $tmonth, $tday, $thour, $tmin, $tsec) = split('[: -]', $agenda_obj->event_end);
+
+            $event_end['year']= $tyear;
+            $event_end['month']= $tmonth;
+            $event_end['day']= $tday;
+            $event_end['hour']= $thour;
+            $event_end['minutes']= $tmin;
+
+            list($fyear, $fmonth, $fday, $fhour, $fmin, $fsec) = split('[: -]', $agenda_obj->event_start);
+
+            $event_start['year']= $fyear;
+            $event_start['month']= $fmonth;
+            $event_start['day']= $fday;
+            $event_start['hour']= $fhour;
+            $event_start['minutes']= $fmin;
+        }
+    }
+
+    $form['agenda_details']['course_nid'] = array(
+            '#type' => 'hidden',
+            '#value' => $course_nid,
+    );
+    $form['agenda_details']['year'] = array(
+            '#type' => 'hidden',
+            '#value' => $year,
+    );
+    $form['agenda_details']['month'] = array(
+            '#type' => 'hidden',
+            '#value' => $month,
+    );
+    $form['agenda_details']['day'] = array(
+            '#type' => 'hidden',
+            '#value' => $day,
+    );
+    $form['agenda_details']['nid'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $nid,
+    );
+
+
+    if ($view_state != 'Edit Agenda Details') {
+        /*********************** Start View form ************************/
+
+        $date = date('Y/m/d', mktime(0, 0, 0, intval($month), intval($day), intval($year)));
+        // parse about any English textual datetime description into a Unix timestamp
+        $ts = strtotime($date);
+
+        $TODAY_DAY = date("l", $ts);
+        $TODAY_DATE = date("M j, Y", $ts);
+
+        $form['agenda_details']['agenda_title'] = array(
+                '#type' => 'item',
+                '#value' => '<h3>'.$TODAY_DAY.'<span>&nbsp;|&nbsp;</span>'.$TODAY_DATE.'</h3>',
+                '#prefix' => $HTMLmain_agenda_date_start,
+                '#suffix' => $HTMLmain_agenda_date_end,
+
+        );
+        $form['agenda_details']['agenda_desc'] = array(
+                '#type' => 'item',
+                '#value' => (!empty($agenda_desc) ? nl2br($agenda_desc) : 'No agenda found for today'),
+                '#prefix' => $HTMLmain_agenda_body_start,
+                '#suffix' => $HTMLmain_agenda_body_end,
+
+        );
+
+        if(user_access("edit agenda")) {
+            $form['agenda_details']['agenda_edit_button'] = array(
+                    '#type' => 'submit',
+                    '#value' => t('Edit Agenda Details'),
+                    '#ahah' => array(
+                            'path' => ahah_helper_path(array('agenda_details')),
+                            'wrapper' => 'edit_agenda_details_test',
+                            'progress' => array('type' => 'throbber', 'message' => t('Please wait...')),
+                    ),
+                    '#prefix' => '<div>',
+                    '#suffix' => '</div>',
+            );
+        }
+
+
+    } else {
+
+        watchdog('info',$year .' '. $day .' '.$month.' '. $course_nid .' '.$agendaid);
+//        $rec = get_agenda($courseid, $pyear, $pmonth, $pday);
+        $form['agenda_details']['agenda_title'] = array(
+                '#type' => 'textfield',
+                '#value' => $title,
+                '#prefix' => $HTMLmain_agenda_title_start,
+                '#suffix' => $HTMLmain_agenda_title_end,
+
+        );
+
+        $form['agenda_details']['fromdate'] = array(
+                '#type' => 'event',
+                '#size' => 10,
+                '#title' => t('From'),
+                '#attributes' => array('onclick' => "callme();"),
+                '#default_value'=> $event_start,
+                '#prefix' => '<div>',
+                '#suffix' => '</div>',
+
+
+        );
+
+        $form['agenda_details']['todate'] = array(
+                '#type' => 'event',
+                '#size' => 10,
+                '#title' => t('To'),
+                '#attributes' => array('onclick' => "callme();"),
+                '#default_value' => $event_end,
+                '#prefix' => '<div>',
+                '#suffix' => '</div>',
+        );
+
+        $form['agenda_details']['agenda_desc'] = array(
+                '#type' => 'textarea',
+//                '#title' => t('Detail'),
+                '#default_value' => '',
+                '#required' => TRUE,
+                '#default_value' => $agenda_desc,
+                '#prefix' => $HTMLmain_agenda_body_start,
+                '#suffix' => $HTMLmain_agenda_body_end,
+        );
+
+        $form['agenda_details']['agenda_save_button'] = array(
+                '#type' => 'submit',
+                '#value' => t('Save Agenda Details'),
+                '#ahah' => array(
+                        'path' => ahah_helper_path(array('agenda_details')),
+                        'wrapper' => 'edit_agenda_details_test',
+                        'progress' => array('type' => 'throbber', 'message' => t('Saving agenda details..')),
+                ),
+                '#submit' => array('agenda_edit_submit'),
+        );
+    }
+    /*******************************End Edit form ***********************************/
+
+
+    return $form;
+}
+
+
+
+function agenda_edit($agendaform=NULL, $course_nid=0, $year = 2010, $month = 2, $day = 2) {
+//echo "Course: $nid ($year/$month/$day)";
+    $path = drupal_get_path('module', 'ntlp_agenda');
+//    drupal_add_js($path . '/jquery.ui.datepicker.js', 'module');
+//    drupal_add_js($path . '/jquery.ui.core.js', 'module');
+    drupal_add_css($path.'/theme/ui.all.css');
+
+    $agenda_desc = '';
+    $title = '';
+    $fdt = getdate();
+    $event_end['year']= $fdt['year'];
+    $event_end['month']= $fdt['mon'];
+    $event_end['day']= $fdt['mday'];
+    $event_end['hour']= $fdt['hours'];
+    $event_end['minutes']= $fdt['minutes'];
+    $event_start = $event_end;
+    $nid = 0;
+
+    if($course_nid != 0) {
+
+        $agenda_obj = get_agenda($course_nid, $year, $month, $day);
+//        echo 'Result: Agenda found';
+        if($agenda_obj) {
+            $agenda_desc = $agenda_obj->body;
+            $title = $agenda_obj->title;
+            $nid = $agenda_obj->nid;
+
+            list($tyear, $tmonth, $tday, $thour, $tmin, $tsec) = split('[: -]', $agenda_obj->event_end);
+
+            $event_end['year']= $tyear;
+            $event_end['month']= $tmonth;
+            $event_end['day']= $tday;
+            $event_end['hour']= $thour;
+            $event_end['minutes']= $tmin;
+
+            list($fyear, $fmonth, $fday, $fhour, $fmin, $fsec) = split('[: -]', $agenda_obj->event_start);
+
+            $event_start['year']= $fyear;
+            $event_start['month']= $fmonth;
+            $event_start['day']= $fday;
+            $event_start['hour']= $fhour;
+            $event_start['minutes']= $fmin;
+        }
+    }
+
+    $form['nid'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $nid,
+    );
+    $form['course_nid'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $course_nid,
+    );
+
+    $form['year'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $year,
+    );
+
+    $form['month'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $month,
+    );
+
+
+    $form['agenda_title'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Agenda Title'),
+            '#size' => '40',
+            '#default_value' => $title,
+//            '#default_value' => (!empty($title) ? $title  : 'Today\'s Agenda'),
+    );
+
+    $form['fromdate'] = array(
+            '#type' => 'event',
+            '#size' => 10,
+            '#title' => t('From'),
+            '#attributes' => array('onclick' => "callme();"),
+            '#default_value'=> $event_start,
+//            '#default_value' => isset($fromdate) ? $fromdate : _event_user_time(),
+
+    );
+
+    $form['todate'] = array(
+            '#type' => 'event',
+            '#size' => 10,
+            '#title' => t('To'),
+            '#attributes' => array('onclick' => "callme();"),
+            '#default_value' => $event_end,
+    );
+
+    $form['agenda_desc'] = array(
+            '#type' => 'textarea',
+            '#title' => t('Detail'),
+            '#default_value' => '',
+            '#required' => TRUE,
+            '#default_value' => $agenda_desc,
+    );
+
+
+    $form['submit'] = array(
+            '#type' => 'submit',
+            '#value' => t('Submit'),
+    );
+
+    return $form;
+}
+
+function agenda_edit_submit($form, &$form_state) {
+    global $user;
+//    print_r($form_state);
+//    die();
+    $nid = check_plain($form_state['clicked_button']['#post']['agenda_details']['nid']);
+    $course_nid = check_plain($form_state['clicked_button']['#post']['agenda_details']['course_nid']);
+//    $year = check_plain($form_state['values']['year']);
+//    $month = check_plain($form_state['values']['month']);
+
+    $fromdate = $form_state['clicked_button']['#post']['agenda_details']['fromdate'];
+    $todate = $form_state['clicked_button']['#post']['agenda_details']['todate'];
+
+    $fromyear = $fromdate['year'];
+    $frommonth = $fromdate['month'];
+    $fromday = $fromdate['day'];
+    $fromhour = $fromdate['hour'];
+    $fromminute = $fromdate['minute'];
+
+    $toyear = $todate['year'];
+    $tomonth = $todate['month'];
+    $today = $todate['day'];
+    $tohour = $todate['hour'];
+    $tominute = $todate['minute'];
+
+    $agendafromdate = $fromyear.'/'.$frommonth.'/'.$fromday;
+    $agendatodate = $toyear.'/'.$tomonth.'/'.$today;
+
+    $agenda_desc = $form_state['clicked_button']['#post']['agenda_details']['agenda_desc'];
+    $agenda_title = $form_state['clicked_button']['#post']['agenda_details']['agenda_title'];
+
+    //Get all agendas between the selected dates
+    if((strtotime($agendatodate) < strtotime($agendafromdate)) != true && $course_nid != 0) {
+        $dayscalculate = (strtotime($agendatodate) - strtotime($agendafromdate)) / (60 * 60 * 24);
+        $curdate = strtotime($agendafromdate);
+        for($i = 0; $i < $dayscalculate+1; $i++) {
+            $valdate = getdate($curdate);
+            $rec = get_agenda($course_nid, $valdate['year'], $valdate['mon'], $valdate['mday']);
+//            drupal_set_message('opening agenda');
+            if($rec) {
+//                drupal_set_message('loading existing agenda');
+                $nid = $rec->nid;
+
+                $event_node = node_load($nid);
+                if (!$event_node) {
+                    drupal_set_message('Unable to find agenda in contents');
+                    //drupal_goto('ntlp/agenda/'.$course_nid.'/'.$fromyear.'/'.$frommonth.'/'.$fromday);
+                    return;
+                }
+                $edit = true;
+            } else {
+//                drupal_set_message('creating new agenda');
+                $event_node = new stdClass();
+                $event_node->type = 'ntlp_agenda';   // Your specified content type
+                $event_node->created = $time;
+                $edit = false; // set boolean for editing a node..
+            }
+            $event_node->title = $agenda_title;
+            $event_node->changed = $time;
+            $event_node->body = $agenda_desc;
+            $event_node->status = 1;
+            $event_node->promote = 0;
+            $event_node->sticky = 0;
+            $event_node->format = 1;       // Filtered HTML
+            $event_node->uid = $user->uid; // UID of content owner
+
+            $event_node->event['has_time'] = '1';
+            $event_node->event['has_end_date'] = '1';
+
+            $event_node->event['start_exploded']['year'] = $fromyear;
+            $event_node->event['start_exploded']['month'] = $frommonth;
+            $event_node->event['start_exploded']['day'] = $fromday;
+            $event_node->event['start_exploded']['hour'] = $fromhour;
+            $event_node->event['start_exploded']['minute'] =  $fromminute;
+
+            $event_node->event['end_exploded']['year'] = $toyear;
+            $event_node->event['end_exploded']['month'] = $tomonth;
+            $event_node->event['end_exploded']['day'] = $today;
+            $event_node->event['end_exploded']['hour'] = $tohour;
+            $event_node->event['end_exploded']['minute'] =$tominute;
+
+            node_save($event_node);
+            $nid = $event_node->nid;
+//            drupal_set_message('agenda node saved');
+
+            //Save in our table
+            $data = array(
+                    'nid' => $nid,
+                    'course_nid' => $course_nid,
+                    'year' => intval($fromyear),
+                    'month' => intval($frommonth),
+                    'day' => intval($fromday),
+                    'status' => $status,
+            );
+            try {
+                if($edit == false) {
+//                    $retval = drupal_write_record('ntlp_course_agenda', $data);
+//                    if ($retval == FALSE) drupal_set_message('FALSE returned');
+//                    drupal_set_message('Agenda created.'.$retval);
+                    db_query("INSERT INTO {ntlp_course_agenda} VALUES (%d, %d, %d, %d, %d, '1')",
+                            $nid, $course_nid, intval($fromyear), intval($frommonth), intval($fromday));
+
+                }else {
+//                    $retval = drupal_write_record('ntlp_course_agenda', $data, 'nid');
+//                    drupal_set_message('Agenda updated.'.$retval);
+                    db_query("UPDATE {ntlp_course_agenda} SET course_nid = %d,
+                            year = %d, month = %d, day = %d, status = '1' WHERE nid = %d",
+                            $course_nid, intval($fromyear), intval($frommonth), intval($fromday), $nid);
+                }
+                $curdate += (60 * 60 * 24);
+            }
+            catch (Exception $e) {
+                drupal_set_message('Error:'.$e->getMessage());
+            }
+        }
+    }
+
+//    drupal_goto('ntlp/agenda/'.$course_nid.'/'.$fromyear.'/'.$frommonth.'/'.$fromday);
+    drupal_set_message('Agenda saved.');
+}
+
+/**
+ * Themed output to display a list of node dates.
+ *
+ * @param $node
+ * @return HTML output.
+ */
+function agenda_main($node, $year = 2008, $month = 1, $day = 1) {
+//echo "Course: $node ($year/$month/$day)";
+    include('agenda.template.inc');
+    drupal_add_css(drupal_get_path('module', 'ntlp_agenda') .'/ntlp_agenda.css');
+    drupal_add_js('misc/ahah.js');
+
+    // Calendar code based on example at http://evolt.org/node/60673 :
+    //$day = 1;
+
+    $startofweek = 0;   //variable_get('ntlp_agenda_'. $node->nid .'_startofweek', 1);
+    $showkey = 1;   //variable_get('ntlp_agenda_'. $node->nid .'_showkey', 1);
+    $firstletter = 0;   //variable_get('ntlp_agenda_'. $node->nid .'_firstletter', 0);
+
+    $m = $month;
+    $y = $year;
+    $month_title = t("@date", array('@date' => format_date(mktime(12, 0, 0, $month, 1, $year), 'custom', 'M Y')));
+
+    $output = $HTMLmain_container;
+    $output = str_replace("@LINK_EDIT", url("ntlp/agenda/edit/$node/$year/$month/$day"), $output);
+    $output = str_replace("@CALENDAR_TITLE", $month_title, $output);
+    $output = str_replace("@CALENDAR_MM", $month, $output);
+    $output = str_replace("@CALENDAR_YY", $year, $output);
+    $output = str_replace('@CALENDAR_BODY', render_calendars_month($node, $y, $m, $day), $output);
+//    $output = str_replace('@AGENDA_BODY', agenda_main_contents($node, $year, $month, $day), $output);
+    $output = str_replace('@AGENDA_BODY', agenda_details_contents($node, $year, $month, $day), $output);
+    $output .= '<div><input id="hnodeid" type="hidden" value='.$node.' /></div>';
+
+    // add an extra three months for editors only
+    if (user_access('edit availability calendars')) {
+
+    }
+
+    return $output;
+}
+
+function get_calendars_month_meta($year, $month, $startofweek) {
+
+    $month_meta['daysinmonth'] = date("t", mktime(0, 0, 0, $month, 1, $year));
+    $month_meta['firstday'] = date("w", mktime(0, 0, 0, $month, 1, $year)) + $startofweek;
+    $tempDays = $month_meta['firstday'] + $month_meta['daysinmonth']; // padding
+    $month_meta['weeksinmonth'] = ceil($tempDays / 7);
+
+//    // Stop empty weeks occuring at start of month
+//    if ($month_meta['firstday'] > 6) {
+//        $month_meta['firstday'] = $month_meta['firstday'] - 7;
+//        $month_meta['weeksinmonth'] --;
+//    }
+    return $month_meta;
+}
+
+function render_calendars_month($node, $year, $month, $day) {
+    include('agenda.template.inc');
+    $path = drupal_get_path('module', 'ntlp_agenda');
+    drupal_add_js($path . '/ntlp_agenda.js', 'module');
+
+    $startofweek = 0;
+    $month_meta = get_calendars_month_meta($year, $month, $startofweek);
+    /* here we list all the days of the week, an array of 14 (two full weeks) so that if users select monday
+      as the first day we still get a full week in our following loop */
+    $days = array(
+            13 => t('Mon'),
+            12 => t('Tue'),
+            11 => t('Wed'),
+            10 => t('Thu'),
+            9 => t('Fri'),
+            8 => t('Sat'),
+            7 => t('Sun'),
+            6 => t('Mon'),
+            5 => t('Tue'),
+            4 => t('Wed'),
+            3 => t('Thu'),
+            2 => t('Fri'),
+            1 => t('Sat'),
+            0 => t('Sun'),
+    );
+    $counter=0;
+    for ($j=0;$j<$month_meta['weeksinmonth'];$j++) {
+        for ($i=0;$i<7;$i++) {
+            $counter++;
+            $week[$j][$i] = $counter;
+            // offset the days
+            $week[$j][$i] -= $month_meta['firstday'];
+            if (($week[$j][$i] < 1) || ($week[$j][$i] > $month_meta['daysinmonth'])) {
+                $week[$j][$i] = "";
+            }
+        }
+    }
+
+    // find all entries in database for this month ($availability, $notes) and pre-populate
+    $status_result = db_query('SELECT day, status, nid FROM {ntlp_course_agenda} WHERE course_nid = %d AND year = %d AND month = %d', $node, $year, $month);
+    while ($status = db_fetch_array($status_result)) {
+        $day_status[$status['day']] = $status['status'];
+    }
+    $html_row = '';
+    $html_month = '';
+//    $debugval = '';
+    foreach ($week as $key => $val) {
+        $weeknumber = $key + 1;
+//        firep($weeknumber);
+//        array_push($cells, array('data' => '', 'class' => 'calnote')); // add the note cell to the cells array
+        $html_row = $HTMLmain_calendar_row;
+        //Change the class of first row, if this is a 6 week month,
+        //and first day falls on last cell
+        if ($month_meta['firstday'] == 6 && $weeknumber == 1) {
+            $html_row = str_replace("@CLASS_ROW", "FirstRow", $html_row);
+            $html_row = str_replace("@CLASS_CELL", " class='LastCell'", $html_row);
+        } else {
+            $html_row = str_replace("@CLASS_ROW", "Numday", $html_row);
+            $html_row = str_replace("@CLASS_CELL", "", $html_row);
+        }
+
+        for ($i=0; $i<7; $i++) {
+            // if there's a date, it's part of this month
+            $calclass = '';
+            if ($week[$key][$i]) {
+
+                if ($day_status[$week[$key][$i]] == 1) { // booked
+                    $calclass = 'active';
+                }
+                elseif ($day_status[$week[$key][$i]] == 2) { // provisionally booked
+                    $calclass = 'calnotavailableprov';
+                }
+                elseif ($day == $week[$key][$i]) {  // add by saifuddin to set current date..
+                    $calclass = 'mainDate';
+                }
+                else { // available
+                    // do nothing
+                }
+                $link = url("ntlp/agenda/$node/$year/$month/".$week[$key][$i]);
+                $html_row = str_replace("@DAY_".($i+1), "<a href='$link'
+                            style='cursor: pointer; cursor: hand;'
+                            name='$year-$month-".$week[$key][$i]."'
+                            class='$calclass click'>".$week[$key][$i]."</a>", $html_row);
+            }
+            else { // empty, typically row 1 or 5 in a month
+                $html_row = str_replace("@DAY_".($i+1), '', $html_row);
+            }
+        }
+        $html_month .= $html_row;
+//        firep($html_row);
+    }
+//    firep($html_month);
+//    $html_month = $month_meta['firstday'].'<br>'.$month_meta['daysinmonth'].'<br>'.
+//                  $month_meta['weeksinmonth'].'<br>'.$debugval;
+    $output = $HTMLmain_calendar_body;
+    $output = str_replace("@CALENDAR_DAYS", $html_month, $output);
+    return $output;
+}
+
+/*
+ * this return boolean based on current date.
+*/
+function get_current_date($year, $month, $date) {
+
+    $flag = false;
+    if($year == date('Y')) {
+
+        if($month == date('m')) {
+
+            if($date == date('d')) {
+                $flag = true;
+            }
+        }
+    }
+    return $flag;
+//    echo " <br>Today is ".date("d/m/Y");
+}
+
+function view_agenda($course_nid, $year = 2008, $month = 1, $day = 1) {
+    //echo "Course: $course_nid, $year, $month, $day";
+
+    $output = agenda_details_contents($course_nid, $year, $month, $day);
+    echo $output;
+}
+
+function next_month($node, $year = 2008, $month = 1) {
+    $month++;
+    if ($month > 12) {
+        $month = 1;
+        $year++;
+    }
+    $output = render_calendars_month($node, $year, $month, 1);
+    echo $output;
+}
+
+function previous_month($node, $year = 2008, $month = 1) {
+//    watchdog('info', "Course: $node ($year/$month)");
+    $month--;
+    if ($month < 1) {
+        $month = 12;
+        $year--;
+    }
+
+    $output = render_calendars_month($node, $year, $month, 1);
+    echo $output;
+}
+
+

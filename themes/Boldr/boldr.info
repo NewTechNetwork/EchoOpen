@@ -1,0 +1,22 @@
+; $Id: boldr.info,v 1.4 2007/06/08 05:50:57 dries Exp $
+name = Echo Open
+description = Echo Open Template
+version = VERSION
+core = 6.x
+engine = phptemplate
+
+; Information added by drupal.org packaging script on 2009-09-16
+version = "6.14"
+project = "drupal"
+datestamp = "1253130027"
+
+
+stylesheets[all][] = system.css
+stylesheets[all][] = style.css
+
+
+regions[websitename] = websiteName
+regions[mainNav] = MainNavigation
+regions[msgbox] = MessageBox
+regions[content] = Content
+regions[footer] = Footer

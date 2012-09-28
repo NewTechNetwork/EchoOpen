@@ -1,0 +1,240 @@
+<?php
+
+/**
+ * @file
+ *
+ * This file implements a selection voting mode
+ */
+
+// $Id: selection.module,v 1.13 2009/07/27 23:25:43 anarcat Exp $
+
+function selection_help($section) {
+  $help = "";
+  switch ($section) {
+  case 'admin/modules#description':
+    break;
+  default:
+    if ($section == 'node/add#decisions-selection') {
+      $help = t('Creates a decision where the user selects one or many options.');
+    }
+    break;
+  }
+  return $help;
+}
+
+function selection_node_info() {
+  return array('decisions_selection' => array('name' => t('Decisions - selection'), 'module' => 'decisions', 'description' => t('Creates a decision where the user selects one or many options.')));
+}
+
+function selection_perm() { return decisions_perm(); } 
+function selection_acces($op, $node, $account) { return decisions_access($op, $node, $account); }
+function selection_form(&$node) { return decisions_form($node); }
+
+
+/**
+ * Implementation of the decisions_algorithms() hook
+ */
+function selection_decisions_algorithms() {
+  return array('plurality' => t('The plurality algorithm determines the winner based solely on the number of votes received: the one with the larger number of votes wins. See the <a href="http://en.wikipedia.org/wiki/Plurality_voting_system">Plurality voting system on Wikipedia</a> for more information'));
+}
+
+/**
+ * Implementation of the decisions_voting_hook_form() hook for the selection module.
+ * 
+ * This creates a list of choices to allow the user to vote on choices.
+ */
+function selection_decisions_voting_form(&$node, $teaser, $page) {
+  if ($node->choice) {
+    $list = array();
+
+    if ($node->maxchoices == 1) {
+      // plurality voting
+      foreach ($node->choice as $i => $choice) {
+        if ($choice['label']) {
+          $list[$i] = check_plain($choice['label']);
+        }
+      }
+
+      $form['choice'] = array(
+                              '#type' => 'radios',
+                              '#title' => $page ? '' : check_plain($node->title),
+                              '#default_value' => -1,
+                              '#options' => $list
+                              );
+    }
+    else {
+      // approval voting
+      foreach ($node->choice as $i => $choice) {
+        if ($choice['label']) {
+          $list[$i] = check_plain($choice['label']);
+        }
+      }
+      $form['choice'] = array(
+                              '#type' => 'checkboxes',
+                              '#title' => $page ? '' : check_plain($node->title),
+                              '#options' => $list,
+                              );
+    }
+  }
+  $form['nid'] = array(
+                       '#type' => 'hidden',
+                       '#value' => $node->nid
+                       );
+  $form['vote'] = array(
+                        '#type' => 'submit',
+                        '#value' => t('Vote')
+                        );
+  $form['#action'] = url('node/'. $node->nid);
+  return $form;
+}
+
+/**
+ * Implementation of the decisions_view_results() hook for the selection module
+ *
+ * TODO: implement (http://drupal.org/node/48249)
+ */
+function selection_decisions_view_results($node, $teaser, $page) {
+
+  $output = "";
+  $results = votingapi_select_votes(array('content_id' => $node->nid, 'content_type' => 'decisions'));
+  // Count the votes for each choice
+  $votes = array();
+
+  foreach ($results as $result) {
+
+    // approval
+    $voteval = $result['tag'];
+    
+    if (!array_key_exists($voteval, $votes)) {
+      $votes[$voteval] = 0;
+    }
+    // the value is the position chosen in this case, we just want to increment
+    $votes[$voteval]++;
+  }
+
+  $total_votes = array_sum($votes);
+  if ($node->choice && $total_votes > 0) {
+    // TODO: Those <div>s and <br />s should be in a theme function. First collect all the data in a structure, then theme it.
+    // display results for each possible choice
+    $output .= '<div class="poll">';
+    foreach ($node->choice as $i => $ch) {
+      if (!array_key_exists($i, $votes)) {
+        $votes[$i] = 0;
+      }
+      $percentage = round(100 * $votes[$i] / $total_votes, 0);
+      $output .= theme('decisions_bar',  check_plain($ch['label']), $percentage, format_plural($votes[$i], '1 vote', '@count votes'));
+    }
+    $output .= '</div>';
+  }
+
+  $output .= '<br />';
+  return $output;
+}
+
+/**
+ * implementation of the format_votes() hook.
+ * 
+ * formats how a user's votes should be displayed.
+ *
+ * @returns a formatted string
+ */
+function selection_decisions_format_votes($node, $votes) {
+  $unordered_votes = array();
+  foreach ($votes as $vote) {
+    // Just need one dimensional results
+    if ($vote->value > 0) {
+      $unordered_votes[] = check_plain($node->choice[$vote->tag]['label']);
+    }
+  }
+  return implode(', ', $unordered_votes);
+}
+
+
+/**
+ * implementation of the submit() hook
+ *
+ * registers the vote as a key for this node using votingapi_set_vote()
+ */
+function selection_decisions_vote($node, $form_values) {
+  $votes = array();
+  if ($node->maxchoices == 1) {
+    // plurality voting
+    $vote = array(
+                  'value' => 1,
+                  'tag' => $form_values['choice'],
+                  'value_type' => 'option',
+                  'content_type' => 'decisions',
+                  'content_id' => $node->nid);
+    $votes[] = $vote;
+  }
+  else {
+    // approval voting
+    foreach ($node->choice as $key => $choice) {
+      if (isset($form_values['choice'][$key]) && $form_values['choice'][$key]) {
+        $vote = array(
+                      'value' => 1,
+                      'value_type' => 'option',
+                      'tag' => $key,
+                      'content_type' => 'decisions',
+                      'content_id' => $node->nid
+        );
+        $votes[] = $vote;
+      }
+    }
+  }
+  votingapi_add_votes($votes);
+}
+
+/**
+ * implementation of the vote_validate() hook
+ *
+ * check if the submitted key exists, just to make sure the form is not bypassed.
+ *
+ * @returns boolean true if the form is valid
+ */
+function selection_decisions_vote_validate($node, $form_values) {
+  $ok = TRUE;
+  if ($node->maxchoices == 1) {
+    // plurality voting
+    if (!array_key_exists($form_values['choice'], $node->choice)) {
+      form_set_error('choice', 'At least one choice must be selected.');
+      $ok = FALSE;
+    }
+  }
+  else {
+    // approval voting
+
+    // array used to check which values are set
+    $setvalues = array();
+    foreach ($node->choice as $key => $choice) {
+
+      // need a minchoices choice to do this
+      //if (empty($_POST['edit']['Choice_' . $key])) {
+      //form_set_error('Choice_'.$key, "choice $key cannot be empty");
+      //$ok = FALSE;
+      //}
+
+      // see if the box is checked
+      if (!empty($form_values['choice'][$key])) {
+        $numchoices++;
+      }
+    }
+        
+    // too many choices ranked
+    if ($node->maxchoices != 0 && $numchoices > $node->maxchoices) {
+      form_set_error('choice',
+                     t('%num choices were selected but only %max are allowed.',
+                       array('%num' => $numchoices, '%max' => $node->maxchoices)));
+      $ok = FALSE;
+    }
+
+    // not enough choices ranked
+    $minchoices = 1;
+    if ($numchoices < $minchoices) {
+      form_set_error('choice', t('At least one choice must be selected.'));
+      $ok = FALSE;
+    }
+  }
+  return $ok;
+}
+

@@ -1,0 +1,69 @@
+<?php
+
+include 'ntlp_help_header.content.inc';
+include 'help_form_def.inc';
+include 'data_access.inc';
+
+function ntlp_help_menu() {
+    $items[] = array();
+
+    /*$items['ntlp/help/faq'] = array(
+            'title' => 'NTLP help',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('help_form'),
+            'access arguments' => array('view help'),
+            'type' => MENU_CALLBACK,
+    );*/
+
+    $items['ntlp/help/feedback'] = array(
+            'title' => 'NTLP help',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('help_feedback_form'),
+            'access arguments' => array('view help'),
+            'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/help/support'] = array(
+            'title' => 'NTLP help',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('help_support_form'),
+            'access arguments' => array('view help'),
+            'type' => MENU_CALLBACK,
+    );
+
+    return $items;
+}
+
+
+function ntlp_help_perm() {
+
+
+    return array('view help');
+}
+
+function ntlp_help_block($op = 'list', $delta = 0, $edit = array()) {
+    // The $op parameter determines what piece of information is being requested.
+    switch ($op) {
+        case 'list':
+            $blocks[0] = array(
+                    'info'       => t('NTLP: Course Agenda view block'),
+            );
+            return $blocks;
+
+        case 'configure':
+            $form = array();
+            return $form;
+
+        case 'view': default:
+            switch ($delta) {
+                case 0:
+                    $block['subject'] = t('Group Tabs');
+                    $block['content'] = ntlp_group_tabs();
+                    break;
+            }
+            return $block;
+    }
+}
+
+
+?>

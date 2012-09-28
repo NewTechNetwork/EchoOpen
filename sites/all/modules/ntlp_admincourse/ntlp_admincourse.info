@@ -1,0 +1,7 @@
+; $Id: ntlp_admincourse.info,v .01 $
+name = NTLP Administer Course
+description = Administer Course settings, grade, outcomes, enrollments and user access.
+core = 6.x
+version = "6.x-1.0"
+package = NTLP
+

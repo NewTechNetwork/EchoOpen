@@ -1,0 +1,5 @@
+; $Id: grupal.info 59 2009-09-05 10:05:35Z samj@samj.net $
+name = Grupal
+description = Google Apps integrations for Drupal.
+package = Third-party integration
+core = 6.x

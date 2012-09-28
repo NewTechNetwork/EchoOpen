@@ -1,0 +1,273 @@
+/*// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+
+.CourseGradeMainPanel {
+}
+.CourseGradeMainPanel .yellowBoxTopLeftCorner {
+	background-image:url(../Images/CoursesSettingTopLeftYellow.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	background-color:#fff9c2;
+}
+.CourseGradeMainPanel .yellowBoxTopRightCorner {
+	background-image:url(../Images/CoursesSettingTopRightYellow.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+.CourseGradeMainPanel .yellowBoxBottomLeftCorner {
+	background-image:url(../Images/CoursesSettingBottomLeftYellow.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+.CourseGradeMainPanel .yellowBoxBottomRightCorner {
+	background-image:url(../Images/CoursesSettingBottomRightYellow.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+        padding:5px;
+}
+.CourseGradeMainPanel .BlueBoxTopLeftCorner {
+	background-image:url(../Images/CoursesSettingTopLeftBlue.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	background-color:#d5e9f5;
+}
+.CourseGradeMainPanel .BlueBoxTopRightCorner {
+	background-image:url(../Images/CoursesSettingTopRightBlue.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+.CourseGradeMainPanel .BlueBoxBottomLeftCorner {
+	background-image:url(../Images/CoursesSettingBottomLeftBlue.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+.CourseGradeMainPanel .BlueBoxBottomRightCorner {
+	background-image:url(../Images/CoursesSettingBottomRightBlue.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	padding:5px;
+}
+.CourseGradeMainPanel .GreenBoxTopLeftCorner {
+	background-image:url(../Images/CoursesSettingTopLeftGreen.jpg);
+	background-position:top left;
+	background-repeat:no-repeat;
+	background-color:#d3ffc2;
+}
+.CourseGradeMainPanel .GreenBoxTopRightCorner {
+	background-image:url(../Images/CoursesSettingTopRightGreen.jpg);
+	background-position:top right;
+	background-repeat:no-repeat;
+}
+.CourseGradeMainPanel .GreenBoxBottomLeftCorner {
+	background-image:url(../Images/CoursesSettingBottomLeftGreen.jpg);
+	background-position:bottom left;
+	background-repeat:no-repeat;
+}
+.CourseGradeMainPanel .GreenBoxBottomRightCorner {
+	background-image:url(../Images/CoursesSettingBottomRightGreen.jpg);
+	background-position:bottom right;
+	background-repeat:no-repeat;
+	padding:5px;
+}
+
+.CourseGradeMainPanel h4 {
+	padding:0px;
+	margin:0px;
+	font-size:14px;
+	color:#666;
+	font-weight:bold;
+	
+}
+.CourseGradeMainPanel table.table {
+ border:#9ecce9 solid 1px;
+ border-collapse:collapse;
+}
+.CourseGradeMainPanel table.table .first th {
+ color:#3570aa;
+ background-color:#9ecce9;
+ border:#d5e9f5 solid 1px;
+ border-collapse:collapse;
+ border-top:none;
+}
+.CourseGradeMainPanel table.table .last th {
+ color:#3570aa;
+ background-color:#9ecce9;
+ border:#d5e9f5 solid 1px;
+ border-collapse:collapse;
+ border-bottom:none;
+}
+
+.CourseGradeMainPanel table.table th {
+ color:#3570aa;
+ background-color:#9ecce9;
+ border:#d5e9f5 solid 1px;
+ border-collapse:collapse;
+}
+.CourseGradeMainPanel table.table td {
+ border:#9ecce9 solid 1px;
+ border-collapse:collapse;
+
+}
+.CourseGradeMainPanel .panelHeading h2 {
+	padding:0px;
+	margin:0px;
+	color:#3570aa;
+	font-weight:bold;
+	font-size:15px;
+}
+.CourseGradeMainPanel .panelHeading {
+	padding-bottom:10px;
+}
+.CourseGradeMainPanel .seprater {
+ height:10px;
+ font-size:10px;
+}
+.CourseGradeMainPanel .AddOutComesBg {
+	background-image:url(../Images/AddOutComesBg.jpg);
+	text-align:center;
+	color:#FFFFFF;
+	font-weight:bold;
+	height:19px;
+	width:107px;
+	display:block;
+	border:none;
+	background-repeat:no-repeat;
+        padding-top: 4px;
+}
+#students_view  .AddOutComesBg {
+	background-image:url(../Images/AddOutComesBg.jpg);
+	text-align:center;
+	color:#FFFFFF;
+	font-weight:bold;
+	height:23px;
+	width:107px;
+	display:block;
+	border:none;
+        font-size: 12px;
+	background-repeat:no-repeat;
+        padding-top: 1px;
+        float: right;
+}
+ a.gradeSettingLinkActive {
+     color:#090 !important;
+     text-decoration: none;
+     float:right;
+     margin-left:5px;
+     margin-bottom:13px;
+
+}
+ a:hover.gradeSettingLinkActive {
+     text-decoration: underline;
+
+}
+ a.gradeSettingLinkDisActive {
+     color:#7fba70!important;
+     text-decoration: none;
+     float:right;
+     margin-left:5px;
+     margin-bottom:13px;
+
+}
+ a:hover.gradeSettingLinkDisActive {
+     text-decoration: underline;
+
+}
+
+.add_students_link a {
+	background-image:url(../Images/AddStudentsBtn.png);
+	text-align:center;
+        font-size: 0px !important;
+	color:#FFFFFF !important;
+	font-weight:bold;
+	height:23px;
+	width:117px;
+	display:block;
+	border:none;
+        font-size: 12px;
+	background-repeat:no-repeat;
+        text-decoration: none !important;
+        margin-bottom:5px;
+}
+.AddGuestsBtn a {
+	background-image:url(../Images/AddGuestsBtn.png);
+	text-align:center;
+        font-size: 0px !important;
+	color:#FFFFFF !important;
+	font-weight:bold;
+	height:23px;
+	width:117px;
+	display:block;
+	border:none;
+        font-size: 12px;
+	background-repeat:no-repeat;
+        text-decoration: none !important;
+
+}
+.AddMembersBtn a {
+	background-image:url(../Images/AddMembersBtn.png);
+	text-align:center;
+        font-size: 0px !important;
+	color:#FFFFFF !important;
+	font-weight:bold;
+	height:23px;
+	width:117px;
+	display:block;
+	border:none;
+        font-size: 12px;
+	background-repeat:no-repeat;
+        text-decoration: none !important;
+
+}
+
+.CourseGradeMainPanel .yellowBoxBottomRightCorner .form-radios .form-item {
+        float: left !important;
+        width: 80px !important;
+}
+.CourseGradeMainPanel .yellowBoxBottomRightCorner .form-radios {
+        padding:0px;
+        margin:0px;
+        float:left;
+}
+.CourseGradeMainPanel .yellowBoxBottomRightCorner .form-item label {
+        float: left;
+}
+
+.gradesRadio .form-radios {
+        padding:0px;
+        margin:0px;
+}
+.gradesRadio .form-radios .form-item {
+        float: left;
+        width: 100px !important;
+}
+h4.greenHeading {
+	color:#3570aa !important;
+	font-size:14px;
+	padding:0px;
+	margin:0px;
+	padding-bottom:5px;
+}
+#course_views .view-content .views-table th.views-field {
+    text-align: left !important;
+    color:#090;
+
+}
+a.greenButtonLink {
+	background-image:url(../Images/SubmitGradeBtn.jpg);
+	text-align:center;
+	color:#FFFFFF !important;
+        text-decoration: none !important;
+	font-weight:bold;
+	height:19px;
+	width:107px;
+	display:block;
+	border:none;
+	background-repeat:no-repeat;
+        padding-top: 4px;
+        margin-top: 5px;
+}
+a:hover.greenButtonLink {
+        text-decoration: none !important;
+}

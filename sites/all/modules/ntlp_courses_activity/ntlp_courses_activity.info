@@ -1,0 +1,7 @@
+; $Id: ntlp_school.info,v .01 $
+name = NTLP Course Activity Maintenance
+description = Allows maintenance of NTLP Courses Activity
+package = NTLP
+core = 6.x
+version = "6.x-0.1"
+

@@ -1,0 +1,602 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+module_load_include('inc', 'ntlp_school', 'fileupload');
+module_load_include('inc', 'ntlp_school', 'data_access');
+module_load_include('inc', 'ntlp_school', 'constants');
+module_load_include('inc', 'ntlp_document_library', 'data_access');
+
+//module_load_include('inc', 'ntlp_group', 'group_block_contents');
+//require_once "data_access.inc";
+require_once "form_def.inc";
+include('group_tab_contents.inc');
+include('group_block_contents.inc');
+include('ntlp_group_header.content.inc');
+include('group_add_popup.inc');
+include('group_delete_popup.inc');
+
+/**
+ * Implementation of hook_menu().
+ */
+function ntlp_group_menu() {
+    $items[] = array();
+
+    $items['ntlp/group/enroll/%/%/%'] = array(
+        'title' => t('Echo group Members - Enroll'),
+        'page callback' => 'enroll_group_users',
+        'page arguments' => array(3, 4, 5), //group id, Enroll-in-role_id and Comma delimited user ids
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/group/drop/%/%'] = array(
+        'title' => t('Echo Group Members - Dropout'),
+        'page callback' => 'drop_group_users',
+        'page arguments' => array(3, 4),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/group/changeadmin/%/%/%'] = array(
+        'title' => t('Echo Group Members - Change Admin'),
+        'page callback' => 'change_group_admins',
+        'page arguments' => array(3, 4, 5),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/group/delete/popup/%'] = array(
+        'title' => t('Echo Group Delete Popup'),
+        'page callback' => 'ntlp_group_delete_popup',
+        'page arguments' => array(4),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/group/delete/%'] = array(
+        'title' => t('Echo Group Delete'),
+        'page callback' => 'ntlp_group_delete',
+        'page arguments' => array(3),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/group/add'] = array(
+        'title' => t('Create Group'),
+        'page callback' => 'ntlp_group_add_popup_frm',
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/groups/edit/%'] = array(
+        'title' => 'Group Add / Edit',
+//          'page arguments' => array(2, 3),        //[new/edit], [group_nid]
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('group_form_controller'), //ntlp_group_form'),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+        'ntlp_main_menu' => 'nav/groups',
+    );
+
+    $items['ntlp/group/filter/%'] = array(
+        'title' => t('Echo Group Filter Callback'),
+        'page callback' => 'ntlp_group_filter_callback',
+        'page arguments' => array(3),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/groups/member/filter/%'] = array(
+        'title' => t('Echo Groups Member Filter Callback'),
+        'page callback' => 'ntlp_groups_member_filter',
+        'page arguments' => array(4),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/save/group/image/%/%'] = array(
+        'title' => t('Echo Groups Image Save'),
+        'page callback' => 'save_group_picture',
+        'page arguments' => array(4, 5),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/create/group/%/%/%'] = array(
+        'title' => t('Echo Groups Create New Group'),
+        'page callback' => 'ntlp_group_add_group',
+        'page arguments' => array(3, 4, 5),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/group/links/edit/%'] = array(
+        'title' => t('Group Links Edit'),
+        'page callback' => '_ntlp_group_links_edit_content',
+        'page arguments' => array(4),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/group/join/%'] = array(
+        'title' => t('Join Group'),
+        'page callback' => 'ntlp_group_join',
+        'page arguments' => array(3),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/group/unjoin/%'] = array(
+        'title' => t('Un-Join Group'),
+        'page callback' => 'ntlp_group_unjoin',
+        'page arguments' => array(3),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/group/resource/filter/%'] = array(
+        'title' => t('Group Resources Filter Callback'),
+        'page callback' => 'ntlp_group_resources_filter_callback',
+        'page arguments' => array(4),
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/group/approve/%/%'] = array(
+        'title' => t('Group Member'),
+        'page callback' => 'ntlp_group_member_approve',
+        'page arguments' => array(3, 4), // GROUP NID, UID
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/group/reject/%/%'] = array(
+        'title' => t('Group Member'),
+        'page callback' => 'ntlp_group_member_reject',
+        'page arguments' => array(3, 4), // GROUP NID, UID
+        'access arguments' => array('create ntlp_group content'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    return $items;
+}
+
+function group_form_submit_settings($form, $form_state) {
+    global $user;
+    $school_nid = get_user_school($user->uid);
+    $group_nid = $form_state['clicked_button']['#post']['group_node'];
+    $group_full_title = $form_state['clicked_button']['#post']['group_full_title'];
+    $group_description = $form_state['clicked_button']['#post']['group_description'];
+    $group_moderator_ids = $form_state['clicked_button']['#post']['group_moderator_ids'];
+    $course_nid = $form_state['clicked_button']['#post']['course'];
+    $project_nid = $form_state['clicked_button']['#post']['project_nid'];
+    $picture_fid = $form_state['clicked_button']['#post']['file_fid'];
+    $access_rights = $form_state['clicked_button']['#post']['access_rights'];
+    $showin_school_dir = $form_state['clicked_button']['#post']['showin_school_dir'];
+    $showin_network_dir = $form_state['clicked_button']['#post']['showin_network_dir'];
+    $group_perm = $form_state['clicked_button']['#post']['display_group_in_school_directory'];
+//    $category = $form_state['clicked_button']['#post']['category'];
+    // Group Category Remove From Form as per request.
+    $category = 0;
+
+
+    if ($group_perm == 0) {
+
+        $access_rights = 0;
+        $showin_school_dir = 1;
+        $showin_network_dir = 0;
+    } elseif ($group_perm == 1) {
+
+        $access_rights = 1;
+        $showin_school_dir = 1;
+        $showin_network_dir = 0;
+    } elseif ($group_perm == 2) {
+
+        $access_rights = 0;
+        $showin_school_dir = 0;
+        $showin_network_dir = 1;
+    } elseif ($group_perm == 3) {
+
+        $access_rights = 1;
+        $showin_school_dir = 0;
+        $showin_network_dir = 1;
+    } elseif ($group_perm == 4) {
+
+        $access_rights = 1;
+        $showin_network_dir = 0;
+        $school_directory = 0;
+    }
+
+//   print_r($form_state['clicked_button']['#post']['display_group_in_school_directory']);
+//   echo ' access rights '.$access_rights .' showin_network_dir '.$showin_network_dir. ' network_directory '.$network_directory;
+//    die();
+    $dateformat = "%Y-%m-%d %H:%M:%S";
+    $nodetype = 'ntlp_group';
+    $time = strftime($dateformat, strtotime(date('Y-m-d')));
+    $is_new = false;
+
+    if (empty($group_nid)) {
+        $group_node = new stdClass();
+        $group_node->changed = $time;
+        $group_node->status = 1;
+        $group_node->promote = 0;
+        $group_node->sticky = 0;
+        $group_node->format = 1;       // Filtered HTML
+        $group_node->uid = $user->uid; // UID of content owner
+        $is_new = true;
+    } else {
+        $group_node = node_load($group_nid);
+    }
+//    firep('Node:'$group_node);
+
+    $group_node->title = $group_full_title;
+    $group_node->type = $nodetype;   // Your specified content type
+    $group_node->created = $time;
+    $group_node->body = $group_description;
+    // add standard node organic groups
+//    $group_node->og_initial_groups = array();
+//    $group_node->og_groups = array($course_id=> $course_id);
+//
+//  Need to test Group Type and permissions in detail
+//    $group_node->og_private = 1;
+//    $group_node->og_selective = $access_rights;
+
+    node_save($group_node);
+
+    $group_nid = $group_node->nid;
+    $result = TRUE;     //Database query result
+
+    if ($is_new) {
+        $result = db_query("INSERT INTO {ntlp_group}(nid, school_nid, course_nid, project_nid, picture_fid,
+                    is_closed, showin_school_directory, showin_network_directory, category_tid)
+            VALUES(%d, %d, %d, %d, %d,
+                    %d, %d, %d, %d)",
+                        $group_nid, intval($school_nid), $course_nid, $project_nid, $picture_fid,
+                        $access_rights, $showin_school_dir, $showin_network_dir, $category);
+
+        if ($result === FALSE) {
+            //Show error
+        } else {
+            //Enroll Group Moderator(s)
+            enroll_moderators($group_nid, NTLP_ROLEID_TEACHER, $group_moderator_ids);
+        }
+    } else {
+        $rec = get_group($group_nid);
+        if ($rec) {
+            $result = db_query("UPDATE {ntlp_group}
+                    SET course_nid = %d, project_nid = %d,
+                    is_closed = %d, showin_school_directory = %d, showin_network_directory = %d
+                    WHERE nid = %d",
+                            $course_nid, $project_nid,
+                            $access_rights, $showin_school_dir, $showin_network_dir,
+                            $group_nid);
+
+            if ($result === FALSE) {
+                //Show error
+            } else {
+                //Drop all old School Moderator(s)
+                if ($rec_users = get_group_users($group_nid, NTLP_ROLEID_TEACHER)) {
+
+
+                    while ($row = db_fetch_array($rec_users)) {
+
+                        drop_user_from_group($group_nid, $row['uid']);
+                    }
+                }
+
+                watchdog('group users', 'group users group submit form' . print_r($group_moderator_ids, true));
+                //Enroll School Moderator(s)
+                enroll_moderator_in_group($group_nid, NTLP_ROLEID_TEACHER, $group_moderator_ids, false);
+            }
+        }
+    }
+    //update block cache block for users
+    ntlp_update_block_cache('ntlp_group', $group_nid);
+
+    if ($result === FALSE) {
+        drupal_set_message('Fatal error while saving group information, please contact your system administrator.', 'error');
+    } else {
+        drupal_set_message('Group information saved successfully.');
+    }
+
+
+//    exit;
+}
+
+//Enrollment functions
+//Enroll and Drop
+
+function enroll_group_users($group_nid, $role_id, $ids, $print_view = true) {
+    global $user;
+
+//     watchdog('enroll', "Group_id: $group_nid<br>Users:$ids");
+    $group_group_moderatornames = '';
+    $count = 0;
+    if (isset($group_nid) && !empty($group_nid)) {
+        if (isset($ids) && !empty($ids)) {
+            $user_ids = explode(",", $ids);         //Explode multiple users using pipe (|) delimiter
+            foreach ($user_ids as $uid) {
+                if (!empty($uid)) {
+                    $count++;
+
+                    enroll_user_in_group($group_nid, $uid, $role_id);
+                }
+            }
+        }
+    }
+
+    //update block cache block for users
+    ntlp_update_block_cache('ntlp_group', $group_nid);
+
+    if ($print_view) {
+        drupal_set_message('User(s) enrolled successfully.');
+        // these were for ajax logic, now we are using pare refresh.
+//        $view = views_get_view('ntlp_group_members');
+//        $view->set_arguments(array($group_nid));
+//        print $view->preview();
+    }
+//    $view = views_get_view('ntlp_group_members');
+//    $view->set_arguments(array($group_nid));
+    watchdog('enroll', 'group:' . $group_nid . ' Ids:' . $ids);
+//        watchdog('enroll', $view->render());
+//        print 'group:'.$group_nid.' Ids:'.$output.'><br />';
+//    print function returns only this content.
+//    return function returns the whole page.
+//    print "<div><p>$count new users added.</p><br /></div>";
+//    print $view->render();
+}
+
+function drop_group_users($group_nid, $user_uid) {
+    global $user;
+
+    //update block cache block for users
+    ntlp_update_block_cache('ntlp_group', $group_nid);
+
+    if (drop_user_from_group($group_nid, $user_uid)) {
+        drupal_set_message('User Dropped successfully.');
+
+        // these were for ajax logic, now we are using pare refresh.
+//          print "<div><p>User Dropped successfully</p><br /></div>";
+//        $view = views_get_view('ntlp_group_members');
+//        $view->set_arguments(array($group_nid));
+//        print $view->preview();
+    } else {
+        drupal_set_message("Failed to remove. User is still a member of this group.");
+//        print "<div><p>Failed to remove. User is still a member of this group.</p><br /></div>";
+    }
+}
+
+function drop_user_from_group($group_nid, $user_uid) {
+    ntlp_og_delete_subscription($group_nid, $user_uid);
+    $sql = "SELECT * FROM {og_uid} WHERE nid = %d AND uid = %d";
+    $result = db_query($sql, $group_nid, $user_uid);
+    return!$result->num_rows;
+}
+
+function enroll_moderator_in_group($group_nid, $role_id, $user_uid) {
+    global $user;
+
+    if (isset($group_nid) && !empty($group_nid)) {
+        if (isset($user_uid) && !empty($user_uid)) {
+            $user_ids = explode(",", $user_uid);         //Explode multiple users using (,) delimiter
+            foreach ($user_ids as $uid) {
+                if (!empty($uid)) {
+                    $count++;
+
+                    ntlp_og_save_subscription($group_nid, $uid, array('is_active' => 1, 'is_admin' => 1));
+                }
+            }
+
+            //update block cache block for users
+            ntlp_update_block_cache('ntlp_group', $group_nid);
+        }
+    }
+}
+
+function enroll_user_in_group($group_nid, $user_uid, $role_id) {
+    global $user;
+
+    ntlp_og_save_subscription($group_nid, $user_uid, array('is_active' => 1));
+}
+
+function change_group_admins($group_nid, $user_uid, $is_admin) {
+    global $user;
+    watchdog('info ', 'Group Id:' . $group_nid);
+    $is_member = is_group_member($group_nid, $user_uid);
+    if ($is_member) {
+        ntlp_og_save_subscription($group_nid, $user_uid, array('is_active' => 1, 'is_admin' => $is_admin));
+//        $view = views_get_view('ntlp_group_members');
+//        $view->set_arguments(array($group_nid));
+//        print $view->preview();
+    } else {
+        print "ERROR";
+    }
+
+    //update block cache block for users
+    ntlp_update_block_cache('ntlp_group', $group_nid);
+}
+
+/* Echo Group Delete  STart */
+
+function ntlp_group_delete($group_id) {
+
+    $dateformat = "%Y-%m-%d %H:%M:%S";
+    if ($group_id) {
+
+        $record = db_fetch_object(db_query("SELECT * FROM {ntlp_group} WHERE nid = %d", $group_id));
+
+        $result = db_query("SELECT * FROM {ntlp_group_history} WHERE nid = %d ", $group_id);
+
+        if ($result->num_rows == 0) {
+
+            //update block cache block for users
+            ntlp_update_block_cache('ntlp_group', $group_id);
+
+            db_query("INSERT INTO {ntlp_group_history}(nid, school_nid, course_nid, project_nid, picture_fid,
+                    is_closed, showin_school_directory, showin_network_directory, category_tid,
+                    deleted_by, deleted_on) VALUES(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s')", $record->nid,
+                    $record->school_nid, $record->course_nid, $record->project_nid, $record->picture_fid,
+                    $record->is_closed, $record->showin_school_directory, $record->showin_network_directory,
+                    $record->category_tid, $user->uid, strftime($dateformat, time()));
+
+            db_query("Delete from {ntlp_group} where nid = %d", $group_id);
+
+            db_query("UPDATE {node} SET status = 0 where nid = %d", $group_id);
+        }
+    }
+
+
+
+    drupal_set_message('The Group has been Successfully deleted');
+}
+
+/* Echo Group Delete  End */
+
+function enroll_moderators($course_nid, $role_id, $ids) {
+    $course_primary_teachername = '';
+    $count = 0;
+    if (isset($course_nid) && !empty($course_nid)) {
+        if (isset($ids) && !empty($ids)) {
+            $user_ids = explode(",", $ids);         //Explode multiple users using (,) delimiter
+            foreach ($user_ids as $uid) {
+                if (!empty($uid)) {
+                    $count++;
+
+                    enroll_user_in_course($course_nid, $uid, $role_id);
+                    ntlp_og_save_subscription($course_nid, $uid, array('is_active' => 1, 'is_admin' => 1));
+                }
+            }
+        }
+    }
+}
+
+function ntlp_group_block($op = 'list', $delta = 0, $edit = array()) {
+    switch ($op) {
+        case 'list':
+            $blocks[0] = array(
+                'info' => t('NTLP: Group Meta data view'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+            $blocks[1] = array(
+                'info' => t('Group Tabs'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'node/*',);
+            $blocks[2] = array(
+                'info' => t('Group Start Tabs'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'node/*',);
+            $blocks[3] = array(
+                'info' => t('Group Resource Tabs'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'node/*',);
+            $blocks[4] = array(
+                'info' => t('Group Members Tab'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'node/*',);
+            $blocks[5] = array(
+                'info' => t('Project Library Tab'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'node/*',);
+
+            $blocks[6] = array(
+                'info' => t('NTLP: My Group Filter'),
+            );
+
+            $blocks[7] = array(
+                'info' => t('NTLP: Group Resources Filter'),
+            );
+
+            $blocks[8] = array(
+                'info' => t('NTLP: My Groups'),
+            );
+
+            $blocks[9] = array(
+                'info' => t('NTLP: All Groups'),
+            );
+
+            $blocks[10] = array(
+                'info' => t('NTLP: All Group Filter'),
+            );
+
+            $blocks[11] = array(
+                'info' => t('NTLP: Group Resources'),
+            );
+
+            return $blocks;
+
+        case 'configure':
+            $form = array();
+            return $form;
+
+        case 'view': default:
+            switch ($delta) {
+                case 0:
+                    $group_meta_data_view .= _get_ntlp_group_project_detail_contents();
+                    $group_meta_data_view .= _get_ntlp_group_activity_contents();
+                    $group_meta_data_view .= _get_ntlp_group_admin_contents();
+                    $group_meta_data_view .= _get_ntlp_group_link_contents();
+                    $block['subject'] = t('NTLP: Group - Projects Meta deta view');
+                    $block['content'] = $group_meta_data_view;
+                    break;
+                case 1:
+                    $block['subject'] = t('Group Tabs');
+                    $block['content'] = ntlp_group_tabs();
+                    break;
+                case 2:
+                    $block['subject'] = t('Group Start Tab');
+                    $block['content'] = ntlp_group_start_tab();
+                    break;
+                case 3:
+                    $block['subject'] = t('Group Resource Tab');
+                    $block['content'] = ntlp_group_resource_tabs();
+                    break;
+                case 4:
+                    $block['subject'] = t('Group Members Tab');
+                    $block['content'] = ntlp_group_members_tabs();
+                    break;
+                case 5:
+                    $block['subject'] = t('Project Library Tabs');
+                    $block['content'] = ntlp_proejct_library_tabs();
+                    break;
+                case 6:
+                    $block['subject'] = t('NTLP: My Group Filter');
+                    $block['content'] = ntlp_group_filter(false);
+                    break;
+
+                case 7:
+                    $block['subject'] = t('NTLP: Group Resources Filter');
+                    $block['content'] = ntlp_group_resources_filter();
+                    break;
+                case 8:
+                    $block['subject'] = t('NTLP: My Groups');
+                    $block['content'] = ntlp_groups_content(false);
+                    break;
+                case 9:
+                    $block['subject'] = t('NTLP: All Groups');
+                    $block['content'] = ntlp_groups_content(true);
+                    break;
+                case 10:
+                    $block['subject'] = t('NTLP: All Group Filter');
+                    $block['content'] = ntlp_group_filter(true);
+                    break;
+                case 11:
+                    $block['subject'] = t('NTLP: Group Resources');
+                    $block['content'] = '<div id="ntlp_group_resource_content">' . get_group_resource_list() . '</div>';
+                    break;
+            }
+            return $block;
+    }
+}
+
+?>

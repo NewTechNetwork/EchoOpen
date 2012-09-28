@@ -1,0 +1,43 @@
+/* // Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+*/
+/*// $Id: ckeditor.css,v 1.2.2.2 2010/01/13 11:31:22 wwalc Exp $*/
+/* Indent & Justify classes */
+
+.rteindent1 {
+  margin-left: 40px;
+}
+.rteindent2 {
+  margin-left: 80px;
+}
+.rteindent3 {
+  margin-left: 120px;
+}
+.rteindent4 {
+  margin-left: 160px;
+}
+.rteleft {
+  text-align: left;
+}
+.rteright {
+  text-align: right;
+}
+.rtecenter {
+  text-align: center;
+}
+.rtejustify {
+  text-align: justify;
+}
+.ibimage_left {
+  float: left;
+}
+.ibimage_right {
+  float: right;
+}
+
+/* CKEditor padding in IE */
+table.cke_editor fieldset { 
+  padding:0 !important;
+
+}

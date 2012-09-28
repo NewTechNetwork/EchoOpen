@@ -1,0 +1,736 @@
+<?php
+// Echo Open software Copyright © 2012 KnowledgeWorks Foundation
+// ECHO OPEN trademark and logo are trademarks of New Technology Network LLC
+// The Echo Open software is licensed under the GNU GPLv2.  For licensing information // please contact New Technology Network Licensing at: // webmaster@newtechnetwork.org or 935 Clinton Street, Napa, CA 94559.
+
+
+module_load_include('inc', 'ntlp_course', 'data_access');
+module_load_include('inc', 'ntlp_school', 'data_access');
+module_load_include('inc', 'ntlp_blocks', 'default_header.contents');
+
+//require_once "ntlp_resource_stuff.inc";
+//require_once "attachment_handler.inc";
+require_once "ntlp_document_mgmt.inc";
+require_once "form_def.inc";
+require_once "ntlp_lib_doc_category.inc";
+require_once "lib_doc_category_edit.inc";
+require_once "ntlp_lib_category_resources.inc";
+require_once "document_library_header.content.inc";
+
+function ntlp_document_library_menu() {
+// $items = array();
+    $items['ntlp/document/view/%/%'] = array(
+        'title' => 'Course Resources View',
+        'page callback' => 'get_document_view_frm',
+        'access arguments' => array('ntlp view resources'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(3, 4),
+        'description' => 'NTLP Resource Page',
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/document/library/add/resource'] = array(
+        'title' => 'Library Add Resrouces',
+        'page callback' => 'ntlp_document_library_frm',
+//            'page arguments' => array(5),               //Resource id, Comment text
+        'access arguments' => array('ntlp view resources'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/document/library/edit/resource/%'] = array(
+        'title' => 'Library Edit Resrouces',
+        'page callback' => 'ntlp_document_library__edit_frm',
+        'page arguments' => array(5), //Resource id, Comment text
+        'access arguments' => array('ntlp view resources'),
+        'type' => MENU_CALLBACK,
+    );
+
+
+    $items['ntlp/document/library/manage'] = array(
+        'title' => 'Document Library',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ntlp_library_doc_form_controller'), //ntlp_admincourse_form'),
+        'access arguments' => array('ntlp view resources'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/library/add/category/%/%'] = array(
+        'title' => 'Add Library Category',
+        'page callback' => 'ntlp_document_library_category_add_frm',
+        'access arguments' => array('ntlp view resources'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/library/save/category/%/%'] = array(
+        'title' => 'Add Library Category',
+        'page callback' => 'ntlp_document_library_category_add_data',
+        'access arguments' => array('ntlp view resources'), //On Load: check if teacher/student is enrolled in this course
+        'page arguments' => array(4, 5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/document/library/delete/file/%'] = array(
+        'title' => 'Library Add Resrouces',
+        'page callback' => 'ntlp_document_delete_frm',
+        'page arguments' => array(5), //Resource id, Comment text
+        'access arguments' => array('ntlp view resources'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/document/library/resource/delete/popup/%'] = array(
+        'title' => 'Library Delete Resrouces',
+        'page callback' => 'ntlp_document_resource_delete_frm',
+        'page arguments' => array(6), //Resource id, Comment text
+        'access arguments' => array('delete own resources'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/document/library/resource/delete/data/%'] = array(
+        'title' => 'Library Delete Resrouces',
+        'page callback' => 'ntlp_document_resource_delete_data',
+        'page arguments' => array(6), //Resource id, Comment text
+        'access arguments' => array('delete own resources'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/document/library/filter/callback/%'] = array(
+        'title' => 'Document Library Filter Callback',
+        'page callback' => 'ntlp_school_library_resource_search',
+        'page arguments' => array(5, 6), //Category, Ajax
+        'access arguments' => array('ntlp view resources'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['ntlp/document/library/search'] = array(
+        'title' => 'Document Library Search',
+        'page callback' => 'ntlp_document_library_search_page',
+        'access arguments' => array('ntlp view resources'),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/document/library/resource/delete/%'] = array(
+        'title' => 'Resource Delete',
+        'page callback' => 'library_resource_delete_frm',
+        'access arguments' => array('delete own resources'),
+        'page arguments' => array(5),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/document/library/resource/delete/data/%'] = array(
+        'title' => 'Resource Delete',
+        'page callback' => 'library_resource_delete_data',
+        'access arguments' => array('delete own resources'),
+        'page arguments' => array(6),
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['ntlp/document/library/resource/attachment/google'] = array(
+        'title' => 'Course Resources',
+        'page callback' => 'get_google_docs_frm_for_library',
+        'access arguments' => array('ntlp view resources'),
+        'type' => MENU_CALLBACK
+    );
+    
+    $items['ntlp/document/library/delcategory/%'] = array(
+        'title' => 'School Resource Library',
+        'page callback' => 'ntlp_library_document_delete_category',
+        'page arguments' => array(4),
+        'access arguments' => array('ntlp edit category'),
+        'type' => MENU_CALLBACK,
+    );
+    
+    $items['ntlp/document/library/categoryresourcecheck/%'] = array(
+        'title' => 'School Resource Library',
+        'page callback' => 'ntlp_document_library_category_resource_check',
+        'page arguments' => array(4),
+        'access arguments' => array('ntlp edit category'),
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+/* implementation of hook perm */
+
+function ntlp_document_library_perm() {
+    return array("ntlp add resources", "ntlp add category", "ntlp edit category", "ntlp edit resources",
+        "ntlp view resources", "delete own resources", "delete comment", "view comment", "delete own comment");
+}
+
+function get_document_view_frm($course_nid, $resourse_id) {
+    include('ntlp_resource_view.inc');
+    return drupal_get_form('resource_view_form', $course_nid, $resourse_id);
+}
+
+function ntlp_document_delete_frm() {
+
+    return drupal_get_form('ntlp_document_delete_form');
+}
+
+function ntlp_document_delete_form($form_state) {
+    //ntlp/document/library/delete/file/5805
+    if ($courseid == 0) {
+        //Getting Query String From URL
+        $url = $_GET['q'];
+        $args = explode('/', $url);
+        for ($i = 0; $i < count($args); $i++) {
+            if (is_numeric($args[$i]) && empty($resource_id))
+                $resource_nid = $args[$i];
+        }
+    }
+
+    $sql = "select fid from {ntlp_library_resource} where nid=%d";
+    $result = db_query($sql, $resource_nid);
+    $row = db_fetch_array($result);
+    $fid = $row['fid'];
+
+    db_query("update {ntlp_library_resource} set path='',fid='' where nid=%d", $resource_nid);
+    db_query("delete from {files} where fid=%d", $row['fid']);
+}
+
+function ntlp_document_library__edit_frm() {
+
+    return drupal_get_form('ntlp_document_library_add_resource_form');
+}
+
+function ntlp_document_library_block($op = 'list', $delta = 0, $edit = array()) {
+
+    switch ($op) {
+        case 'list':
+            $blocks[0] = array(
+                'info' => t('NTLP: School Resoruce Library'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[1] = array(
+                'info' => t('NTLP: School Resoruce Library Search'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[2] = array(
+                'info' => t('NTLP: School Library Category Resources'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[3] = array(
+                'info' => t('NTLP: School Library Resources View'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[4] = array(
+                'info' => t('NTLP: School Library Popular Resource'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[5] = array(
+                'info' => t('NTLP: School Library Total Resource'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[6] = array(
+                'info' => t('NTLP: School Library Recent Resource Additions'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[7] = array(
+                'info' => t('NTLP: School Library Recent Resource Additions By Category'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[8] = array(
+                'info' => t('NTLP: School Library Resource Category/Keyword'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[9] = array(
+                'info' => t('NTLP: School Library Resource Filter'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[10] = array(
+                'info' => t('NTLP: Category Resource Filter'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[11] = array(
+                'info' => t('NTLP: Resource Category Information'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+            $blocks[12] = array(
+                'info' => t('NTLP: School Library Resrouce Search'),
+                'status' => TRUE,
+                'weight' => 0,
+                'visibility' => 1,
+                'pages' => 'nav/*',
+            );
+
+
+
+
+            return $blocks;
+
+        case 'configure':
+            $form = array();
+            return $form;
+
+        case 'save':
+
+
+        case 'view': default:
+
+            switch ($delta) {
+                case 0:
+
+                    $block['subject'] = t('NTLP: School Resoruce Library');
+                    $block['content'] = school_resource_library_category_contents();
+                    break;
+
+                case 1:
+
+                    $block['subject'] = t('NTLP: School Resoruce Library Search');
+                    $block['content'] = school_resource_library_search_contents();
+                    break;
+
+                case 2:
+
+                    $block['subject'] = t('NTLP: School Library Category Resources');
+                    $block['content'] = library_category_resources_contents();
+                    break;
+
+                case 3:
+
+                    $block['subject'] = t('NTLP: School Library Resources View');
+                    $block['content'] = ntlp_document_lib_resource_view_contents();
+                    break;
+
+                case 4:
+                    $block['subject'] = t('NTLP: School Library Popular Resource');
+                    $block['content'] = ntlp_most_popular_resource_contents();
+                    break;
+
+                case 5:
+
+                    $block['subject'] = t('NTLP: School Library Total Resource');
+                    $block['content'] = ntlp_total_resource_contents();
+                    break;
+
+                case 6:
+
+                    $block['subject'] = t('NTLP: School Library Recent Resource Additions');
+                    $block['content'] = ntlp_recent_additions_resource_contents();
+                    break;
+
+                case 7:
+                    $block['subject'] = t('NTLP: School Library Recent Resource Additions By Category');
+                    $block['content'] = ntlp_recent_additions_resource_contents_by_category();
+                    break;
+
+                case 8:
+                    $block['subject'] = t('NTLP: School Library Resource Category/Keyword');
+                    $block['content'] = ntlp_resource_contents_category_keyword();
+                    break;
+
+                case 9:
+                    $block['subject'] = t('NTLP: School Library Resource Filter');
+                    $block['content'] = ntlp_resource_filter_block();
+                    break;
+
+                case 10:
+                    $block['subject'] = t('NTLP: Category Resource Filter');
+                    $block['content'] = ntlp_category_resource_filter();
+                    break;
+
+                case 11:
+                    $block['subject'] = t('NTLP: Resource Category Information');
+                    $block['content'] = ntlp_resource_category_info();
+                    break;
+
+                case 12:
+                    $block['subject'] = t('NTLP: School Library Resrouce Search');
+                    $block['content'] = ntlp_school_library_resource_search();
+                    break;
+            }
+
+            return $block;
+    }
+}
+
+//function ntlp_document_library_theme($existing, $type, $theme, $path) {
+//    watchdog("theme_func", print_r($existing, true));
+//    return array();
+//}
+
+function ntlp_document_library_theme() {
+
+    return array(
+        // The form ID.
+        'ntlp_document_library_add_resource_form' => array(
+            // Forms always take the form argument.
+            'arguments' => array('form' => NULL),
+        ),
+    );
+}
+
+function theme_ntlp_document_library_add_resource_form($form) {
+
+    $variables_to_restore = cache_get("library_resource:" . session_id());
+    $variables_to_restore = $variables_to_restore->data;
+//    watchdog("theme", 'Variables:'. is_object($variables_to_restore) . '<br>'. print_r($variables_to_restore, true));
+    if (!empty($variables_to_restore) && is_object($variables_to_restore)) {
+        $resource_nid = $variables_to_restore->resource_nid;
+        $resource_type = $variables_to_restore->resource_type;
+
+        $form['add_resources']['resource_nid']['#value'] = $resource_nid;
+        $form['add_resources']['resource_name']['#value'] = $variables_to_restore->resource_name;
+        $form['add_resources']['selected_type']['#value'] = $resource_type;
+        $form['add_resources']['description']['#value'] = $variables_to_restore->description;
+//        $form['add_resources']['keywords']['#value'] = $variables_to_restore->keywords;
+        $module_nid = $variables_to_restore->module_nid;
+        $school_nid = $variables_to_restore->school_nid;
+        $form['add_resources']['featured_resource']['#value'] = $variables_to_restore->featured_resource;
+        $form['add_resources']['last_state']['#value'] = $variables_to_restore->last_state;
+        $form['add_resources']['school_nid']['#value'] = $variables_to_restore->school_nid;
+        $form['add_resources']['module_nid']['#value'] = $variables_to_restore->module_nid;
+
+        $category_array = get_prepare_selected_array($variables_to_restore->selected_categories);
+//        $form['add_resources']['temp_selected_categories']['#value'] = $categories_array;
+
+        if ($resource_type == 'lo_document') {
+            $form['add_resources']['google_radio']['#value'] = $variables_to_restore->google_radio;
+        } else if ($resource_type == 'lo_image' || $resource_type == 'lo_video') {
+
+            $form['add_resources']['other_resource_link']['#value'] = $variables_to_restore->other_resource_link;
+            $form['add_resources']['resource_radio']['#value'] = $variables_to_restore->resource_radio;
+        } else if ($resource_type == 'lo_page') {
+            $form['add_resources']['page_data']['#value'] = $variables_to_restore->page_data;
+        } else if ($resource_type == 'lo_link') {
+            $form['add_resources']['attach_link_for_link']['#value'] = $variables_to_restore->attach_link_for_link;
+        }
+
+        /*         * ******** */
+        if (count($category_array) > 0) {
+            
+            $options = get_library_categories($school_nid, $module_nid);
+            $maxCategory = sizeof($options);
+
+            if (isset($category_array)) {
+                //if user selected categories are availale for edit
+                $i = 0;
+                foreach ($category_array as $key => $value) {
+                    $tr_count = $i;
+
+                    $outcomediv1 = '<span class="comboboxBgLeft" style="width:150px;">
+                        <select id="%ID%" onchange="onchange_outcome_hidden(this,%INDEX%)">';
+                    $outcomediv1 .= '<option value="x">None</option>';
+                    if (isset($options)) {
+                        foreach ($options as $key2 => $value2) {
+                            if ($category_array[$key] == $value2)
+                                $outcomediv1 .= '<option value="' . $key2 . '" selected>' . $value2 . '</option>';
+                            else
+                                $outcomediv1 .= '<option value="' . $key2 . '">' . $value2 . '</option>';
+                        }
+                    }
+                    $outcomediv1 .= '</select></span>';
+                    $form['add_resources']['add_outcome']['hide_outcome1'] = array(
+                        '#type' => 'hidden',
+                        '#id' => 'oc_td1',
+                        '#value' => $outcomediv1,
+                    );
+
+                    $outcomediv1 = str_replace("%INDEX%", $tr_count, $outcomediv1);
+                    $outcomediv1 = str_replace("%ID%", $tr_count, $outcomediv1);
+                    $outcomediv .= '<tr id="outcome_' . $tr_count . '"><td style="border:none">' . $outcomediv1 . '</td></tr>';
+                    $i++;
+                }
+            }
+
+            $form['add_resources']['add_outcome']['add_outcome'] = array(
+                '#type' => 'item',
+                '#value' => '<table class="table" cellpadding="8" width="292px" style="border:0px;" cellspacing="0" border="0">
+                        <tbody id="ocContainer">' . $outcomediv . '
+                            <tr id="ocLastRow">
+                            <td style="border:none">
+                                <a class="SubmitAssignmentBtn" style="float:left !important" onclick="get_outcome_combo(' . $maxCategory . ');">Add Category</a>
+                            </td>
+                            <td style="border:none">&nbsp</td>
+                            </tr>
+                        </table>',
+            );
+        } else {
+            $options = get_library_categories($school_nid, $module_nid);
+
+            $maxCategory = sizeof($options);
+            $outcomediv1 = '<span class="comboboxBgLeft" style="width:150px;">
+        <select id="%ID%" onchange="onchange_outcome_hidden(this,%INDEX%)">';
+            $outcomediv1 .= '<option value="x">None</option>';
+            if (isset($options)) {
+                foreach ($options as $key => $value) {
+                    $outcomediv1 .= '<option value="' . $key . '">' . $value . '</option>';
+                }
+            }
+            $outcomediv1 .= '</select></span>';
+            $form['add_resources']['add_outcome']['hide_outcome1'] = array(
+                '#type' => 'hidden',
+                '#id' => 'oc_td1',
+                '#value' => $outcomediv1,
+            );
+
+            $tr_count = 1;
+            $outcomediv1 = str_replace("%INDEX%", $tr_count, $outcomediv1);
+            $outcomediv1 = str_replace("%ID%", $tr_count, $outcomediv1);
+            $form['add_resources']['add_outcome']['add_outcome'] = array(
+                '#type' => 'item',
+                '#value' => '<table class="table" cellpadding="8" width="292px" style="border:0px;" cellspacing="0" border="0">
+  <tbody id="ocContainer">
+    <tr id="outcome_' . $tr_count . '"><td>' . $outcomediv1 . '</td></tr>
+        <tr id="ocLastRow">
+      <td style="border:none"><a class="AddOutComesBg" onclick="get_outcome_combo(' . $maxCategory . ');">Add Category</a></td>
+      <td>&nbsp</td>
+    </tr>
+</table>',
+            );
+        }
+
+        //File upload controls for Page Resource
+        if ($resource_type == 'lo_page') {
+//            $rs_attachment = get_resource_attachment($resource_nid);
+//            $hiddendata = '';
+//            $attached_files_data = '';
+//            if($rs_attachment->num_rows > 0) {
+//                while($rec = db_fetch_object($rs_attachment)) {
+//                    $hiddendata .= 'F,' . $rec->fid . ',' . $rec->filename . ';';
+//                    $attached_files_data .= '<div id="F_' . $rec->fid . '"><a onclick="page_delete_attachment(\'F_' . $rec->fid . '\');" ><img src="' . $base_path . 'themes/Boldr/Images/DeleteBtn.png" border="0" /></a>&nbsp;&nbsp;<a href="' . $base_path . $rec->filepath . '" target="_blank">' . $rec->filename . '</a></div>';
+//                    }
+//            }
+//            foreach ($variables_to_restore->pageattachments_upload_control as $rec) {
+//                //Add with '-' sign as all these files are newly uploaded files.
+//                $hiddendata .= 'F,-' . $rec['file_info_id'] . ',' . $rec['file_info_name'] . ';';
+//                $attached_files_data .= '<div id="F_' . $rec['file_info_id'] . '"><a onclick="page_delete_attachment(\'F_' . $rec['file_info_id'] . '\');" ><img src="' . $base_path . 'themes/Boldr/Images/DeleteBtn.png" border="0" /></a>&nbsp;&nbsp;<a href="' . $base_path . $rec['file_info_path'] . '" target="_blank">' . $rec['file_info_name'] . '</a></div>';
+//            }
+            $linksarray = get_google_links($variables_to_restore->page_attached_files);
+            foreach ($linksarray as $l) {
+                list($vtype, $vupload_fileid, $vupload_filename) = $l;
+                if (!empty($vtype) && $vtype != 'X') {
+                    $attached_files_data .= '<div id="F_' . abs($vupload_fileid) . '"><a onclick="page_delete_attachment(\'F_' . abs($vupload_fileid) . '\');" ><img src="' . $base_path . 'themes/Boldr/Images/DeleteBtn.png" border="0" /></a>&nbsp;&nbsp;' . $vupload_filename . '</div>';
+                }
+            }
+
+            $attach_fileupload_link = '<div style="width: 100px;  cursor: pointer !important;" > <span style="float:left;text-decoration:none;color: #3399CC;"><span style="color:#000">+</span> <a class="project_resource_Green_text" id="attach_link">Attach file</a></span></div>';
+
+            $form['add_resources']['pageattachments_upload_control']['#prefix'] = '<tr id="page_attachments" style="display:none"><th >' . t('Attachments') . '</th><td colspan="3" onmouseover="place_fileupload_control(\'edit-add-resources-pageattachments-upload-control\', this);" onmouseout="place_fileupload_control_mouseout(this);" >' . $attach_fileupload_link;
+            $form['add_resources']['pageattachments_upload_control']['#suffix'] = '<br><div id="page_attach_links" style="float:left;width:auto;" class="attach_link_forum" >' . $attached_files_data . '</div></td></tr>';
+
+            $form['add_resources']['page_attached_files_hidden']['#value'] = $variables_to_restore->page_attached_files;
+        }
+    }
+
+    auto_upload_align_attach_control('edit-add-resources-upload-control');
+    auto_upload_align_attach_control('edit-add-resources-pageattachments-upload-control', true);
+    drupal_add_js(drupal_get_path('module', 'ntlp_school') . '/fileupload_ahah_helper.js');
+
+//    cache_set("library_resource:" . session_id(), null, 'cache', CACHE_TEMPORARY);
+
+    $output = drupal_render($form);
+    return $output;
+}
+
+//ntlp_document_library_filter_callback
+function ntlp_school_library_resource_search($category_tid = 0, $ajax = false, $types = array(), $featured = false) {
+
+    $school_nid = get_this_school();
+    $school_moduleObj = get_school_module($school_nid, 'ntlp_school_document_library');
+    $module_nid = $school_moduleObj->nid; // module_nid
+
+    $vargs = array();
+    $vargs[] = $module_nid;
+
+    if ($category_tid == 0) {
+        $category_tid = arg(4);
+    }
+    if ($ajax == 1 && isset($_REQUEST['category'])) {
+        $category_tid = $_REQUEST['category'];
+    }
+    if ($category_tid > 0) {
+        $vargs[] = $category_tid;
+    } else {
+        $vargs[] = "all";
+    }
+    
+    if (isset($_REQUEST['featured_resource'])) {
+        $featured = true;
+        $vargs[] = 1;
+    }else{
+        $featured = false;
+        $vargs[] = "all";
+    }
+       
+   //--- Check for Selected Types
+    $typesTotal = array(
+        'link' => 'lo_link',
+        'images' => 'lo_image',
+        'documents' => 'lo_document',
+        'pages' => 'lo_page',
+        'videos' => 'lo_video',
+    );
+    $types = array_keys($typesTotal);
+
+    $selected_types = array();
+    if (isset($_REQUEST['type'])) {
+        foreach ($_REQUEST['type'] as $type) {
+            if (in_array($type, $types)) {
+                $selected_types[] = $typesTotal[$type];
+            }
+        }
+    }
+
+    $view = views_get_view('ntlp_documentlib_school_resource');
+
+    //If type filter is selected then we will get value here, and then we can filter node types
+    if ($selected_types) {
+        $filter_type = array(
+            'type' => array(
+                'operator' => 'in',
+                'value' => $selected_types,
+                'table' => 'node',
+                'field' => 'type',
+            ),
+        );
+        $view->display['default']->display_options['filters'] = array_merge($view->display['default']->display_options['filters'], $filter_type);
+    }
+//    watchdog('view_args ', print_r($vargs, true));
+    $output = '<div id="library_document_table_view">' . $view->preview('default', $vargs) . '</div>';
+    if ($ajax) {
+        $output .= '
+            <script type="text/javascript">
+                fixDocumentSearchResultPager();
+            </script>
+        ';
+        print $output;
+    } else {
+        return $output;
+    }
+}
+
+function get_prepare_selected_array($selected_categries_id) {
+
+    if (isset($selected_categries_id)) {
+        foreach ($selected_categries_id as $obj) {
+
+            $result = db_query("SELECT tid, name FROM {term_data}
+            WHERE tid = %d ", $obj);
+            while ($term = db_fetch_object($result)) {
+                $terms[$term->tid] = $term->name;
+            }
+        }
+    }
+    return $terms;
+}
+
+function ntlp_document_library_form_alter(&$form, $form_state, $form_id) {
+    switch ($form_id) {
+        case 'ntlp_document_library_add_resource_form':
+//            watchdog('formAltDocLib', 'request_uri:' . request_uri() . ' referer:' . $_SERVER['HTTP_REFERER']);
+            $form['#action'] = empty($form_state['post']) ? request_uri() : $_SERVER['HTTP_REFERER'];
+            return $form;
+    }
+}
+
+function ntlp_document_library_search_page() {
+
+    if (!user_is_logged_in()) {
+        return "";
+    }
+
+    $HTML_homepage = t(<<<END
+    <div>
+        @CATEGORYINFO
+    </div>
+    <div>
+        <div style="width:70%;float:left;">
+            <div>@SEARCHBOX</div>
+            <div>@SEARCHRESULT</div>
+        </div>
+        <div style="float:left;"></div>
+        <div style="width:25%;float:right;">
+            @FILTERS
+        </div>
+    </div>
+END
+    );
+
+    $html = str_replace('@CATEGORYINFO', ntlp_resource_category_info(), $HTML_homepage);
+    $html = str_replace('@SEARCHBOX', school_resource_library_search_contents(), $html);
+    $html = str_replace('@SEARCHRESULT', ntlp_school_library_resource_search(), $html);
+    $html = str_replace('@FILTERS', ntlp_resource_filter_block(), $html);
+    return $html;
+}
+
+function ntlp_document_library_category_resource_check($category_tid) {
+    $message = "";
+    $warning = 0;
+
+    $result = db_query("SELECT * FROM {term_node} WHERE tid = %d", $category_tid);
+    
+    if ($result->num_rows > 0) {
+
+        $message = "<p>You are about to permanently delete this category. This will also remove the resources contained in this category.</p><p>Are you sure you want to permanently delete this category?</p>";
+        $warning = 1;
+    }
+
+    drupal_json(array('warning' => $warning,
+        'message' => $message,
+    ));
+}
+
+function ntlp_library_document_delete_category($category_id) {
+    db_query("DELETE FROM {ntlp_library_category} where category_tid = %d", $category_id);
+
+    if (db_affected_rows() > 0) {
+        //Remove references of this category from all mapped resources
+        $result = db_query("SELECT name FROM {term_data} WHERE tid = %d", $category_id);
+        if ($result->num_rows > 0) {
+            $record = db_fetch_object($result);
+            
+            $perm = ' '.get_this_school().' '.strtolower($record->name);
+//            watchdog('del_doclib_cat', 'permission '.$perm. ' category_tid  '.$category_id);
+            db_query("DELETE FROM {term_node} where tid = %d", $category_id);
+            db_query("UPDATE {permission} SET perm = TRIM(BOTH ',' FROM REPLACE(CONCAT(',' , perm, ','), CONCAT(',', '%s', ',') , ',')) WHERE rid IN( %d, %d, %d)", $perm, NTLP_ROLEID_TEACHER, NTLP_ROLEID_PARENT, NTLP_ROLEID_STUDENT);
+        }
+        drupal_set_message('Category successfully deleted');
+    }
+}

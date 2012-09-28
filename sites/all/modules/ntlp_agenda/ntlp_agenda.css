@@ -1,0 +1,75 @@
+table.cal {
+    width: 200px;
+    display: inline;
+    display: inline-table; /* for Safari */
+    float: left;
+    font-size: 80%;
+    margin: 0 6px 6px;
+}
+
+th.dayofweek {
+    text-align: center;
+}
+
+tr.caldays {
+    color: #ccc;
+}
+
+td.calnote {
+    color: #000;
+}
+
+td.calother {
+    background: #fff;
+}
+
+td.calavailable {
+    color: #000;
+    background: white;
+    text-align: center;
+}
+
+td.calcurrent {
+    color: #000;
+    background: silver;
+    text-align: center;
+}
+
+td.calnotavailable {
+    color: #ffff;
+    text-align: center;
+    background: light gray;
+
+}
+
+td.calnotavailableprov {
+    color: #ccc;
+    text-align: center;
+    background: lightyellow;
+}
+
+td.keystatus {
+    padding-left: 2px;
+}
+
+div.month_title{
+    width: 200px;
+    margin: 6px 6px 0;
+    border-bottom:1px solid #ddd;
+}
+
+div.edit_link{
+    width: 500px;
+    border:1px double black;
+
+    
+}
+
+div.calmonth-wrapper {
+    float:left;
+}
+
+
+#agenda_content_id {
+    margin: 0 0 0 15px;
+}

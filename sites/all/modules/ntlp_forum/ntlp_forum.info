@@ -1,0 +1,14 @@
+;$Id: ntlp_forum.info,v .01  $
+
+name = NTLP Forum
+description = Creates forums like organic groups.
+package = NTLP
+dependencies[] = forum
+dependencies[] = forum 
+core = 6.x
+; Information added by Ahmed Bilal on 01-02-2011
+version = "6.x-2.0"
+core = "6.x"
+project = "ntlp_forum"
+datestamp = "1255528560"
+

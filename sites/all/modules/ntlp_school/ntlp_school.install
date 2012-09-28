@@ -1,0 +1,102 @@
+<?php
+// $Id: ntlp_school.install,v .01 $
+
+/**
+ * Implementation of hook_install().
+ */
+function ntlp_school_install() {
+  // Create tables.
+  drupal_install_schema('ntlp_school');
+  drupal_install_schema('ntlp_user');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ntlp_school_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('ntlp_school');
+  drupal_uninstall_schema('ntlp_user');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function ntlp_school_schema() {
+  $schema['ntlp_school'] = array(
+    'description' => 'Stores NTLP School records',
+    'fields' => array(
+      'nid'     => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The ntlp_school\'s unique identifier, refers to Node id of ntlp_school type.'
+        ),
+      'address' => array(
+        'type' => 'varchar',
+        'length' => 200,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'School\'s internet domain name, e.g. techvalleyhs.org.'
+        ),
+      'location_tid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Region where School is located. This is a Taxonomy referenced field. The field is mapped with Vocabulary id of "NTLP Location"'
+        ),
+      'active'  => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Boolean indicating whether or not the ntlp_school is open.',
+        ),
+      ),
+    'indexes' => array(
+      'location_tid' => array('location_tid')
+      ),
+    'primary key' => array('nid'),
+    );
+
+  $schema['ntlp_user'] = array(
+    'description' => 'Stores NTLP User records',
+    'fields' => array(
+      'uid'     => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The ntlp_user\'s unique identifier, refers to Drupal User id.'
+        ),
+      'first_name' => array(
+        'type' => 'varchar',
+        'length' => 40,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'First Name'
+        ),
+      'last_name' => array(
+        'type' => 'varchar',
+        'length' => 40,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Last Name'
+        ),
+      'school_nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The ntlp_school the user belongs to, refers to Node id of type ntlp_school'
+        ),
+      ),
+    'indexes' => array(
+      'school_nid' => array('school_nid')
+      ),
+    'primary key' => array('uid'),
+    );
+
+  return $schema;
+}
+
